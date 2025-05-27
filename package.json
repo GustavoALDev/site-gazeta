@@ -14,9 +14,21 @@
     "@angular/platform-server": "~19.2.0",
     "@angular/router": "~19.2.0",
     "@angular/ssr": "~19.2.0",
+    "@nestjs/config": "^4.0.2",
+    "@nestjs/jwt": "^11.0.0",
+    "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.1.1",
+    "@nestjs/swagger": "^11.2.0",
+    "@types/bcrypt": "^5.0.2",
+    "@types/passport-jwt": "^4.0.1",
     "axios": "^1.6.0",
+    "bcrypt": "^6.0.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2",
     "express": "^4.21.2",
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1",
+    "swagger-ui-express": "^5.0.1",
     "zone.js": "~0.15.0"
   },
   "devDependencies": {
@@ -42,6 +54,7 @@
     "@nx/web": "21.1.2",
     "@nx/webpack": "21.1.2",
     "@nx/workspace": "21.1.2",
+    "@prisma/client": "^6.8.2",
     "@schematics/angular": "~19.2.0",
     "@swc-node/register": "~1.9.1",
     "@swc/core": "~1.5.7",
@@ -58,6 +71,7 @@
     "jest-preset-angular": "~14.4.0",
     "nx": "21.1.2",
     "prettier": "^2.6.2",
+    "prisma": "^6.8.2",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "ts-jest": "^29.1.0",
@@ -66,5 +80,9 @@
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.19.0",
     "webpack-cli": "^5.1.4"
+  },
+  "prisma": {
+    "schema": "apps/backend-gazeta/prisma/schema.prisma",
+    "seed": "ts-node apps/backend-gazeta/prisma/seed.ts"
   }
 }
