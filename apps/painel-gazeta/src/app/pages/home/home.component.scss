@@ -1,0 +1,48 @@
+:host{
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+  }
+  
+  .content {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100%;
+    .content_header{
+      height: 40px;
+      background:#dcdcdc;
+      display: none;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 0 10px;
+    
+      .menu_button{
+        border: 2px solid #0a80c4;
+        background: none;
+        cursor: pointer;
+        border-radius: 10px;
+        span{
+          color:red;
+        }
+      }
+    }
+    .content_body{
+      flex: 1;
+      overflow-y: auto;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .desktop{
+      display: none;
+    }
+    .mobile{
+      display: block;
+    }
+    .content {
+      .content_header{
+        display: flex;
+      }
+    }
+  }

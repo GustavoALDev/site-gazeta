@@ -1,0 +1,91 @@
+@use 'sass:color';
+
+// Variables
+$primary-color: #eb3237;
+$secondary-color: #0a80c4;
+$box-shadow-default: 0px 0px 10px rgba(0, 0, 0, 0.363);
+$font-size-base: 1rem;
+
+// Container e Card - usado apenas no componente principal
+.category-container {
+  height: 100%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  background: linear-gradient(135deg, $primary-color 0%, $secondary-color 100%);
+  padding: 2rem 1rem;
+}
+
+.category-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: $box-shadow-default;
+  padding: 2rem;
+  width: 100%;
+  height: 100%;
+  max-height: 720px;
+  animation: slideUp 0.6s ease-out;
+  .category-form-container-wrapper{
+    display: flex;
+    flex-direction: row;
+    .category-form-container, .category-list-container{
+      flex: 0 0 50%;
+    }
+  }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+// Header - usado apenas no componente principal
+.category-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  h2 { color: $secondary-color; font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; }
+  p { color: color.adjust($secondary-color, $lightness: 20%); font-size: $font-size-base; margin: 0; }
+}
+
+// Responsividade para o componente principal
+@media (max-width: 1000px) {
+    .category-container {
+        padding: 1rem;
+        height: auto;
+    }
+
+    .category-card {
+        padding: 1.5rem;
+        height: auto;
+        max-height: max-content;
+
+        .category-form-container-wrapper {
+            flex-direction: column;
+
+            .category-form-container,
+            .category-list-container {
+                flex: 0 0 100%;
+            }
+        }
+    }
+
+}
+@media (max-width: 768px) {
+    .category-container {
+        padding: 1rem;
+    }
+
+    .category-card {
+        padding: 1.5rem;
+
+        .category-form-container-wrapper {
+            flex-direction: column;
+
+            .category-form-container,
+            .category-list-container {
+                flex: 0 0 100%;
+            }
+        }
+    }
+
+}

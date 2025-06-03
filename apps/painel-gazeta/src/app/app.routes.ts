@@ -1,3 +1,18 @@
-import { Routes } from '@angular/router';
+import { Route } from '@angular/router';
+import { LoginComponent } from './pages/login/login.component';
+import { HomeComponent } from './pages/home/home.component';
 
-export const routes: Routes = [];
+export const appRoutes: Route[] = [
+  {path: 'login', component: LoginComponent},
+  {path: '', component: HomeComponent, children:[
+    {path:'', loadComponent: () => import('./pages/metrics/metrics.component').then(m => m.MetricsComponent)},
+    {path:'category', loadComponent: () => import('./pages/category/category.component').then(m => m.CategoryComponent)},
+    {path:'news', loadComponent: () => import('./pages/news/news.component').then(m => m.NewsComponent)},
+    {path:'news/:id', loadComponent: () => import('./pages/news/news.component').then(m => m.NewsComponent)},
+    {path:'newsList', loadComponent: () => import('./pages/news/news-list/news-list.component').then(m => m.NewsListComponent)},
+    {path:'menu', loadComponent: () => import('./pages/menu/menu.component').then(m => m.MenuComponent)},
+    {path:'videos', loadComponent: () => import('./pages/videos/videos.component').then(m => m.VideosComponent)},
+    {path:'users', loadComponent: () => import('./pages/users/users.component').then(m => m.UsersComponent)},
+    {path:'config', loadComponent: () => import('./pages/config/config.component').then(m => m.ConfigComponent)},
+  ]}
+];

@@ -1,0 +1,308 @@
+@use 'sass:color';
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+// Variables
+$primary-color: #eb3237;
+$secondary-color: #0a80c4;
+$sidebar-width: 280px;
+$transition-default: 0.3s ease-in-out;
+$box-shadow-default: 0px 0px 10px rgba(0, 0, 0, 0.363);
+$box-shadow-light: 0px 0px 3px rgba(0, 0, 0, 0.24);
+
+// Font Size Variables
+$font-size-base: 1rem; // 16px base
+$font-size-large: 1.2rem; // 19.2px
+$font-size-medium: 0.875rem; // 14px
+$font-size-small: 0.75rem; // 12px
+$font-size-xsmall: 0.625rem; // 10px
+
+// Mixins
+@mixin flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+@mixin fullscreen-fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+//Host styles
+:host {
+  display: flex;
+  z-index: 9999;
+  height: 100vh;
+}
+
+// Sidebar Container
+.sidecontent {
+  position: relative;
+  height: 100vh;
+}
+
+// Main Sidebar
+.sidebar {
+  z-index: 9999;
+  background: white;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: $sidebar-width;
+  height: 100vh;
+  @include flex-column;
+  justify-content: space-between;
+  box-shadow: $box-shadow-default;
+  transform: translateX(-100%);
+  transition: transform $transition-default;
+
+  // Header
+  &__header {
+    display: flex;
+    width: 100%;
+    box-shadow: $box-shadow-light;
+
+    .logo {
+      padding: 5px;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.137);
+
+      img {
+        width: 100%;
+        height: auto;
+      }
+    }
+  }
+
+  // Content
+  &__content {
+    @include flex-column;
+    flex-grow: 1;
+    width: 100%;
+    padding: 10px;
+    overflow-y: auto;
+
+    // Scrollbar customizada ultra fina para o conteúdo principal
+    &::-webkit-scrollbar {
+      width: 2px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.15);
+      border-radius: 1px;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    // Para Firefox
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+
+    .menu-item {
+      margin-bottom: 5px;
+
+      // Menu pai com filhos
+      .menu-parent {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 15px;
+        margin: 5px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 4px;
+        cursor: pointer;
+        background: rgba(0, 0, 0, 0.02);
+        font-size: $font-size-medium;
+        font-weight: 600;
+        color: $primary-color;
+        transition: all $transition-default;
+
+        &:hover {
+          color: $secondary-color;
+          background: rgba(0, 0, 0, 0.05);
+          transform: translateY(-1px);
+        }
+
+        &.expanded {
+          border-bottom-left-radius: 0;
+          border-bottom-right-radius: 0;
+          background: rgba(0, 0, 0, 0.08);
+        }
+
+        .menu-text {
+          flex-grow: 1;
+        }
+
+        .expand-icon {
+          font-size: $font-size-large;
+          transition: transform $transition-default;
+        }
+      }
+
+      // Submenu com animação accordion
+      .submenu {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height $transition-default ease-out;
+        background: rgba(0, 0, 0, 0.02);
+        border-left: 1px solid rgba(0, 0, 0, 0.1);
+        border-right: 1px solid rgba(0, 0, 0, 0.1);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        margin: 0 5px 5px 5px;
+        border-bottom-left-radius: 4px;
+        border-bottom-right-radius: 4px;
+
+        &.expanded {
+          max-height: 200px; // Altura para ~5 itens (40px cada)
+          overflow-y: auto;
+          transition: max-height $transition-default ease-in;
+
+          // Scrollbar customizada ultra fina
+          &::-webkit-scrollbar {
+            width: 2px;
+          }
+
+          &::-webkit-scrollbar-track {
+            background: transparent;
+          }
+
+          &::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 1px;
+          }
+
+          &::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.4);
+          }
+
+          // Para Firefox
+          scrollbar-width: thin;
+          scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+        }
+
+        .submenu-item {
+          display: block;
+          padding: 10px 20px 10px 30px;
+          font-size: $font-size-small;
+          text-decoration: none;
+          color: color.adjust($primary-color, $lightness: -10%);
+          border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+          transition: all $transition-default;
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+          &:hover {
+            background: rgba(0, 0, 0, 0.05);
+            color: $secondary-color;
+            padding-left: 35px;
+          }
+
+          &.active {
+            background: rgba($primary-color, 0.1);
+            color: $primary-color;
+            font-weight: 600;
+            border-left: 3px solid $primary-color;
+          }
+        }
+      }
+
+      // Menu simples sem filhos
+      .menu-simple {
+        display: block;
+        padding: 12px 15px;
+        margin: 5px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 4px;
+        font-size: $font-size-medium;
+        text-decoration: none;
+        color: $primary-color;
+        transition: all $transition-default;
+        font-weight: 500;
+        background: white;
+
+        &:hover {
+          background: rgba(0, 0, 0, 0.02);
+          color: $secondary-color;
+          transform: translateY(-1px);
+        }
+
+        &.active {
+          background: rgba($secondary-color, 0.1);
+          color: $secondary-color;
+          font-weight: 600;
+          border-color: $secondary-color;
+        }
+      }
+    }
+  }
+
+  // Footer
+  &__footer {
+    .footer_auth {
+      padding: 10px;
+      display: flex;
+      justify-content: flex-start;
+
+      ::ng-deep {
+        .auth_button {
+          cursor: pointer;
+          display: block;
+          padding: 12px 15px;
+          margin: 5px;
+          border: 1px solid rgba(0, 0, 0, 0.1);
+          border-radius: 4px;
+          font-size: $font-size-medium;
+          text-decoration: none;
+          color: $primary-color;
+          transition: all $transition-default;
+          font-weight: 500;
+          background: white;
+
+          &:hover {
+            background: rgba(0, 0, 0, 0.02);
+            color: $secondary-color;
+            transform: translateY(-1px);
+          }
+        }
+      }
+    }
+
+    .footer__content {
+      padding: 10px;
+      font-size: $font-size-xsmall;
+      font-weight: 500;
+
+      .created_by {
+        font-weight: 400;
+        font-size: $font-size-xsmall;
+        font-style: italic;
+      }
+    }
+  }
+}
+
+// Backdrop
+.backdrop {
+  @include fullscreen-fixed;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 9998;
+}
+
+// State classes
+.sidebar_opened {
+  transform: translateX(0) !important;
+}
+
+.opened_mode {
+  position: relative;
+  transform: translateX(0) !important;
+}

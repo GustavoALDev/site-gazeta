@@ -1,0 +1,17 @@
+<div class="category-container">
+    <div class="category-card">
+        <div class="category-header">
+            <h2>Gerenciar Categorias</h2>
+            <p>Crie e gerencie as categorias de notícias</p>
+        </div>
+        <div class="category-form-container-wrapper">
+            <div class="category-form-container">
+                <app-category-form [editingCategory]="editingCategory()!" (categorySubmit)="onCategorySubmit($event)"
+                    (cancelEdit)="onCancelEdit()" />
+            </div>
+            <div class="category-list-container">
+                <app-category-list [categories]="categories()" (editCategory)="onEditCategory($event)"
+                    (deleteCategory)="onDeleteCategory($event)" />
+            </div>
+        </div>
+    </div>

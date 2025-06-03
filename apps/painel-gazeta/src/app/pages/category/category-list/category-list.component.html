@@ -1,0 +1,78 @@
+<div class="categories-section">
+  
+  @if (categories().length > 0) {
+    <div class="filters">
+        <div class="search-container">
+            <input 
+              type="text" 
+              placeholder="Pesquisar categoria" 
+              [value]="searchTerm()"
+              (input)="onSearchChange($event)"
+            />
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none">
+              <path d="M21 21L16.514 16.506M19 10.5C19 15.194 15.194 19 10.5 19S2 15.194 2 10.5 5.806 2 10.5 2 19 5.806 19 10.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+        <div class="order-container">
+            <select 
+              name="order" 
+              id="order"
+              [value]="orderBy()"
+              (change)="onOrderChange($event)"
+            >
+                <option value="newest">Mais recente</option>
+                <option value="oldest">Mais antigo</option>
+            </select>
+        </div>
+        <div class="filter-container">
+            <select 
+              name="filter" 
+              id="filter"
+              [value]="statusFilter()"
+              (change)="onStatusFilterChange($event)"
+            >
+                <option value="all">Todas</option>
+                <option value="active">Ativas</option>
+                <option value="inactive">Inativas</option>
+            </select>
+        </div>
+    </div>
+    <div class="categories-list">
+      @for (category of filteredCategories(); track category.id) {
+       
+        <div class="category-item">
+          <div class="category-info">
+            <h4>{{ category.name }}</h4>
+            <p>{{ category.description }}</p>
+          </div>
+          <div class="category-meta">
+            <span class="category-status" [class.active]="category.isActive">
+              {{ category.isActive ? 'Ativa' : 'Inativa' }}
+            </span>
+            <div class="category-actions">
+              <button class="btn-edit" (click)="onEdit(category)">
+                Editar
+              </button>
+              <button class="btn-delete" (click)="onDelete(category)">
+                Excluir
+              </button>
+            </div>
+          </div>
+        </div>
+        
+      }
+    </div>
+    
+    @if (filteredCategories().length === 0) {
+      <div class="no-results">
+        <p>Nenhuma categoria encontrada com os filtros aplicados.</p>
+      </div>
+    }
+    
+  } @else {
+    <div class="no-categories">
+        <h3>Lista de Categorias</h3>
+      <p>Nenhuma categoria criada ainda.</p>
+    </div>
+  }
+</div>

@@ -1,0 +1,16 @@
+<lib-sidebar class="desktop" [opened]="true" [menuItems]="menuItems">
+    <button auth class="auth_button">sair</button>
+  </lib-sidebar>
+  <lib-sidebar class="mobile" #mobileSidebar [opened]="false" [menuItems]="menuItems">
+    <button auth class="auth_button">sair</button>
+  </lib-sidebar>
+  <div class="content">
+    <div class="content_header">
+      <button class="menu_button" (click)="mobileSidebar.toggleSidebar()">
+        <span class="material-icons">menu</span>
+      </button>
+    </div>
+    <div class="content_body">
+      <router-outlet></router-outlet>
+    </div>
+  </div>

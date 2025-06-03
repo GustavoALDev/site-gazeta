@@ -2,29 +2,27 @@
   "name": "painel-gazeta",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
-  "generators": {},
-  "sourceRoot": "apps/painel-gazeta/src",
   "prefix": "app",
+  "sourceRoot": "apps/painel-gazeta/src",
+  "tags": [],
   "targets": {
     "build": {
       "executor": "@angular-devkit/build-angular:application",
+      "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/painel-gazeta",
+        "outputPath": "dist/apps/painel-gazeta",
         "index": "apps/painel-gazeta/src/index.html",
         "browser": "apps/painel-gazeta/src/main.ts",
-        "polyfills": [
-          "zone.js"
-        ],
+        "polyfills": ["zone.js"],
         "tsConfig": "apps/painel-gazeta/tsconfig.app.json",
+        "inlineStyleLanguage": "scss",
         "assets": [
           {
             "glob": "**/*",
-            "input": "apps/painel-gazeta/public"
+            "input": "public/"
           }
         ],
-        "styles": [
-          "apps/painel-gazeta/src/styles.css"
-        ],
+        "styles": ["apps/painel-gazeta/src/styles.scss"],
         "scripts": []
       },
       "configurations": {
@@ -32,13 +30,13 @@
           "budgets": [
             {
               "type": "initial",
-              "maximumWarning": "500kB",
-              "maximumError": "1MB"
+              "maximumWarning": "500kb",
+              "maximumError": "1mb"
             },
             {
               "type": "anyComponentStyle",
-              "maximumWarning": "4kB",
-              "maximumError": "8kB"
+              "maximumWarning": "4kb",
+              "maximumError": "8kb"
             }
           ],
           "outputHashing": "all"
@@ -52,6 +50,7 @@
       "defaultConfiguration": "production"
     },
     "serve": {
+      "continuous": true,
       "executor": "@angular-devkit/build-angular:dev-server",
       "configurations": {
         "production": {
@@ -64,26 +63,28 @@
       "defaultConfiguration": "development"
     },
     "extract-i18n": {
-      "executor": "@angular-devkit/build-angular:extract-i18n"
+      "executor": "@angular-devkit/build-angular:extract-i18n",
+      "options": {
+        "buildTarget": "painel-gazeta:build"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
     },
     "test": {
-      "executor": "@angular-devkit/build-angular:karma",
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "polyfills": [
-          "zone.js",
-          "zone.js/testing"
-        ],
-        "tsConfig": "apps/painel-gazeta/tsconfig.spec.json",
-        "assets": [
-          {
-            "glob": "**/*",
-            "input": "apps/painel-gazeta/public"
-          }
-        ],
-        "styles": [
-          "apps/painel-gazeta/src/styles.css"
-        ],
-        "scripts": []
+        "jestConfig": "apps/painel-gazeta/jest.config.ts"
+      }
+    },
+    "serve-static": {
+      "continuous": true,
+      "executor": "@nx/web:file-server",
+      "options": {
+        "buildTarget": "painel-gazeta:build",
+        "staticFilePath": "dist/apps/painel-gazeta/browser",
+        "spa": true
       }
     }
   }
