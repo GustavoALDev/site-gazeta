@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/prisma"
@@ -21,18 +15,56 @@ model User {
   name      String
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+  news      News[]
 
   @@map("users")
 }
 
 model Category {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
-  description String?  @db.Text
-  slug        String   @unique
-  isActive    Boolean  @default(true) @map("is_active")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id             Int            @id @default(autoincrement())
+  name           String         @unique
+  description    String?        @db.Text
+  slug           String         @unique
+  isActive       Boolean        @default(true) @map("is_active")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+  newsCategories NewsCategory[]
 
   @@map("categories")
+}
+
+model News {
+  id                Int            @id @default(autoincrement())
+  title             String         @db.VarChar(255)
+  subtitle          String         @db.Text
+  content           String         @db.LongText
+  imgEmphasis       String         @map("img_emphasis") @db.VarChar(500)
+  imgEmphasisAuthor String         @map("img_emphasis_author") @db.VarChar(200)
+  author            String         @db.VarChar(200)
+  media             String         @db.LongText
+  published         Boolean        @default(false)
+  views             Int            @default(0)
+  status            String         @db.VarChar(50)
+  validity          String         @db.VarChar(50)
+  slug              String         @unique @db.VarChar(255)
+  isEmphasis        Boolean        @default(false) @map("is_emphasis")
+  createdAt         DateTime       @default(now()) @map("created_at")
+  updatedAt         DateTime       @updatedAt @map("updated_at")
+  authorId          Int            @map("author_id")
+  authorUser        User           @relation(fields: [authorId], references: [id])
+  newsCategories    NewsCategory[]
+
+  @@index([authorId], map: "news_author_id_fkey")
+  @@map("news")
+}
+
+model NewsCategory {
+  newsId     Int      @map("news_id")
+  categoryId Int      @map("category_id")
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  news       News     @relation(fields: [newsId], references: [id], onDelete: Cascade)
+
+  @@id([newsId, categoryId])
+  @@index([categoryId], map: "news_categories_category_id_fkey")
+  @@map("news_categories")
 }
