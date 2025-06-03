@@ -1,26 +1,29 @@
 {
-    "compileOnSave": false,
-    "compilerOptions": {
-      "rootDir": ".",
-      "sourceMap": true,
-      "declaration": false,
-      "moduleResolution": "node",
-      "emitDecoratorMetadata": true,
-      "experimentalDecorators": true,
-      "importHelpers": true,
-      "target": "es2015",
-      "module": "esnext",
-      "lib": ["es2020", "dom"],
-      "skipLibCheck": true,
-      "skipDefaultLibCheck": true,
-      "baseUrl": ".",
-      "paths": {
-        "@site-gazeta/models": ["libs/ts/models/index.ts"],
-        "@site-gazeta/alert": ["libs/shared/alert/src/index.ts"],
-        "@site-gazeta/form-validator": ["libs/shared/form-validator/src/index.ts"],
-        "@site-gazeta/sidebar": ["libs/shared/sidebar/src/index.ts"],
-        "@site-gazeta/editor": ["libs/components/editor/src/index.ts"]
-      }
-    },
-    "exclude": ["node_modules", "tmp"]
-  }
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "es2015",
+    "module": "esnext",
+    "lib": ["es2020", "dom"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@site-gazeta/alert": ["libs/shared/alert/src/index.ts"],
+      "@site-gazeta/editor": ["libs/components/editor/src/index.ts"],
+      "@site-gazeta/form-validator": [
+        "libs/shared/form-validator/src/index.ts"
+      ],
+      "@site-gazeta/models": ["libs/ts/models/index.ts"],
+      "@site-gazeta/sidebar": ["libs/shared/sidebar/src/index.ts"],
+      "@site-gazeta/text-editor": ["libs/components/text-editor/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "tmp"]
+}

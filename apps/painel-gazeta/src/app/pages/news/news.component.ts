@@ -1,10 +1,10 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { EditorComponent } from '@site-gazeta/editor';
+import { TextEditorComponent } from '@site-gazeta/text-editor';
 
 @Component({
   selector: 'app-news',
-  imports: [CommonModule, EditorComponent],
+  imports: [CommonModule, TextEditorComponent],
   templateUrl: './news.component.html',
   styleUrl: './news.component.scss',
 })
