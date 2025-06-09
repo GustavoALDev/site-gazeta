@@ -1,1 +1,241 @@
-<lib-text-editor></lib-text-editor>
+<div class="news-container">
+  <div class="news-card">
+    <div class="news-header">
+      <h2>Gerenciar Notícias</h2>
+      <p>Crie e edite suas notícias</p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="news-content-wrapper">
+        <div class="news-main-content" [class.sidebar-closed]="!sidebarOpen()">
+          
+          <!-- Menu de Abas com Botão Toggle -->
+          <div class="tab-header">
+            <div class="tab-menu">
+              <button 
+                type="button"
+                class="tab-button"
+                [class.active]="activeTab === 'info'"
+                (click)="setActiveTab('info')">
+                Informações
+              </button>
+              <button 
+                type="button"
+                class="tab-button"
+                [class.active]="activeTab === 'content'"
+                (click)="setActiveTab('content')">
+                Conteúdo
+              </button>
+              <button 
+                type="button"
+                class="tab-button"
+                [class.active]="activeTab === 'media'"
+                (click)="setActiveTab('media')">
+                Mídias
+              </button>
+            </div>
+            
+            <div class="sidebar-toggle-container">
+              <button 
+                type="button" 
+                class="sidebar-toggle-btn"
+                (click)="toggleSidebar()"
+                [title]="sidebarOpen() ? 'Fechar painel' : 'Abrir painel'">
+                <span class="material-icons">
+                  {{ sidebarOpen() ? 'chevron_right' : 'chevron_left' }}
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <div class="tab-content" [class.active]="activeTab === 'info'">
+            <div class="form-group">
+              <label for="categories">Categorias *</label>
+              <div class="category-selector">
+                <div class="selected-categories">
+                  @for (category of selectedCategories(); track category.id) {
+                    <div class="category-tag">
+                      <span>{{ category.name }}</span>
+                      <button type="button" class="remove-category" (click)="removeCategory(category.id!)">
+                        <span class="material-icons">close</span>
+                      </button>
+                    </div>
+                  }
+                  <button 
+                    type="button" 
+                    class="add-category-btn"
+                    (click)="toggleCategoryDropdown()"
+                    [class.active]="categoryDropdownOpen()">
+                    <span class="material-icons">add</span>
+                    Adicionar Categoria
+                  </button>
+                </div>
+                
+                @if (categoryDropdownOpen()) {
+                  <div class="category-dropdown">
+                    @if (getAvailableCategories().length > 0) {
+                      @for (category of getAvailableCategories(); track category.id) {
+                        <div class="category-option" (click)="selectCategory(category)">
+                          <span class="category-name">{{ category.name }}</span>
+                          <small class="category-description">{{ category.description }}</small>
+                        </div>
+                      }
+                    } @else {
+                      <div class="no-categories">
+                        <span>Todas as categorias foram selecionadas</span>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+              @if (selectedCategories().length === 0) {
+                <div class="error-message">
+                  Selecione pelo menos uma categoria
+                </div>
+              }
+            </div>
+
+            <div class="form-group">
+              <label for="title">Título *</label>
+              <input 
+                type="text" 
+                id="title"
+                formControlName="title"
+                placeholder="Digite o título da notícia"
+                (blur)="generateSlug()"
+                [class.error]="form.get('title')?.invalid && form.get('title')?.touched">
+              <div class="error-message" *ngIf="form.get('title')?.invalid && form.get('title')?.touched">
+                Título é obrigatório
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="subtitle">Subtítulo *</label>
+              <input 
+                type="text" 
+                id="subtitle"
+                formControlName="subtitle"
+                placeholder="Digite o subtítulo da notícia"
+                [class.error]="form.get('subtitle')?.invalid && form.get('subtitle')?.touched">
+              <div class="error-message" *ngIf="form.get('subtitle')?.invalid && form.get('subtitle')?.touched">
+                Subtítulo é obrigatório
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="slug">URL da Notícia*</label>
+              <input 
+                type="text" 
+                id="slug"
+                formControlName="slug"
+                placeholder="url-da-noticia"
+                [class.error]="form.get('slug')?.invalid && form.get('slug')?.touched">
+                @if(urlDisplay()){
+                  <span class="url-preview"><b>URL:</b> www.site.exemplo.com/<b>{{urlDisplay()}}</b></span>
+                }
+              <div class="error-message" *ngIf="form.get('slug')?.invalid && form.get('slug')?.touched">
+                URL é obrigatória
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="author">Autor *</label>
+              <input 
+                type="text" 
+                id="author"
+                formControlName="author"
+                placeholder="Digite o nome do autor"
+                [class.error]="form.get('author')?.invalid && form.get('author')?.touched">
+              <div class="error-message" *ngIf="form.get('author')?.invalid && form.get('author')?.touched">
+                Autor é obrigatório
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-content" [class.active]="activeTab === 'content'">
+            <div class="form-group">
+              <label for="content">Conteúdo da Notícia *</label>
+              <lib-text-editor formControlName="content" ></lib-text-editor>
+              <div class="error-message" *ngIf="form.get('content')?.invalid && form.get('content')?.touched">
+                Conteúdo é obrigatório
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-content" [class.active]="activeTab === 'media'">
+            <app-news-midia (formValue)="onFormValue($event)"></app-news-midia>
+          </div>
+        </div>
+
+        <div class="news-sidebar" [class.sidebar-hidden]="!sidebarOpen()">
+          <div class="sidebar-content">
+            <h3>Configurações</h3>
+            
+            <div class="sidebar-section">
+              <div class="form-group">
+                <label for="published">Data e Hora de Publicação *</label>
+                <input 
+                  type="datetime-local" 
+                  id="published"
+                  formControlName="published"
+                  [class.error]="form.get('published')?.invalid && form.get('published')?.touched"
+                  (click)="$event.stopPropagation()"
+                  (focus)="$event.stopPropagation()">
+                <small>Defina quando a notícia será publicada</small>
+                <div class="error-message" *ngIf="form.get('published')?.invalid && form.get('published')?.touched">
+                  Data e hora de publicação são obrigatórias
+                </div>
+              </div>
+
+              <div class="toggle-group">
+                <span class="toggle-label">Notícia Destaque</span>
+                <div class="toggle-container">
+                  <input 
+                    type="checkbox" 
+                    id="isEmphasis"
+                    formControlName="isEmphasis"
+                    class="toggle-input">
+                  <label for="isEmphasis" class="toggle-switch">
+                    <span class="toggle-slider"></span>
+                  </label>
+                  <span class="toggle-text">
+                    {{ form.get('isEmphasis')?.value ? 'Sim' : 'Não' }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="validity">Data de Validade</label>
+                <input 
+                  type="date" 
+                  id="validity"
+                  formControlName="validity">
+                <small>Até quando a notícia será exibida</small>
+              </div>
+
+              <div class="form-group">
+                <label for="status">Status *</label>
+                <select 
+                  id="status"
+                  formControlName="status"
+                  [class.error]="form.get('status')?.invalid && form.get('status')?.touched">
+                  <option *ngFor="let option of statusOptions" [value]="option.value">
+                    {{ option.label }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <div class="sidebar-actions">
+              <button type="submit" class="btn-primary" [disabled]="form.invalid" >
+                Salvar Notícia
+              </button>
+              <button type="button" class="btn-secondary" (click)="onReset()">
+                Limpar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

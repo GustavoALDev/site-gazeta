@@ -1,0 +1,152 @@
+<div class="midia-content">
+  <div class="media-main-container">
+    <div class="form-group featured-image-group">
+      <label for="featuredImage">Imagem de Destaque</label>
+      <div class="image-preview-container">
+        <div class="image-preview" [class.has-image]="featuredImage()">
+          @if (featuredImage(); as featured) {
+            <img [src]="featured.preview" alt="Imagem de destaque selecionada" />
+          } @else {
+            <div class="image-placeholder">
+              <span class="material-icons">image</span>
+              <p>A primeira foto adicionada será automaticamente destacada</p>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="secondary-media-controls">
+      <label for="secondaryMedia">Mídias</label>
+      <div class="media-buttons">
+        <button type="button" class="btn-add-photo" (click)="addPhoto()">
+          <span class="material-icons">photo_camera</span>
+          Adicionar Foto
+        </button>
+        <button type="button" class="btn-add-video" (click)="addVideo()">
+          <span class="material-icons">videocam</span>
+          Adicionar Vídeo
+        </button>
+      </div>
+      <small>Adicione fotos ou vídeos do YouTube que serão exibidos no carrossel da notícia. A primeira foto será automaticamente definida como imagem de destaque.</small>
+
+      @if (selectedMediaIndex() !== null) {
+        <div class="media-edit-form">
+          @if (selectedMedia()?.type === 'photo') {
+            <div class="photo-edit-form">
+              <div class="form-group">
+                <label for="mediaAuthor">Autor da Foto</label>
+                <input 
+                  type="text" 
+                  id="mediaAuthor"
+                  [value]="editingMedia().author || ''"
+                  (input)="updateEditingAuthor($any($event.target).value)"
+                  placeholder="Digite o nome do autor"
+                />
+              </div>
+              
+              <div class="form-group">
+                <label for="mediaDate">Data da Foto</label>
+                <input 
+                  type="date" 
+                  id="mediaDate"
+                  [value]="editingMedia().date || ''"
+                  (input)="updateEditingDate($any($event.target).value)"
+                />
+              </div>
+            </div>
+          }
+
+          <div class="form-actions">
+            <button type="button" class="btn-save" (click)="saveMediaInfo()">
+              Salvar
+            </button>
+            <button type="button" class="btn-cancel" (click)="cancelMediaEdit()">
+              Cancelar
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  @if (hasMidias()) {
+    <div class="secondary-media-viewer">
+      <h4>Mídias Adicionadas</h4>
+      <div class="media-items-container">
+        @for (media of previewMidias(); track $index) {
+          <div 
+            class="media-item"
+            [class.photo]="media.type === 'photo'"
+            [class.video]="media.type === 'video'"
+            [class.featured]="media.emphasis"
+            [class.selected]="selectedMediaIndex() === $index"
+            (click)="selectMedia($index)"
+          >
+            @if (media.type === 'photo') {
+              <div class="featured-star" 
+                   [class.active]="media.emphasis"
+                   (click)="toggleFeatured($index, $event)">
+                <span class="material-icons">{{ media.emphasis ? 'star' : 'star_border' }}</span>
+              </div>
+
+              <div class="photo-preview">
+                <img [src]="media.preview" [alt]="'Foto ' + ($index + 1)" />
+                
+                <button type="button" class="remove-media-btn top-left" (click)="removeMedia($index, $event)">
+                  <span class="material-icons">delete</span>
+                </button>
+                
+                <div class="photo-info">
+                  @if (media.author) {
+                    <div class="info-item">
+                      <span class="material-icons">person</span>
+                      <small>{{ media.author }}</small>
+                    </div>
+                  }
+                  @if (media.date) {
+                    <div class="info-item">
+                      <span class="material-icons">calendar_today</span>
+                      <small>{{ media.date | date:'dd/MM/yyyy' }}</small>
+                    </div>
+                  }
+                </div>
+              </div>
+            } @else {
+              <div class="video-preview">
+                <div class="video-thumbnail">
+                  @if (media.thumbnail) {
+                    <img [src]="media.thumbnail" [alt]="'Vídeo ' + ($index + 1)" />
+                  } @else {
+                    <div class="video-placeholder">
+                      <span class="material-icons">play_circle_filled</span>
+                    </div>
+                  }
+                  <div class="play-overlay">
+                    <span class="material-icons">play_arrow</span>
+                  </div>
+                </div>
+                <div class="video-info">
+                  <p class="video-title">{{ media.title || 'Vídeo do YouTube' }}</p>
+                  <small class="video-url">{{ media.url }}</small>
+                </div>
+                <button type="button" class="remove-media-btn" (click)="removeMedia($index, $event)">
+                  <span class="material-icons">delete</span>
+                </button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <input 
+    type="file" 
+    #photoInput
+    accept="image/*"
+    multiple
+    (change)="onPhotosSelected($event)"
+    style="display: none;"
+  />
+</div>

@@ -1,15 +1,77 @@
-import { Component } from '@angular/core';
+import { Component, forwardRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 import * as CKBuilding from '../ckeditor/build/ckeditor';
 import { CKEditorModule } from '@ckeditor/ckeditor5-angular';
 
 @Component({
   selector: 'lib-text-editor',
-  imports: [CommonModule, CKEditorModule],
+  imports: [CommonModule, CKEditorModule, ReactiveFormsModule],
   template: `
-  <ckeditor tagName="textarea" [editor]="editor" ></ckeditor>
-  `
+    <ckeditor 
+      tagName="textarea" 
+      [editor]="editor"
+      [data]="value"
+      [formControl]="formControl"
+      (blur)="onTouched()"
+      
+    ></ckeditor>
+  `,
+  styles:[
+    `	
+    textarea{
+      min-height: 300px;
+    }
+    `
+  ],
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => TextEditorComponent),
+      multi: true
+    }
+  ]
 })
-export class TextEditorComponent {
-  editor = CKBuilding.default || CKBuilding;
+export class TextEditorComponent implements ControlValueAccessor {
+  protected editor = CKBuilding.default || CKBuilding;
+  protected value: string = '';
+  protected disable = false
+  // Funções de callback do ControlValueAccessor
+  private onChange = (value: string) => {};
+  protected onTouched = () => {};
+  formControl = new FormControl('');
+  constructor(){
+    this.formControl.valueChanges.subscribe(value => {
+      this.onChange(value as string)
+    })
+  }
+  onDataChange(data: any): void {
+    this.value = data as string;
+    this.onChange(data);
+  }
+  
+  onBlur(): void {
+    this.onTouched();
+  }
+  
+  
+  writeValue(value: string): void {
+    this.value = value || '';
+  }
+  
+  registerOnChange(fn: (value: string) => void): void {
+    this.onChange = fn;
+  }
+  
+  registerOnTouched(fn: () => void): void {
+    this.onTouched = fn;
+  }
+  
+  setDisabledState(isDisabled: boolean): void {
+    if(isDisabled){
+      this.formControl.disable();
+    }else{
+      this.formControl.enable();
+    }
+  }
 }

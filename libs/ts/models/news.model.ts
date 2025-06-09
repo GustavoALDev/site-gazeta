@@ -1,14 +1,16 @@
+import { NewsMedia } from "./newsMedia.model";
+import { NewsVideo } from "./newsVideo.model";
+
 export interface News {
     id: number;
     title: string;
     subtitle: string;
     content: string;
     categoryId: number[];
-    imgEmphasis: string;
-    imgEmphasisAuthor: string;
     author: string;
-    media:{type: string, url: string, author: string, date: string}
-    published: boolean;
+    mediaNews:NewsMedia[];
+    videoNews:NewsVideo[];
+    published: string;
     createdAt: string;
     updateAt: string;
     views: number;
