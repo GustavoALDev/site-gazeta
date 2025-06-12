@@ -1,5 +1,50 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsArray, IsBoolean, IsOptional, IsObject, MinLength, MaxLength } from 'class-validator';
+import { IsNotEmpty, IsString, IsArray, IsBoolean, IsOptional, IsObject, MinLength, MaxLength, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+
+export class CreateNewsMediaDto {
+  @ApiProperty({ description: 'URL da mídia', example: 'https://exemplo.com/imagem.jpg' })
+  @IsNotEmpty({ message: 'URL da mídia é obrigatória' })
+  @IsString({ message: 'URL da mídia deve ser uma string' })
+  url: string;
+
+  @ApiProperty({ description: 'Tipo da mídia', example: 'image' })
+  @IsNotEmpty({ message: 'Tipo da mídia é obrigatório' })
+  @IsString({ message: 'Tipo da mídia deve ser uma string' })
+  type: string;
+
+  @ApiProperty({ description: 'Autor da mídia', example: 'João Fotógrafo' })
+  @IsNotEmpty({ message: 'Autor da mídia é obrigatório' })
+  @IsString({ message: 'Autor da mídia deve ser uma string' })
+  author: string;
+
+  @ApiProperty({ description: 'Data da mídia', example: '2025-01-20' })
+  @IsNotEmpty({ message: 'Data da mídia é obrigatória' })
+  @IsString({ message: 'Data da mídia deve ser uma string' })
+  date: string;
+}
+
+export class CreateNewsVideoDto {
+  @ApiProperty({ description: 'URL do vídeo', example: 'https://youtube.com/watch?v=123' })
+  @IsNotEmpty({ message: 'URL do vídeo é obrigatória' })
+  @IsString({ message: 'URL do vídeo deve ser uma string' })
+  url: string;
+
+  @ApiProperty({ description: 'Título do vídeo', example: 'Vídeo explicativo' })
+  @IsNotEmpty({ message: 'Título do vídeo é obrigatório' })
+  @IsString({ message: 'Título do vídeo deve ser uma string' })
+  title: string;
+
+  @ApiProperty({ description: 'Autor do vídeo', example: 'Canal XYZ' })
+  @IsNotEmpty({ message: 'Autor do vídeo é obrigatório' })
+  @IsString({ message: 'Autor do vídeo deve ser uma string' })
+  author: string;
+
+  @ApiProperty({ description: 'Data do vídeo', example: '2025-01-20' })
+  @IsNotEmpty({ message: 'Data do vídeo é obrigatória' })
+  @IsString({ message: 'Data do vídeo deve ser uma string' })
+  date: string;
+}
 
 export class CreateNewsDto {
   @ApiProperty({
@@ -40,22 +85,6 @@ export class CreateNewsDto {
   categoryId: number[];
 
   @ApiProperty({
-    description: 'URL da imagem de destaque',
-    example: 'https://exemplo.com/imagem.jpg'
-  })
-  @IsNotEmpty({ message: 'Imagem de destaque é obrigatória' })
-  @IsString({ message: 'URL da imagem deve ser uma string' })
-  imgEmphasis: string;
-
-  @ApiProperty({
-    description: 'Autor da imagem de destaque',
-    example: 'João Fotógrafo'
-  })
-  @IsNotEmpty({ message: 'Autor da imagem é obrigatório' })
-  @IsString({ message: 'Autor da imagem deve ser uma string' })
-  imgEmphasisAuthor: string;
-
-  @ApiProperty({
     description: 'Nome do autor da notícia',
     example: 'Maria Silva'
   })
@@ -64,20 +93,35 @@ export class CreateNewsDto {
   author: string;
 
   @ApiProperty({
-    description: 'Mídia adicional da notícia',
-    example: { type: 'video', url: 'https://youtube.com/watch?v=123', author: 'Canal XYZ', date: '2025-01-20' }
+    description: 'Mídias da notícia',
+    type: [CreateNewsMediaDto],
+    isArray: true
   })
-  @IsObject({ message: 'Media deve ser um objeto' })
-  media: { type: string; url: string; author: string; date: string };
+  @IsArray({ message: 'mediaNews deve ser um array' })
+  @ValidateNested({ each: true })
+  @Type(() => CreateNewsMediaDto)
+  @IsOptional()
+  mediaNews?: CreateNewsMediaDto[];
+
+  @ApiProperty({
+    description: 'Vídeos da notícia',
+    type: [CreateNewsVideoDto],
+    isArray: true
+  })
+  @IsArray({ message: 'videoNews deve ser um array' })
+  @ValidateNested({ each: true })
+  @Type(() => CreateNewsVideoDto)
+  @IsOptional()
+  videoNews?: CreateNewsVideoDto[];
 
   @ApiProperty({
     description: 'Se a notícia está publicada',
-    example: true,
-    default: false
+    example: 'true',
+    default: 'false'
   })
   @IsOptional()
-  @IsBoolean({ message: 'Published deve ser um boolean' })
-  published?: boolean;
+  @IsString({ message: 'Published deve ser uma string' })
+  published?: string;
 
   @ApiProperty({
     description: 'Status da notícia',

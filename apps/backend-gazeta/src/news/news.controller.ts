@@ -37,16 +37,25 @@ export class NewsController {
   @ApiBearerAuth()
   @ApiOperation({ 
     summary: 'Criar nova notícia', 
-    description: 'Endpoint para criar uma nova notícia' 
+    description: 'Endpoint para criar uma nova notícia com mídias e vídeos' 
   })
   @ApiResponse({ 
     status: 201, 
     description: 'Notícia criada com sucesso', 
     type: NewsResponseDto 
   })
-  @ApiResponse({ status: 400, description: 'Dados inválidos' })
-  @ApiResponse({ status: 401, description: 'Token inválido ou não fornecido' })
-  @ApiResponse({ status: 409, description: 'Slug já existe' })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'Dados inválidos - Validação de campos obrigatórios' 
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: 'Token inválido ou não fornecido' 
+  })
+  @ApiResponse({ 
+    status: 409, 
+    description: 'Slug já existe - Escolha outro slug único' 
+  })
   async create(@Body() createNewsDto: CreateNewsDto, @Request() req): Promise<NewsResponseDto> {
     try {
       return await this.newsService.create(createNewsDto, req.user.id);
@@ -65,11 +74,11 @@ export class NewsController {
   @Get()
   @ApiOperation({ 
     summary: 'Listar todas as notícias', 
-    description: 'Endpoint para obter todas as notícias' 
+    description: 'Endpoint para obter todas as notícias com suas mídias e vídeos' 
   })
   @ApiResponse({ 
     status: 200, 
-    description: 'Lista de notícias',
+    description: 'Lista de notícias com mídias e vídeos',
     type: [NewsResponseDto]
   })
   async findAll(): Promise<NewsResponseDto[]> {
@@ -87,15 +96,23 @@ export class NewsController {
   @Get(':id')
   @ApiOperation({ 
     summary: 'Obter notícia por ID', 
-    description: 'Endpoint para obter uma notícia específica pelo ID' 
+    description: 'Endpoint para obter uma notícia específica pelo ID com suas mídias e vídeos' 
   })
-  @ApiParam({ name: 'id', description: 'ID da notícia', type: 'number' })
+  @ApiParam({ 
+    name: 'id', 
+    description: 'ID da notícia', 
+    type: 'number',
+    example: 1
+  })
   @ApiResponse({ 
     status: 200, 
-    description: 'Notícia encontrada',
+    description: 'Notícia encontrada com mídias e vídeos',
     type: NewsResponseDto
   })
-  @ApiResponse({ status: 404, description: 'Notícia não encontrada' })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Notícia não encontrada' 
+  })
   async findOne(@Param('id', ParseIntPipe) id: number): Promise<NewsResponseDto> {
     try {
       return await this.newsService.findOne(id);
@@ -114,15 +131,23 @@ export class NewsController {
   @Get('slug/:slug')
   @ApiOperation({ 
     summary: 'Obter notícia por slug', 
-    description: 'Endpoint para obter uma notícia específica pelo slug' 
+    description: 'Endpoint para obter uma notícia específica pelo slug com suas mídias e vídeos' 
   })
-  @ApiParam({ name: 'slug', description: 'Slug da notícia', type: 'string' })
+  @ApiParam({ 
+    name: 'slug', 
+    description: 'Slug da notícia', 
+    type: 'string',
+    example: 'nova-tecnologia-revoluciona-mercado'
+  })
   @ApiResponse({ 
     status: 200, 
-    description: 'Notícia encontrada',
+    description: 'Notícia encontrada com mídias e vídeos',
     type: NewsResponseDto
   })
-  @ApiResponse({ status: 404, description: 'Notícia não encontrada' })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Notícia não encontrada' 
+  })
   async findBySlug(@Param('slug') slug: string): Promise<NewsResponseDto> {
     try {
       return await this.newsService.findBySlug(slug);
@@ -143,18 +168,35 @@ export class NewsController {
   @ApiBearerAuth()
   @ApiOperation({ 
     summary: 'Atualizar notícia', 
-    description: 'Endpoint para atualizar uma notícia existente' 
+    description: 'Endpoint para atualizar uma notícia existente com suas mídias e vídeos' 
   })
-  @ApiParam({ name: 'id', description: 'ID da notícia', type: 'number' })
+  @ApiParam({ 
+    name: 'id', 
+    description: 'ID da notícia', 
+    type: 'number',
+    example: 1
+  })
   @ApiResponse({ 
     status: 200, 
     description: 'Notícia atualizada com sucesso',
     type: NewsResponseDto
   })
-  @ApiResponse({ status: 400, description: 'Dados inválidos' })
-  @ApiResponse({ status: 401, description: 'Token inválido ou não fornecido' })
-  @ApiResponse({ status: 404, description: 'Notícia não encontrada' })
-  @ApiResponse({ status: 409, description: 'Slug já existe' })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'Dados inválidos - Validação de campos' 
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: 'Token inválido ou não fornecido' 
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Notícia não encontrada' 
+  })
+  @ApiResponse({ 
+    status: 409, 
+    description: 'Slug já existe - Escolha outro slug único' 
+  })
   async update(
     @Param('id', ParseIntPipe) id: number, 
     @Body() updateNewsDto: UpdateNewsDto
@@ -178,12 +220,26 @@ export class NewsController {
   @ApiBearerAuth()
   @ApiOperation({ 
     summary: 'Excluir notícia', 
-    description: 'Endpoint para excluir uma notícia' 
+    description: 'Endpoint para excluir uma notícia e todas suas mídias e vídeos relacionados' 
   })
-  @ApiParam({ name: 'id', description: 'ID da notícia', type: 'number' })
-  @ApiResponse({ status: 200, description: 'Notícia excluída com sucesso' })
-  @ApiResponse({ status: 401, description: 'Token inválido ou não fornecido' })
-  @ApiResponse({ status: 404, description: 'Notícia não encontrada' })
+  @ApiParam({ 
+    name: 'id', 
+    description: 'ID da notícia', 
+    type: 'number',
+    example: 1
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Notícia excluída com sucesso' 
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: 'Token inválido ou não fornecido' 
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Notícia não encontrada' 
+  })
   async remove(@Param('id', ParseIntPipe) id: number): Promise<{ message: string }> {
     try {
       await this.newsService.remove(id);
@@ -203,11 +259,32 @@ export class NewsController {
   @Post(':id/view')
   @ApiOperation({ 
     summary: 'Incrementar visualização', 
-    description: 'Endpoint para incrementar o contador de visualizações da notícia' 
+    description: 'Endpoint para incrementar o contador de visualizações da notícia (apenas para notícias publicadas)' 
   })
-  @ApiParam({ name: 'id', description: 'ID da notícia', type: 'number' })
-  @ApiResponse({ status: 200, description: 'Visualização incrementada' })
-  @ApiResponse({ status: 404, description: 'Notícia não encontrada' })
+  @ApiParam({ 
+    name: 'id', 
+    description: 'ID da notícia', 
+    type: 'number',
+    example: 1
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Visualização incrementada com sucesso',
+    schema: {
+      type: 'object',
+      properties: {
+        views: {
+          type: 'number',
+          example: 1251,
+          description: 'Número atualizado de visualizações'
+        }
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Notícia não encontrada ou não publicada' 
+  })
   async incrementView(@Param('id', ParseIntPipe) id: number): Promise<{ views: number }> {
     try {
       const views = await this.newsService.incrementView(id);

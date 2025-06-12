@@ -1,5 +1,39 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+export class NewsMediaDto {
+  @ApiProperty({ description: 'ID da mídia', example: 1 })
+  id: number;
+
+  @ApiProperty({ description: 'URL da mídia', example: 'https://exemplo.com/imagem.jpg' })
+  url: string;
+
+  @ApiProperty({ description: 'Tipo da mídia', example: 'image' })
+  type: string;
+
+  @ApiProperty({ description: 'Autor da mídia', example: 'João Fotógrafo' })
+  author: string;
+
+  @ApiProperty({ description: 'Data da mídia', example: '2025-01-20' })
+  date: string;
+}
+
+export class NewsVideoDto {
+  @ApiProperty({ description: 'ID do vídeo', example: 1 })
+  id: number;
+
+  @ApiProperty({ description: 'URL do vídeo', example: 'https://youtube.com/watch?v=123' })
+  url: string;
+
+  @ApiProperty({ description: 'Título do vídeo', example: 'Vídeo explicativo' })
+  title: string;
+
+  @ApiProperty({ description: 'Autor do vídeo', example: 'Canal XYZ' })
+  author: string;
+
+  @ApiProperty({ description: 'Data do vídeo', example: '2025-01-20' })
+  date: string;
+}
+
 export class NewsResponseDto {
   @ApiProperty({ description: 'ID da notícia', example: 1 })
   id: number;
@@ -16,29 +50,31 @@ export class NewsResponseDto {
   @ApiProperty({ description: 'IDs das categorias', example: [1, 2, 3], type: [Number] })
   categoryId: number[];
 
-  @ApiProperty({ description: 'URL da imagem de destaque', example: 'https://exemplo.com/imagem.jpg' })
-  imgEmphasis: string;
-
-  @ApiProperty({ description: 'Autor da imagem de destaque', example: 'João Fotógrafo' })
-  imgEmphasisAuthor: string;
-
   @ApiProperty({ description: 'Nome do autor da notícia', example: 'Maria Silva' })
   author: string;
 
   @ApiProperty({ 
-    description: 'Mídia adicional da notícia',
-    example: { type: 'video', url: 'https://youtube.com/watch?v=123', author: 'Canal XYZ', date: '2025-01-20' }
+    description: 'Mídias da notícia',
+    type: [NewsMediaDto],
+    isArray: true
   })
-  media: { type: string; url: string; author: string; date: string };
+  mediaNews: NewsMediaDto[];
 
-  @ApiProperty({ description: 'Se a notícia está publicada', example: true })
-  published: boolean;
+  @ApiProperty({ 
+    description: 'Vídeos da notícia',
+    type: [NewsVideoDto],
+    isArray: true
+  })
+  videoNews: NewsVideoDto[];
+
+  @ApiProperty({ description: 'Se a notícia está publicada', example: 'true' })
+  published: string;
 
   @ApiProperty({ description: 'Data de criação', example: '2025-01-20T10:00:00.000Z' })
   createdAt: string;
 
   @ApiProperty({ description: 'Data de atualização', example: '2025-01-20T10:00:00.000Z' })
-  updatedAt: string;
+  updateAt: string;
 
   @ApiProperty({ description: 'Número de visualizações', example: 1250 })
   views: number;

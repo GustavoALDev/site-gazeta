@@ -30,24 +30,42 @@ export class NewsService {
       throw new NotFoundException('Uma ou mais categorias não foram encontradas');
     }
 
-    // Extrair categoryId do DTO para não incluir na criação da news
-    const { categoryId, ...newsData } = createNewsDto;
+    // Extrair categoryId, mediaNews e videoNews do DTO
+    const { categoryId, mediaNews, videoNews, ...newsData } = createNewsDto;
 
-    // Criar a notícia
+    // Criar a notícia com relacionamentos
     const news = await this.prisma.news.create({
       data: {
         ...newsData,
         authorId,
         newsCategories: {
           create: categoryId.map(catId => ({ categoryId: catId }))
-        }
+        },
+        mediaNews: mediaNews ? {
+          create: mediaNews.map(media => ({
+            url: media.url,
+            type: media.type,
+            author: media.author,
+            date: media.date
+          }))
+        } : undefined,
+        videoNews: videoNews ? {
+          create: videoNews.map(video => ({
+            url: video.url,
+            title: video.title,
+            author: video.author,
+            date: video.date
+          }))
+        } : undefined
       },
       include: {
         newsCategories: {
           include: {
             category: true
           }
-        }
+        },
+        mediaNews: true,
+        videoNews: true
       }
     });
 
@@ -61,7 +79,9 @@ export class NewsService {
           include: {
             category: true
           }
-        }
+        },
+        mediaNews: true,
+        videoNews: true
       },
       orderBy: { createdAt: 'desc' }
     });
@@ -77,7 +97,9 @@ export class NewsService {
           include: {
             category: true
           }
-        }
+        },
+        mediaNews: true,
+        videoNews: true
       }
     });
 
@@ -96,7 +118,9 @@ export class NewsService {
           include: {
             category: true
           }
-        }
+        },
+        mediaNews: true,
+        videoNews: true
       }
     });
 
@@ -142,7 +166,7 @@ export class NewsService {
       }
     }
 
-    const { categoryId, ...newsData } = updateNewsDto;
+    const { categoryId, mediaNews, videoNews, ...newsData } = updateNewsDto;
 
     // Atualizar a notícia
     const updatedNews = await this.prisma.$transaction(async (tx) => {
@@ -154,14 +178,46 @@ export class NewsService {
 
       // Atualizar categorias se fornecidas
       if (categoryId) {
-        // Remover relacionamentos existentes
         await tx.newsCategory.deleteMany({
           where: { newsId: id }
         });
 
-        // Criar novos relacionamentos
         await tx.newsCategory.createMany({
           data: categoryId.map(catId => ({ newsId: id, categoryId: catId }))
+        });
+      }
+
+      // Atualizar mídias se fornecidas
+      if (mediaNews) {
+        await tx.newsMedia.deleteMany({
+          where: { newsId: id }
+        });
+
+        await tx.newsMedia.createMany({
+          data: mediaNews.map(media => ({
+            newsId: id,
+            url: media.url,
+            type: media.type,
+            author: media.author,
+            date: media.date
+          }))
+        });
+      }
+
+      // Atualizar vídeos se fornecidos
+      if (videoNews) {
+        await tx.newsVideo.deleteMany({
+          where: { newsId: id }
+        });
+
+        await tx.newsVideo.createMany({
+          data: videoNews.map(video => ({
+            newsId: id,
+            url: video.url,
+            title: video.title,
+            author: video.author,
+            date: video.date
+          }))
         });
       }
 
@@ -173,7 +229,9 @@ export class NewsService {
             include: {
               category: true
             }
-          }
+          },
+          mediaNews: true,
+          videoNews: true
         }
       });
     });
@@ -197,7 +255,7 @@ export class NewsService {
 
   async incrementView(id: number): Promise<number> {
     const news = await this.prisma.news.update({
-      where: { id, published: true },
+      where: { id, published: 'true' },
       data: { views: { increment: 1 } },
       select: { views: true }
     });
@@ -212,13 +270,24 @@ export class NewsService {
       subtitle: news.subtitle,
       content: news.content,
       categoryId: news.newsCategories.map(nc => nc.categoryId),
-      imgEmphasis: news.imgEmphasis,
-      imgEmphasisAuthor: news.imgEmphasisAuthor,
       author: news.author,
-      media: news.media,
+      mediaNews: news.mediaNews.map(media => ({
+        id: media.id,
+        url: media.url,
+        type: media.type,
+        author: media.author,
+        date: media.date
+      })),
+      videoNews: news.videoNews.map(video => ({
+        id: video.id,
+        url: video.url,
+        title: video.title,
+        author: video.author,
+        date: video.date
+      })),
       published: news.published,
       createdAt: news.createdAt.toISOString(),
-      updatedAt: news.updatedAt.toISOString(),
+      updateAt: news.updateAt.toISOString(),
       views: news.views,
       status: news.status,
       validity: news.validity,

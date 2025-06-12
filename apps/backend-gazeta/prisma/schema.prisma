@@ -34,28 +34,53 @@ model Category {
 }
 
 model News {
-  id                Int            @id @default(autoincrement())
-  title             String         @db.VarChar(255)
-  subtitle          String         @db.Text
-  content           String         @db.LongText
-  imgEmphasis       String         @map("img_emphasis") @db.VarChar(500)
-  imgEmphasisAuthor String         @map("img_emphasis_author") @db.VarChar(200)
-  author            String         @db.VarChar(200)
-  media             String         @db.LongText
-  published         Boolean        @default(false)
-  views             Int            @default(0)
-  status            String         @db.VarChar(50)
-  validity          String         @db.VarChar(50)
-  slug              String         @unique @db.VarChar(255)
-  isEmphasis        Boolean        @default(false) @map("is_emphasis")
-  createdAt         DateTime       @default(now()) @map("created_at")
-  updatedAt         DateTime       @updatedAt @map("updated_at")
-  authorId          Int            @map("author_id")
-  authorUser        User           @relation(fields: [authorId], references: [id])
-  newsCategories    NewsCategory[]
+  id             Int            @id @default(autoincrement())
+  title          String         @db.VarChar(255)
+  subtitle       String         @db.Text
+  content        String         @db.LongText
+  author         String         @db.VarChar(200)
+  published      String         @db.VarChar(50) @default("false")
+  views          Int            @default(0)
+  status         String         @db.VarChar(50)
+  validity       String         @db.VarChar(50)
+  slug           String         @unique @db.VarChar(255)
+  isEmphasis     Boolean        @default(false) @map("is_emphasis")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updateAt       DateTime       @updatedAt @map("update_at")
+  authorId       Int            @map("author_id")
+  authorUser     User           @relation(fields: [authorId], references: [id])
+  newsCategories NewsCategory[]
+  mediaNews      NewsMedia[]
+  videoNews      NewsVideo[]
 
   @@index([authorId], map: "news_author_id_fkey")
   @@map("news")
+}
+
+model NewsMedia {
+  id       Int    @id @default(autoincrement())
+  url      String @db.VarChar(500)
+  type     String @db.VarChar(50)
+  author   String @db.VarChar(200)
+  date     String @db.VarChar(50)
+  newsId   Int    @map("news_id")
+  news     News   @relation(fields: [newsId], references: [id], onDelete: Cascade)
+
+  @@index([newsId], map: "news_media_news_id_fkey")
+  @@map("news_media")
+}
+
+model NewsVideo {
+  id     Int    @id @default(autoincrement())
+  url    String @db.VarChar(500)
+  title  String @db.VarChar(255)
+  author String @db.VarChar(200)
+  date   String @db.VarChar(50)
+  newsId Int    @map("news_id")
+  news   News   @relation(fields: [newsId], references: [id], onDelete: Cascade)
+
+  @@index([newsId], map: "news_video_news_id_fkey")
+  @@map("news_video")
 }
 
 model NewsCategory {
