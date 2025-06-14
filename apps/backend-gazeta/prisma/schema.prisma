@@ -91,3 +91,15 @@ model NewsCategory {
   @@index([categoryId], map: "news_categories_category_id_fkey")
   @@map("news_categories")
 }
+
+model Media {
+  id        Int      @id @default(autoincrement())
+  emphasis  Boolean  @default(false)
+  imgSize   Json?    @map("img_size")
+  author    String?  @db.VarChar(200)
+  date      String?  @db.VarChar(50)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("media")
+}
