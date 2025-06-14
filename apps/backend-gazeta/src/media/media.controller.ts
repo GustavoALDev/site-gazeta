@@ -9,14 +9,18 @@ import {
   ParseIntPipe,
   HttpException,
   HttpStatus,
-  NotFoundException
+  NotFoundException,
+  UseInterceptors,
+  UploadedFile
 } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
-  ApiParam
+  ApiParam,
+  ApiConsumes
 } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { MediaService } from './media.service';
 import { CreateMediaDto } from './dto/create-media.dto';
 import { UpdateMediaDto } from './dto/update-media.dto';
@@ -45,6 +49,50 @@ export class MediaController {
     try {
       return await this.mediaService.create(createMediaDto);
     } catch (error) {
+      throw new HttpException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Erro no servidor, tente novamente mais tarde',
+        error: 'Internal Server Error'
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({
+    summary: 'Upload de imagem para mídia',
+    description: 'Endpoint para fazer upload de uma imagem que será processada em diferentes tamanhos'
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Imagem processada e mídia criada com sucesso',
+    type: MediaResponseDto
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Arquivo inválido ou dados incorretos'
+  })
+  async uploadImage(
+    @UploadedFile() file: any,
+    @Body('emphasis') emphasis = 'false',
+    @Body('author') author?: string,
+    @Body('date') date?: string
+  ): Promise<MediaResponseDto> {
+    try {
+      if (!file) {
+        throw new HttpException('Arquivo não fornecido', HttpStatus.BAD_REQUEST);
+      }
+
+      return await this.mediaService.createWithUpload(file, {
+        emphasis: emphasis === 'true',
+        author,
+        date
+      });
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       throw new HttpException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         message: 'Erro no servidor, tente novamente mais tarde',

@@ -1,24 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsOptional, IsString, IsArray, ValidateNested } from 'class-validator';
-import { Type } from 'class-transformer';
-
-class MediaSizeDto {
-  @ApiProperty({ description: 'URL da imagem original', example: 'https://exemplo.com/original.jpg' })
-  @IsString()
-  original: string;
-
-  @ApiProperty({ description: 'URL da imagem pequena', example: 'https://exemplo.com/small.jpg' })
-  @IsString()
-  small: string;
-
-  @ApiProperty({ description: 'URL da imagem média', example: 'https://exemplo.com/medium.jpg' })
-  @IsString()
-  medium: string;
-
-  @ApiProperty({ description: 'URL da imagem super pequena', example: 'https://exemplo.com/super-small.jpg' })
-  @IsString()
-  superSmall: string;
-}
+import { IsBoolean, IsOptional, IsString, IsObject } from 'class-validator';
 
 export class CreateMediaDto {
   @ApiProperty({ 
@@ -30,15 +11,23 @@ export class CreateMediaDto {
   emphasis: boolean;
 
   @ApiProperty({ 
-    description: 'Tamanhos da imagem', 
+    description: 'URLs das imagens em diferentes tamanhos', 
     required: false,
-    type: [MediaSizeDto]
+    example: {
+      original: 'https://exemplo.com/original.jpg',
+      medium: 'https://exemplo.com/medium.jpg',
+      small: 'https://exemplo.com/small.jpg',
+      superSmall: 'https://exemplo.com/super-small.jpg'
+    }
   })
   @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => MediaSizeDto)
-  imgSize?: MediaSizeDto[];
+  @IsObject()
+  imgSize?: {
+    original: string;
+    medium: string;
+    small: string;
+    superSmall: string;
+  };
 
   @ApiProperty({ 
     description: 'Autor da mídia', 

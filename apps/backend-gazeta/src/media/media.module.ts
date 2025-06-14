@@ -2,11 +2,12 @@ import { Module } from '@nestjs/common';
 import { MediaService } from './media.service';
 import { MediaController } from './media.controller';
 import { PrismaModule } from '../prisma/prisma.module';
+import { ImageProcessingService } from './services/image-processing.service';
 
 @Module({
   imports: [PrismaModule],
   controllers: [MediaController],
-  providers: [MediaService],
+  providers: [MediaService, ImageProcessingService],
   exports: [MediaService],
 })
 export class MediaModule {} 

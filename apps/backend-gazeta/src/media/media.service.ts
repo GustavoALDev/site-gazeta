@@ -3,10 +3,20 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateMediaDto } from './dto/create-media.dto';
 import { UpdateMediaDto } from './dto/update-media.dto';
 import { MediaResponseDto } from './dto/media-response.dto';
+import { ImageProcessingService, ImageSizes } from './services/image-processing.service';
+
+interface UploadMediaData {
+  emphasis: boolean;
+  author?: string;
+  date?: string;
+}
 
 @Injectable()
 export class MediaService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private imageProcessingService: ImageProcessingService
+  ) {}
 
   async create(createMediaDto: CreateMediaDto): Promise<MediaResponseDto> {
     const media = await this.prisma.media.create({
@@ -15,6 +25,31 @@ export class MediaService {
         imgSize: createMediaDto.imgSize ? JSON.parse(JSON.stringify(createMediaDto.imgSize)) : null,
         author: createMediaDto.author,
         date: createMediaDto.date,
+      },
+    });
+
+    return this.formatResponse(media);
+  }
+
+  async createWithUpload(file: any, data: UploadMediaData): Promise<MediaResponseDto> {
+    // Gerar nome único para o arquivo
+    const timestamp = Date.now();
+    const filename = `media_${timestamp}_${file.originalname}`;
+    
+    // Processar imagem em diferentes tamanhos
+    const imageSizes = await this.imageProcessingService.processImage(file, filename);
+    
+    // Gerar URLs públicas
+    const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+    const publicUrls = this.imageProcessingService.generatePublicUrls(imageSizes, baseUrl);
+
+    // Salvar no banco de dados
+    const media = await this.prisma.media.create({
+      data: {
+        emphasis: data.emphasis,
+        imgSize: JSON.parse(JSON.stringify(publicUrls)),
+        author: data.author,
+        date: data.date,
       },
     });
 
@@ -72,6 +107,16 @@ export class MediaService {
 
     if (!existingMedia) {
       throw new NotFoundException(`Mídia com ID ${id} não encontrada`);
+    }
+
+    // Se existem arquivos de imagem, deletá-los
+    if (existingMedia.imgSize) {
+      try {
+        const imageSizes = existingMedia.imgSize as any;
+        await this.imageProcessingService.deleteImageFiles(imageSizes);
+      } catch (error) {
+        console.error('Erro ao deletar arquivos de imagem:', error);
+      }
     }
 
     await this.prisma.media.delete({
