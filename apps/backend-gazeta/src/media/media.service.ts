@@ -12,7 +12,7 @@ export class MediaService {
     const media = await this.prisma.media.create({
       data: {
         emphasis: createMediaDto.emphasis,
-        imgSize: createMediaDto.imgSize || null,
+        imgSize: createMediaDto.imgSize ? JSON.parse(JSON.stringify(createMediaDto.imgSize)) : null,
         author: createMediaDto.author,
         date: createMediaDto.date,
       },
@@ -56,7 +56,7 @@ export class MediaService {
       where: { id },
       data: {
         emphasis: updateMediaDto.emphasis,
-        imgSize: updateMediaDto.imgSize || existingMedia.imgSize,
+        imgSize: updateMediaDto.imgSize ? JSON.parse(JSON.stringify(updateMediaDto.imgSize)) : existingMedia.imgSize,
         author: updateMediaDto.author,
         date: updateMediaDto.date,
       },
