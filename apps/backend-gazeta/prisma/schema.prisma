@@ -58,26 +58,24 @@ model News {
 }
 
 model NewsMedia {
-  id       Int    @id @default(autoincrement())
-  url      String @db.VarChar(500)
-  type     String @db.VarChar(50)
-  author   String @db.VarChar(200)
-  date     String @db.VarChar(50)
-  newsId   Int    @map("news_id")
-  news     News   @relation(fields: [newsId], references: [id], onDelete: Cascade)
+  id       Int     @id @default(autoincrement())
+  emphasis Boolean @default(false)
+  imgSize  Json?   @map("img_size")
+  author   String? @db.VarChar(200)
+  date     String? @db.VarChar(50)
+  newsId   Int     @map("news_id")
+  news     News    @relation(fields: [newsId], references: [id], onDelete: Cascade)
 
   @@index([newsId], map: "news_media_news_id_fkey")
   @@map("news_media")
 }
 
 model NewsVideo {
-  id     Int    @id @default(autoincrement())
-  url    String @db.VarChar(500)
-  title  String @db.VarChar(255)
-  author String @db.VarChar(200)
-  date   String @db.VarChar(50)
-  newsId Int    @map("news_id")
-  news   News   @relation(fields: [newsId], references: [id], onDelete: Cascade)
+  id        Int    @id @default(autoincrement())
+  url       String @db.VarChar(500)
+  thumbnail String @db.VarChar(500)
+  newsId    Int    @map("news_id")
+  news      News   @relation(fields: [newsId], references: [id], onDelete: Cascade)
 
   @@index([newsId], map: "news_video_news_id_fkey")
   @@map("news_video")

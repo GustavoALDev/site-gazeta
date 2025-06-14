@@ -1,37 +1,48 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class NewsMediaDto {
-  @ApiProperty({ description: 'ID da mídia', example: 1 })
-  id: number;
+  @ApiProperty({ description: 'ID da mídia', example: 1, required: false })
+  id?: number;
 
-  @ApiProperty({ description: 'URL da mídia', example: 'https://exemplo.com/imagem.jpg' })
-  url: string;
+  @ApiProperty({ description: 'ID da notícia', example: 1, required: false })
+  idNews?: number;
 
-  @ApiProperty({ description: 'Tipo da mídia', example: 'image' })
-  type: string;
+  @ApiProperty({ description: 'Se a mídia é destaque', example: false, required: false })
+  emphasis?: boolean;
 
-  @ApiProperty({ description: 'Autor da mídia', example: 'João Fotógrafo' })
-  author: string;
+  @ApiProperty({ 
+    description: 'Tamanhos da imagem', 
+    required: false,
+    example: [{
+      original: 'https://exemplo.com/original.jpg',
+      small: 'https://exemplo.com/small.jpg',
+      medium: 'https://exemplo.com/medium.jpg',
+      superSmall: 'https://exemplo.com/super-small.jpg'
+    }]
+  })
+  imgSize?: Array<{
+    original: string;
+    small: string;
+    medium: string;
+    superSmall: string;
+  }>;
 
-  @ApiProperty({ description: 'Data da mídia', example: '2025-01-20' })
-  date: string;
+  @ApiProperty({ description: 'Autor da mídia', example: 'João Fotógrafo', required: false })
+  author?: string;
+
+  @ApiProperty({ description: 'Data da mídia', example: '2025-01-20', required: false })
+  date?: string;
 }
 
 export class NewsVideoDto {
-  @ApiProperty({ description: 'ID do vídeo', example: 1 })
-  id: number;
+  @ApiProperty({ description: 'ID do vídeo', example: 1, required: false })
+  id?: number;
 
   @ApiProperty({ description: 'URL do vídeo', example: 'https://youtube.com/watch?v=123' })
   url: string;
 
-  @ApiProperty({ description: 'Título do vídeo', example: 'Vídeo explicativo' })
-  title: string;
-
-  @ApiProperty({ description: 'Autor do vídeo', example: 'Canal XYZ' })
-  author: string;
-
-  @ApiProperty({ description: 'Data do vídeo', example: '2025-01-20' })
-  date: string;
+  @ApiProperty({ description: 'Thumbnail do vídeo', example: 'https://exemplo.com/thumbnail.jpg' })
+  thumbnail: string;
 }
 
 export class NewsResponseDto {

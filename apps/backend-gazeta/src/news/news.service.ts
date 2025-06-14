@@ -43,8 +43,8 @@ export class NewsService {
         },
         mediaNews: mediaNews ? {
           create: mediaNews.map(media => ({
-            url: media.url,
-            type: media.type,
+            emphasis: media.emphasis ?? false,
+            imgSize: media.imgSize,
             author: media.author,
             date: media.date
           }))
@@ -52,9 +52,7 @@ export class NewsService {
         videoNews: videoNews ? {
           create: videoNews.map(video => ({
             url: video.url,
-            title: video.title,
-            author: video.author,
-            date: video.date
+            thumbnail: video.thumbnail
           }))
         } : undefined
       },
@@ -196,8 +194,8 @@ export class NewsService {
         await tx.newsMedia.createMany({
           data: mediaNews.map(media => ({
             newsId: id,
-            url: media.url,
-            type: media.type,
+            emphasis: media.emphasis ?? false,
+            imgSize: media.imgSize,
             author: media.author,
             date: media.date
           }))
@@ -214,9 +212,7 @@ export class NewsService {
           data: videoNews.map(video => ({
             newsId: id,
             url: video.url,
-            title: video.title,
-            author: video.author,
-            date: video.date
+            thumbnail: video.thumbnail
           }))
         });
       }
@@ -273,17 +269,15 @@ export class NewsService {
       author: news.author,
       mediaNews: news.mediaNews.map(media => ({
         id: media.id,
-        url: media.url,
-        type: media.type,
+        emphasis: media.emphasis,
+        imgSize: media.imgSize,
         author: media.author,
         date: media.date
       })),
       videoNews: news.videoNews.map(video => ({
         id: video.id,
         url: video.url,
-        title: video.title,
-        author: video.author,
-        date: video.date
+        thumbnail: video.thumbnail
       })),
       published: news.published,
       createdAt: news.createdAt.toISOString(),

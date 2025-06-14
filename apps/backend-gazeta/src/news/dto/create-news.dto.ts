@@ -1,49 +1,59 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsArray, IsBoolean, IsOptional, IsObject, MinLength, MaxLength, ValidateNested } from 'class-validator';
+import { IsNotEmpty, IsString, IsArray, IsBoolean, IsOptional, IsObject, MinLength, MaxLength, ValidateNested, IsNumber } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateNewsMediaDto {
-  @ApiProperty({ description: 'URL da mídia', example: 'https://exemplo.com/imagem.jpg' })
-  @IsNotEmpty({ message: 'URL da mídia é obrigatória' })
-  @IsString({ message: 'URL da mídia deve ser uma string' })
-  url: string;
+  @ApiProperty({ description: 'ID da mídia (opcional)', example: 1, required: false })
+  @IsOptional()
+  @IsNumber({}, { message: 'ID deve ser um número' })
+  id?: number;
 
-  @ApiProperty({ description: 'Tipo da mídia', example: 'image' })
-  @IsNotEmpty({ message: 'Tipo da mídia é obrigatório' })
-  @IsString({ message: 'Tipo da mídia deve ser uma string' })
-  type: string;
+  @ApiProperty({ description: 'ID da notícia (opcional)', example: 1, required: false })
+  @IsOptional()
+  @IsNumber({}, { message: 'ID da notícia deve ser um número' })
+  idNews?: number;
 
-  @ApiProperty({ description: 'Autor da mídia', example: 'João Fotógrafo' })
-  @IsNotEmpty({ message: 'Autor da mídia é obrigatório' })
+  @ApiProperty({ description: 'Se a mídia é destaque', example: false, default: false })
+  @IsOptional()
+  @IsBoolean({ message: 'Emphasis deve ser um boolean' })
+  emphasis?: boolean;
+
+  @ApiProperty({ description: 'Tamanhos da imagem', required: false })
+  @IsOptional()
+  @IsArray({ message: 'imgSize deve ser um array' })
+  imgSize?: Array<{
+    original: string;
+    small: string;
+    medium: string;
+    superSmall: string;
+  }>;
+
+  @ApiProperty({ description: 'Autor da mídia (opcional)', example: 'João Fotógrafo', required: false })
+  @IsOptional()
   @IsString({ message: 'Autor da mídia deve ser uma string' })
-  author: string;
+  author?: string;
 
-  @ApiProperty({ description: 'Data da mídia', example: '2025-01-20' })
-  @IsNotEmpty({ message: 'Data da mídia é obrigatória' })
+  @ApiProperty({ description: 'Data da mídia (opcional)', example: '2025-01-20', required: false })
+  @IsOptional()
   @IsString({ message: 'Data da mídia deve ser uma string' })
-  date: string;
+  date?: string;
 }
 
 export class CreateNewsVideoDto {
+  @ApiProperty({ description: 'ID do vídeo (opcional)', example: 1, required: false })
+  @IsOptional()
+  @IsNumber({}, { message: 'ID deve ser um número' })
+  id?: number;
+
   @ApiProperty({ description: 'URL do vídeo', example: 'https://youtube.com/watch?v=123' })
   @IsNotEmpty({ message: 'URL do vídeo é obrigatória' })
   @IsString({ message: 'URL do vídeo deve ser uma string' })
   url: string;
 
-  @ApiProperty({ description: 'Título do vídeo', example: 'Vídeo explicativo' })
-  @IsNotEmpty({ message: 'Título do vídeo é obrigatório' })
-  @IsString({ message: 'Título do vídeo deve ser uma string' })
-  title: string;
-
-  @ApiProperty({ description: 'Autor do vídeo', example: 'Canal XYZ' })
-  @IsNotEmpty({ message: 'Autor do vídeo é obrigatório' })
-  @IsString({ message: 'Autor do vídeo deve ser uma string' })
-  author: string;
-
-  @ApiProperty({ description: 'Data do vídeo', example: '2025-01-20' })
-  @IsNotEmpty({ message: 'Data do vídeo é obrigatória' })
-  @IsString({ message: 'Data do vídeo deve ser uma string' })
-  date: string;
+  @ApiProperty({ description: 'Thumbnail do vídeo', example: 'https://exemplo.com/thumbnail.jpg' })
+  @IsNotEmpty({ message: 'Thumbnail do vídeo é obrigatório' })
+  @IsString({ message: 'Thumbnail do vídeo deve ser uma string' })
+  thumbnail: string;
 }
 
 export class CreateNewsDto {
