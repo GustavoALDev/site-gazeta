@@ -7,6 +7,7 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { CategoriesModule } from '../categories/categories.module';
 import { NewsModule } from '../news/news.module';
 import { MediaModule } from '../media/media.module';
+import { NewsVideoModule } from '../news-video/news-video.module';
 
 @Module({
   imports: [
@@ -18,7 +19,8 @@ import { MediaModule } from '../media/media.module';
     AuthModule,
     CategoriesModule,
     NewsModule,
-    MediaModule
+    MediaModule,
+    NewsVideoModule
   ],
   controllers: [AppController],
   providers: [AppService],
