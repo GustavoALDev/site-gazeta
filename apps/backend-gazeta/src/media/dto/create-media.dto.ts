@@ -1,7 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsOptional, IsString, IsObject } from 'class-validator';
+import { IsBoolean, IsOptional, IsString, IsObject, IsNumber } from 'class-validator';
 
 export class CreateMediaDto {
+  @ApiProperty({ 
+    description: 'ID da postagem relacionada', 
+    example: 1
+  })
+  @IsNumber()
+  postId: number;
+
   @ApiProperty({ 
     description: 'Se a mídia é destaque', 
     example: false,

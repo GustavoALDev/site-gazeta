@@ -18,6 +18,9 @@ export class MediaResponseDto {
   @ApiProperty({ description: 'ID da mídia', example: 1 })
   id: number;
 
+  @ApiProperty({ description: 'ID da postagem relacionada', example: 1 })
+  postId: number;
+
   @ApiProperty({ description: 'Se a mídia é destaque', example: false })
   emphasis: boolean;
 

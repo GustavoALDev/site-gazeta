@@ -6,6 +6,7 @@ import { MediaResponseDto } from './dto/media-response.dto';
 import { ImageProcessingService, ImageSizes } from './services/image-processing.service';
 
 interface UploadMediaData {
+  postId: number;
   emphasis: boolean;
   author?: string;
   date?: string;
@@ -19,8 +20,9 @@ export class MediaService {
   ) {}
 
   async create(createMediaDto: CreateMediaDto): Promise<MediaResponseDto> {
-    const media = await this.prisma.media.create({
+    const media = await this.prisma.newsMedia.create({
       data: {
+        newsId: createMediaDto.postId,
         emphasis: createMediaDto.emphasis,
         imgSize: createMediaDto.imgSize ? JSON.parse(JSON.stringify(createMediaDto.imgSize)) : null,
         author: createMediaDto.author,
@@ -43,9 +45,10 @@ export class MediaService {
     const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
     const publicUrls = this.imageProcessingService.generatePublicUrls(imageSizes, baseUrl);
 
-    // Salvar no banco de dados
-    const media = await this.prisma.media.create({
+    // Salvar no banco de dados usando NewsMedia
+    const media = await this.prisma.newsMedia.create({
       data: {
+        newsId: data.postId,
         emphasis: data.emphasis,
         imgSize: JSON.parse(JSON.stringify(publicUrls)),
         author: data.author,
@@ -57,9 +60,9 @@ export class MediaService {
   }
 
   async findAll(): Promise<MediaResponseDto[]> {
-    const medias = await this.prisma.media.findMany({
+    const medias = await this.prisma.newsMedia.findMany({
       orderBy: {
-        createdAt: 'desc',
+        id: 'desc',
       },
     });
 
@@ -67,7 +70,7 @@ export class MediaService {
   }
 
   async findOne(id: number): Promise<MediaResponseDto> {
-    const media = await this.prisma.media.findUnique({
+    const media = await this.prisma.newsMedia.findUnique({
       where: { id },
     });
 
@@ -78,8 +81,19 @@ export class MediaService {
     return this.formatResponse(media);
   }
 
+  async findByPost(postId: number): Promise<MediaResponseDto[]> {
+    const medias = await this.prisma.newsMedia.findMany({
+      where: { newsId: postId },
+      orderBy: {
+        id: 'desc',
+      },
+    });
+
+    return medias.map(media => this.formatResponse(media));
+  }
+
   async update(id: number, updateMediaDto: UpdateMediaDto): Promise<MediaResponseDto> {
-    const existingMedia = await this.prisma.media.findUnique({
+    const existingMedia = await this.prisma.newsMedia.findUnique({
       where: { id },
     });
 
@@ -87,9 +101,10 @@ export class MediaService {
       throw new NotFoundException(`Mídia com ID ${id} não encontrada`);
     }
 
-    const updatedMedia = await this.prisma.media.update({
+    const updatedMedia = await this.prisma.newsMedia.update({
       where: { id },
       data: {
+        newsId: updateMediaDto.postId || existingMedia.newsId,
         emphasis: updateMediaDto.emphasis,
         imgSize: updateMediaDto.imgSize ? JSON.parse(JSON.stringify(updateMediaDto.imgSize)) : existingMedia.imgSize,
         author: updateMediaDto.author,
@@ -101,7 +116,7 @@ export class MediaService {
   }
 
   async remove(id: number): Promise<{ message: string }> {
-    const existingMedia = await this.prisma.media.findUnique({
+    const existingMedia = await this.prisma.newsMedia.findUnique({
       where: { id },
     });
 
@@ -119,7 +134,7 @@ export class MediaService {
       }
     }
 
-    await this.prisma.media.delete({
+    await this.prisma.newsMedia.delete({
       where: { id },
     });
 
@@ -127,14 +142,16 @@ export class MediaService {
   }
 
   private formatResponse(media: any): MediaResponseDto {
+    const now = new Date().toISOString();
     return {
       id: media.id,
+      postId: media.newsId,
       emphasis: media.emphasis,
       imgSize: media.imgSize ? JSON.parse(JSON.stringify(media.imgSize)) : null,
       author: media.author,
       date: media.date,
-      createdAt: media.createdAt.toISOString(),
-      updatedAt: media.updatedAt.toISOString(),
+      createdAt: now,
+      updatedAt: now,
     };
   }
 } 

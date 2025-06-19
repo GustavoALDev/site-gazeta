@@ -75,6 +75,7 @@ export class MediaController {
   })
   async uploadImage(
     @UploadedFile() file: any,
+    @Body('postId') postId: string,
     @Body('emphasis') emphasis = 'false',
     @Body('author') author?: string,
     @Body('date') date?: string
@@ -84,7 +85,12 @@ export class MediaController {
         throw new HttpException('Arquivo não fornecido', HttpStatus.BAD_REQUEST);
       }
 
+      if (!postId) {
+        throw new HttpException('ID da postagem é obrigatório', HttpStatus.BAD_REQUEST);
+      }
+
       return await this.mediaService.createWithUpload(file, {
+        postId: parseInt(postId),
         emphasis: emphasis === 'true',
         author,
         date
@@ -114,6 +120,34 @@ export class MediaController {
   async findAll(): Promise<MediaResponseDto[]> {
     try {
       return await this.mediaService.findAll();
+    } catch (error) {
+      throw new HttpException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Erro no servidor, tente novamente mais tarde',
+        error: 'Internal Server Error'
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Get('by-post/:postId')
+  @ApiOperation({
+    summary: 'Obter mídias por ID da postagem',
+    description: 'Endpoint para obter todas as mídias relacionadas a uma postagem específica'
+  })
+  @ApiParam({
+    name: 'postId',
+    description: 'ID da postagem',
+    type: 'number',
+    example: 1
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de mídias da postagem',
+    type: [MediaResponseDto]
+  })
+  async findByPost(@Param('postId', ParseIntPipe) postId: number): Promise<MediaResponseDto[]> {
+    try {
+      return await this.mediaService.findByPost(postId);
     } catch (error) {
       throw new HttpException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
