@@ -9,13 +9,14 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  password  String
-  name      String
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  news      News[]
+  id            Int             @id @default(autoincrement())
+  email         String          @unique
+  password      String
+  name          String
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+  news          News[]
+  advertisements Advertisement[]
 
   @@map("users")
 }
@@ -102,4 +103,26 @@ model Media {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("media")
+}
+
+model Advertisement {
+  id          Int             @id @default(autoincrement())
+  title       String          @db.VarChar(255)
+  description String?         @db.Text
+  imageUrl    String          @db.VarChar(500) @map("image_url")
+  clickUrl    String?         @db.VarChar(500) @map("click_url")
+  position    String          @db.VarChar(100) // top, bottom, sidebar, etc.
+  placement   String          @db.VarChar(50)  // home, news
+  isActive    Boolean         @default(true) @map("is_active")
+  priority    Int             @default(0)     // ordem de exibição
+  startDate   DateTime?       @map("start_date")
+  endDate     DateTime?       @map("end_date")
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+  createdBy   Int             @map("created_by")
+  creator     User            @relation(fields: [createdBy], references: [id])
+
+  @@index([createdBy], map: "advertisement_created_by_fkey")
+  @@index([placement, position, isActive], map: "advertisement_placement_position_active_idx")
+  @@map("advertisements")
 }

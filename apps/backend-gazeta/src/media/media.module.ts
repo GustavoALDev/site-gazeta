@@ -8,6 +8,6 @@ import { ImageProcessingService } from './services/image-processing.service';
   imports: [PrismaModule],
   controllers: [MediaController],
   providers: [MediaService, ImageProcessingService],
-  exports: [MediaService],
+  exports: [MediaService, ImageProcessingService],
 })
 export class MediaModule {} 

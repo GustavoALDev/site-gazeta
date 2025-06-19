@@ -8,6 +8,7 @@ import { CategoriesModule } from '../categories/categories.module';
 import { NewsModule } from '../news/news.module';
 import { MediaModule } from '../media/media.module';
 import { NewsVideoModule } from '../news-video/news-video.module';
+import { AdvertisementModule } from '../advertisement/advertisement.module';
 
 @Module({
   imports: [
@@ -20,7 +21,8 @@ import { NewsVideoModule } from '../news-video/news-video.module';
     CategoriesModule,
     NewsModule,
     MediaModule,
-    NewsVideoModule
+    NewsVideoModule,
+    AdvertisementModule
   ],
   controllers: [AppController],
   providers: [AppService],
