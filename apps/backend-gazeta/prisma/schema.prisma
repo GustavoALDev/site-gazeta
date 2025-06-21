@@ -9,27 +9,29 @@ datasource db {
 }
 
 model User {
-  id            Int             @id @default(autoincrement())
-  email         String          @unique
-  password      String
-  name          String
-  createdAt     DateTime        @default(now()) @map("created_at")
-  updatedAt     DateTime        @updatedAt @map("updated_at")
-  news          News[]
-  advertisements Advertisement[]
+  id                   Int                   @id @default(autoincrement())
+  email                String                @unique
+  password             String
+  name                 String
+  createdAt            DateTime              @default(now()) @map("created_at")
+  updatedAt            DateTime              @updatedAt @map("updated_at")
+  news                 News[]
+  advertisements       Advertisement[]
+  homeCategoryConfigs  HomeCategoryConfig[]
 
   @@map("users")
 }
 
 model Category {
-  id             Int            @id @default(autoincrement())
-  name           String         @unique
-  description    String?        @db.Text
-  slug           String         @unique
-  isActive       Boolean        @default(true) @map("is_active")
-  createdAt      DateTime       @default(now()) @map("created_at")
-  updatedAt      DateTime       @updatedAt @map("updated_at")
-  newsCategories NewsCategory[]
+  id                  Int                   @id @default(autoincrement())
+  name                String                @unique
+  description         String?               @db.Text
+  slug                String                @unique
+  isActive            Boolean               @default(true) @map("is_active")
+  createdAt           DateTime              @default(now()) @map("created_at")
+  updatedAt           DateTime              @updatedAt @map("updated_at")
+  newsCategories      NewsCategory[]
+  homeCategoryConfig  HomeCategoryConfig?
 
   @@map("categories")
 }
@@ -125,4 +127,24 @@ model Advertisement {
   @@index([createdBy], map: "advertisement_created_by_fkey")
   @@index([placement, position, isActive], map: "advertisement_placement_position_active_idx")
   @@map("advertisements")
+}
+
+model HomeCategoryConfig {
+  id             Int      @id @default(autoincrement())
+  categoryId     Int      @map("category_id")
+  displayOrder   Int      @map("display_order")
+  isVisible      Boolean  @default(true) @map("is_visible")
+  maxNews        Int      @default(6) @map("max_news") // quantas notícias mostrar desta categoria
+  showTitle      Boolean  @default(true) @map("show_title") // se mostra o título da categoria
+  customTitle    String?  @db.VarChar(100) @map("custom_title") // título personalizado
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  createdBy      Int      @map("created_by")
+  category       Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  creator        User     @relation(fields: [createdBy], references: [id])
+
+  @@unique([categoryId], map: "home_category_config_category_unique")
+  @@index([displayOrder, isVisible], map: "home_category_config_order_visible_idx")
+  @@index([createdBy], map: "home_category_config_created_by_fkey")
+  @@map("home_category_configs")
 }

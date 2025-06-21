@@ -9,6 +9,7 @@ import { NewsModule } from '../news/news.module';
 import { MediaModule } from '../media/media.module';
 import { NewsVideoModule } from '../news-video/news-video.module';
 import { AdvertisementModule } from '../advertisement/advertisement.module';
+import { HomeConfigModule } from '../home-config/home-config.module';
 
 @Module({
   imports: [
@@ -22,7 +23,8 @@ import { AdvertisementModule } from '../advertisement/advertisement.module';
     NewsModule,
     MediaModule,
     NewsVideoModule,
-    AdvertisementModule
+    AdvertisementModule,
+    HomeConfigModule
   ],
   controllers: [AppController],
   providers: [AppService],
