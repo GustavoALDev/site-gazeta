@@ -93,8 +93,8 @@ export class NewsResponseDto {
   @ApiProperty({ description: 'Status da notícia', example: 'ATIVO' })
   status: string;
 
-  @ApiProperty({ description: 'Validade da notícia', example: '2025-12-31' })
-  validity: string;
+  @ApiProperty({ description: 'Validade da notícia', example: '2025-12-31', required: false })
+  validity?: string;
 
   @ApiProperty({ description: 'Slug da notícia', example: 'nova-tecnologia-revoluciona-mercado' })
   slug: string;

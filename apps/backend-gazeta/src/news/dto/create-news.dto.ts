@@ -142,12 +142,13 @@ export class CreateNewsDto {
   status: string;
 
   @ApiProperty({
-    description: 'Validade da notícia',
-    example: '2025-12-31'
+    description: 'Validade da notícia (opcional)',
+    example: '2025-12-31',
+    required: false
   })
-  @IsNotEmpty({ message: 'Validade é obrigatória' })
+  @IsOptional()
   @IsString({ message: 'Validade deve ser uma string' })
-  validity: string;
+  validity?: string;
 
   @ApiProperty({
     description: 'Slug da notícia',

@@ -15,7 +15,7 @@ export interface News {
     updateAt: string;
     views: number;
     status: string;
-    validity: string;
+    validity?: string;
     slug: string;
     isEmphasis: boolean;
 }
