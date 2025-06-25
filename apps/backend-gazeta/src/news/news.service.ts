@@ -9,65 +9,73 @@ export class NewsService {
   constructor(private prisma: PrismaService) {}
 
   async create(createNewsDto: CreateNewsDto, authorId: number): Promise<NewsResponseDto> {
-    // Verificar se já existe notícia com esse slug
-    const existingNews = await this.prisma.news.findFirst({
-      where: { slug: createNewsDto.slug }
-    });
+    try {
+      console.log('=== CREATE NEWS - Author ID:', authorId);
 
-    if (existingNews) {
-      throw new ConflictException('Já existe uma notícia com este slug');
-    }
+      // Verificar se já existe notícia com esse slug
+      const existingNews = await this.prisma.news.findFirst({
+        where: { slug: createNewsDto.slug }
+      });
 
-    // Verificar se as categorias existem
-    const categories = await this.prisma.category.findMany({
-      where: {
-        id: { in: createNewsDto.categoryId },
-        isActive: true
+      if (existingNews) {
+        throw new ConflictException('Já existe uma notícia com este slug');
       }
-    });
 
-    if (categories.length !== createNewsDto.categoryId.length) {
-      throw new NotFoundException('Uma ou mais categorias não foram encontradas');
-    }
+      // Verificar se as categorias existem
+      const categories = await this.prisma.category.findMany({
+        where: {
+          id: { in: createNewsDto.categoryId },
+          isActive: true
+        }
+      });
 
-    // Extrair categoryId, mediaNews e videoNews do DTO
-    const { categoryId, mediaNews, videoNews, ...newsData } = createNewsDto;
-
-    // Criar a notícia com relacionamentos
-    const news = await this.prisma.news.create({
-      data: {
-        ...newsData,
-        authorId,
-        newsCategories: {
-          create: categoryId.map(catId => ({ categoryId: catId }))
-        },
-        mediaNews: mediaNews ? {
-          create: mediaNews.map(media => ({
-            emphasis: media.emphasis ?? false,
-            imgSize: media.imgSize,
-            author: media.author,
-            date: media.date
-          }))
-        } : undefined,
-        videoNews: videoNews ? {
-          create: videoNews.map(video => ({
-            url: video.url,
-            thumbnail: video.thumbnail
-          }))
-        } : undefined
-      },
-      include: {
-        newsCategories: {
-          include: {
-            category: true
-          }
-        },
-        mediaNews: true,
-        videoNews: true
+      if (categories.length !== createNewsDto.categoryId.length) {
+        throw new NotFoundException('Uma ou mais categorias não foram encontradas');
       }
-    });
 
-    return this.formatNewsResponse(news);
+      // Extrair categoryId, mediaNews e videoNews do DTO
+      const { categoryId, mediaNews, videoNews, ...newsData } = createNewsDto;
+
+      // Criar a notícia com relacionamentos
+      const news = await this.prisma.news.create({
+        data: {
+          ...newsData,
+          authorId,
+          newsCategories: {
+            create: categoryId.map(catId => ({ categoryId: catId }))
+          },
+          mediaNews: mediaNews ? {
+            create: mediaNews.map(media => ({
+              emphasis: media.emphasis ?? false,
+              imgSize: media.imgSize,
+              author: media.author,
+              date: media.date
+            }))
+          } : undefined,
+          videoNews: videoNews ? {
+            create: videoNews.map(video => ({
+              url: video.url,
+              thumbnail: video.thumbnail
+            }))
+          } : undefined
+        },
+        include: {
+          newsCategories: {
+            include: {
+              category: true
+            }
+          },
+          mediaNews: true,
+          videoNews: true
+        }
+      });
+
+      console.log('=== NOTÍCIA CRIADA COM SUCESSO - ID:', news.id);
+      return this.formatNewsResponse(news);
+    } catch (error) {
+      console.error('=== ERRO CREATE NEWS:', error.message);
+      throw error;
+    }
   }
 
   async findAll(): Promise<NewsResponseDto[]> {

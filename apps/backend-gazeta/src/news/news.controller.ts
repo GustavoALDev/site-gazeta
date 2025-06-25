@@ -58,8 +58,10 @@ export class NewsController {
   })
   async create(@Body() createNewsDto: CreateNewsDto, @Request() req): Promise<NewsResponseDto> {
     try {
+      console.log('=== CONTROLLER NEWS - User ID:', req.user.id);
       return await this.newsService.create(createNewsDto, req.user.id);
     } catch (error) {
+      console.error('=== CONTROLLER ERROR:', error.message);
       if (error instanceof ConflictException || error instanceof NotFoundException) {
         throw error;
       }
