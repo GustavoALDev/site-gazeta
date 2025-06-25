@@ -1,37 +1,31 @@
-import { FormValidatorService } from '@site-gazeta/form-validator';
 import {
-  AfterViewInit,
-  Component,
-  ElementRef,
-  inject,
-  OnDestroy,
-  signal,
-  ViewChildren,
-} from '@angular/core';
-import { CommonModule } from '@angular/common';
+  FormValidatorComponent,
+  FormValidatorService,
+} from '@site-gazeta/form-validator';
+import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
+
 import {
-  FormControlName,
   FormsModule,
   NonNullableFormBuilder,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
+import { AuthService } from '../../core/auth/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [FormsModule, ReactiveFormsModule, FormValidatorComponent],
   providers: [FormValidatorService],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
 })
-export class LoginComponent implements AfterViewInit, OnDestroy {
-  @ViewChildren(FormControlName, { read: ElementRef })
-  formInputElements: ElementRef[] = [];
-
+export class LoginComponent implements OnInit, OnDestroy {
   fb = inject(NonNullableFormBuilder);
   formValidator = inject(FormValidatorService);
-
+  authService = inject(AuthService);
+  router = inject(Router);
   errorMessage = {
     email: {
       required: 'Email é obrigatório',
@@ -43,23 +37,20 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
       minlength: 'Senha deve ter no mínimo 6 caracteres',
       invalidPassword: 'Senha inválida',
     },
-    server: {
-      serverError: 'Erro no servidor, tente novamente mais tarde',
-    },
   };
 
   displayError = signal<{ [key: string]: string } | null>({});
-
+  showPassword = signal(false);
   loginForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', Validators.required],
   });
-
+  remember = signal(false);
   destroy$ = new Subject<void>();
 
-  ngAfterViewInit(): void {
+  ngOnInit(): void {
     this.formValidator
-      .InitValidation(this.loginForm, this.formInputElements, this.errorMessage)
+      .InitValidation(this.loginForm, this.errorMessage)
       .pipe(takeUntil(this.destroy$))
       .subscribe((errorMessages) => {
         this.displayError.set(errorMessages);
@@ -67,7 +58,23 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
   }
 
   onSubmit() {
-    console.log(this.loginForm.value);
+    const body = {
+      email: this.loginForm.value.email as string,
+      password: this.loginForm.value.password as string,
+    };
+
+    this.authService.authLogin(body, this.remember()).subscribe({
+      next: () => {
+        this.router.navigate(['/']);
+      },
+      error: (response) => {
+        if (response.error.error == 'Unauthorized') {
+          this.displayError.set({
+            server: response.error.message,
+          });
+        }
+      },
+    });
   }
 
   ngOnDestroy(): void {

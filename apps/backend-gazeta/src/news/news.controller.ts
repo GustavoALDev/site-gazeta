@@ -60,6 +60,7 @@ export class NewsController {
     try {
       return await this.newsService.create(createNewsDto, req.user.id);
     } catch (error) {
+      console.log(error)
       if (error instanceof ConflictException || error instanceof NotFoundException) {
         throw error;
       }

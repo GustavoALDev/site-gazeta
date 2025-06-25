@@ -1,8 +1,8 @@
 <lib-sidebar class="desktop" [opened]="true" [menuItems]="menuItems">
-    <button auth class="auth_button">sair</button>
+    <button auth class="auth_button" (click)="logout()" >sair</button>
   </lib-sidebar>
   <lib-sidebar class="mobile" #mobileSidebar [opened]="false" [menuItems]="menuItems">
-    <button auth class="auth_button">sair</button>
+    <button auth class="auth_button" (click)="logout()" >sair</button>
   </lib-sidebar>
   <div class="content">
     <div class="content_header">

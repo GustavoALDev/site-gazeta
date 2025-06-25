@@ -1,17 +1,18 @@
 import { Component,  inject, input, output, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { NonNullableFormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Category } from '@site-gazeta/models';
+import { ApiService } from '../../../core/services/api.service';
 
 @Component({
   selector: 'app-category-form',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [ReactiveFormsModule],
   templateUrl: './category-form.component.html',
   styleUrl: './category-form.component.scss',
 })
 export class CategoryFormComponent {
   fb = inject(NonNullableFormBuilder);
-
+  apiService = inject(ApiService);
   editingCategory = input(null, {transform: (category: Category | null) => {
     if(category){
       this.setEditingCategory(category);
@@ -37,7 +38,8 @@ export class CategoryFormComponent {
       this.form.patchValue({
         name: category.name,
         description: category.description,
-        isActive: category.isActive
+        isActive: category.isActive,
+        slug: category.slug
       });
       this.isEditing.set(true);
     }else{
@@ -54,16 +56,30 @@ export class CategoryFormComponent {
         name: formValue.name as string,
         description: formValue.description as string,
         slug: this.generateSlug(formValue.name as string),
-        isActive: formValue.isActive as boolean,
       };
 
       if (this.isEditing()) {
         categoryData.id = this.editingCategory()?.id as number;
-        categoryData.createdAt = this.editingCategory()?.createdAt as string;
-      }
+        
 
-      this.categorySubmit.emit(categoryData);
-      
+        this.apiService.editCategory(categoryData.id, categoryData)
+        .subscribe({
+          next: (res) => {
+            this.categorySubmit.emit(res as Category);
+          }
+        });
+      }else{
+      this.apiService.setCategory(categoryData)
+      .subscribe({
+        next: (res) => {
+          console.log(res);
+          this.categorySubmit.emit(res as Category);
+        },
+        error: (err) => {
+          console.error(err);
+        }
+      });
+    }
       if (!this.isEditing()) {
         this.form.reset({ isActive: true });
       }

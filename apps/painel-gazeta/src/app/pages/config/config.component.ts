@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
   selector: 'app-config',
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './config.component.html',
   styleUrl: './config.component.scss',
 })

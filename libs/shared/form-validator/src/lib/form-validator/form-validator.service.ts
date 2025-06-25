@@ -1,6 +1,5 @@
 import { FormGroup } from '@angular/forms';
-import { ElementRef } from '@angular/core';
-import { fromEvent, merge, startWith, Subject, switchMap, takeUntil, tap } from 'rxjs';
+import {  merge, startWith, Subject, switchMap, takeUntil, tap } from 'rxjs';
 
 export class FormValidatorService {
   private formGroup!: FormGroup;
@@ -9,11 +8,13 @@ export class FormValidatorService {
   private destroy$ = new Subject<void>();
 
 
-  InitValidation(formGroup:FormGroup, FormControlElement:ElementRef[], errorMessage:{[key: string]: { [key: string]: string } }) {
+  InitValidation(formGroup:FormGroup, errorMessage:{[key: string]: { [key: string]: string } }) {
     this.errorMessage = errorMessage;
     this.formGroup = formGroup;
-    const controlBlur = FormControlElement.map((input:ElementRef)=> fromEvent(input.nativeElement, 'blur'));
-    merge(...controlBlur)
+    const arrayControls = Object.keys(this.formGroup.controls).map((controls)=>{
+      return this.formGroup.get(controls)?.events
+    })
+    merge(...arrayControls)
     .pipe(
       takeUntil(this.destroy$),
       tap(() => {

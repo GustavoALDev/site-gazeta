@@ -8,25 +8,25 @@
     <form [formGroup]="form" (ngSubmit)="onSubmit()">
       <div class="news-content-wrapper">
         <div class="news-main-content" [class.sidebar-closed]="!sidebarOpen()">
-          
-          <!-- Menu de Abas com Botão Toggle -->
+
+
           <div class="tab-header">
             <div class="tab-menu">
-              <button 
+              <button
                 type="button"
                 class="tab-button"
                 [class.active]="activeTab === 'info'"
                 (click)="setActiveTab('info')">
                 Informações
               </button>
-              <button 
+              <button
                 type="button"
                 class="tab-button"
                 [class.active]="activeTab === 'content'"
                 (click)="setActiveTab('content')">
                 Conteúdo
               </button>
-              <button 
+              <button
                 type="button"
                 class="tab-button"
                 [class.active]="activeTab === 'media'"
@@ -34,10 +34,10 @@
                 Mídias
               </button>
             </div>
-            
+
             <div class="sidebar-toggle-container">
-              <button 
-                type="button" 
+              <button
+                type="button"
                 class="sidebar-toggle-btn"
                 (click)="toggleSidebar()"
                 [title]="sidebarOpen() ? 'Fechar painel' : 'Abrir painel'">
@@ -61,8 +61,8 @@
                       </button>
                     </div>
                   }
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     class="add-category-btn"
                     (click)="toggleCategoryDropdown()"
                     [class.active]="categoryDropdownOpen()">
@@ -70,12 +70,17 @@
                     Adicionar Categoria
                   </button>
                 </div>
-                
+
                 @if (categoryDropdownOpen()) {
                   <div class="category-dropdown">
                     @if (getAvailableCategories().length > 0) {
                       @for (category of getAvailableCategories(); track category.id) {
-                        <div class="category-option" (click)="selectCategory(category)">
+                        <div class="category-option"
+                          (click)="selectCategory(category)"
+                          (keyup.enter)="selectCategory(category)"
+                          (keyup.space)="selectCategory(category)"
+                          tabindex="0"
+                          role="button">
                           <span class="category-name">{{ category.name }}</span>
                           <small class="category-description">{{ category.description }}</small>
                         </div>
@@ -97,145 +102,140 @@
 
             <div class="form-group">
               <label for="title">Título *</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 id="title"
                 formControlName="title"
                 placeholder="Digite o título da notícia"
-                (blur)="generateSlug()"
+                (blur)="setSlug()"
                 [class.error]="form.get('title')?.invalid && form.get('title')?.touched">
-              <div class="error-message" *ngIf="form.get('title')?.invalid && form.get('title')?.touched">
-                Título é obrigatório
+                <error-message [errorMessage]="displayError()!['title']"></error-message>
               </div>
-            </div>
 
-            <div class="form-group">
-              <label for="subtitle">Subtítulo *</label>
-              <input 
-                type="text" 
-                id="subtitle"
-                formControlName="subtitle"
-                placeholder="Digite o subtítulo da notícia"
-                [class.error]="form.get('subtitle')?.invalid && form.get('subtitle')?.touched">
-              <div class="error-message" *ngIf="form.get('subtitle')?.invalid && form.get('subtitle')?.touched">
-                Subtítulo é obrigatório
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="slug">URL da Notícia*</label>
-              <input 
-                type="text" 
-                id="slug"
-                formControlName="slug"
-                placeholder="url-da-noticia"
-                [class.error]="form.get('slug')?.invalid && form.get('slug')?.touched">
-                @if(urlDisplay()){
-                  <span class="url-preview"><b>URL:</b> www.site.exemplo.com/<b>{{urlDisplay()}}</b></span>
-                }
-              <div class="error-message" *ngIf="form.get('slug')?.invalid && form.get('slug')?.touched">
-                URL é obrigatória
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="author">Autor *</label>
-              <input 
-                type="text" 
-                id="author"
-                formControlName="author"
-                placeholder="Digite o nome do autor"
-                [class.error]="form.get('author')?.invalid && form.get('author')?.touched">
-              <div class="error-message" *ngIf="form.get('author')?.invalid && form.get('author')?.touched">
-                Autor é obrigatório
-              </div>
-            </div>
-          </div>
-
-          <div class="tab-content" [class.active]="activeTab === 'content'">
-            <div class="form-group">
-              <label for="content">Conteúdo da Notícia *</label>
-              <lib-text-editor formControlName="content" ></lib-text-editor>
-              <div class="error-message" *ngIf="form.get('content')?.invalid && form.get('content')?.touched">
-                Conteúdo é obrigatório
-              </div>
-            </div>
-          </div>
-
-          <div class="tab-content" [class.active]="activeTab === 'media'">
-            <app-news-midia (formValue)="onFormValue($event)"></app-news-midia>
-          </div>
-        </div>
-
-        <div class="news-sidebar" [class.sidebar-hidden]="!sidebarOpen()">
-          <div class="sidebar-content">
-            <h3>Configurações</h3>
-            
-            <div class="sidebar-section">
               <div class="form-group">
-                <label for="published">Data e Hora de Publicação *</label>
-                <input 
-                  type="datetime-local" 
-                  id="published"
-                  formControlName="published"
-                  [class.error]="form.get('published')?.invalid && form.get('published')?.touched"
-                  (click)="$event.stopPropagation()"
-                  (focus)="$event.stopPropagation()">
-                <small>Defina quando a notícia será publicada</small>
-                <div class="error-message" *ngIf="form.get('published')?.invalid && form.get('published')?.touched">
-                  Data e hora de publicação são obrigatórias
+                <label for="subtitle">Subtítulo *</label>
+                <input
+                  type="text"
+                  id="subtitle"
+                  formControlName="subtitle"
+                  placeholder="Digite o subtítulo da notícia"
+                  [class.error]="form.get('subtitle')?.invalid && form.get('subtitle')?.touched">
+                  <error-message [errorMessage]="displayError()!['subtitle']"></error-message>
+                </div>
+
+                <div class="form-group">
+                  <label for="slug">URL da Notícia*</label>
+                  <input
+                    type="text"
+                    id="slug"
+                    formControlName="slug"
+                    placeholder="url-da-noticia"
+                    [class.error]="form.get('slug')?.invalid && form.get('slug')?.touched">
+                    @if(urlDisplay()){
+                      <span class="url-preview"><b>URL:</b> www.site.exemplo.com/<b>{{urlDisplay()}}</b></span>
+                    }
+                    <error-message [errorMessage]="displayError()!['slug']"></error-message>
+                  </div>
+                  <div class="form-group">
+                    <label for="author">Autor *</label>
+                    <input
+                      type="text"
+                      id="author"
+                      formControlName="author"
+                      placeholder="Digite o nome do autor"
+                      [class.error]="form.get('author')?.invalid && form.get('author')?.touched">
+                      <error-message [errorMessage]="displayError()!['author']"></error-message>
+                    </div>
+                  </div>
+
+                  <div class="tab-content" [class.active]="activeTab === 'content'">
+                    <div class="form-group">
+                      <label for="content">Conteúdo da Notícia *</label>
+                      <lib-text-editor formControlName="content" ></lib-text-editor>
+                      @if (form.get('content')?.invalid && form.get('content')?.touched) {
+                        <div class="error-message">
+                          Conteúdo é obrigatório
+                        </div>
+                      }
+                    </div>
+                  </div>
+
+                  <div class="tab-content" [class.active]="activeTab === 'media'">
+                    <app-news-midia (formValue)="onFormValue($event)"></app-news-midia>
+                  </div>
+                </div>
+
+                <div class="news-sidebar" [class.sidebar-hidden]="!sidebarOpen()">
+                  <div class="sidebar-content">
+                    <h3>Configurações</h3>
+
+                    <div class="sidebar-section">
+                      <div class="form-group">
+                        <label for="published">Data e Hora de Publicação *</label>
+                        <input
+                          type="datetime-local"
+                          id="published"
+                          formControlName="published"
+                          [class.error]="form.get('published')?.invalid && form.get('published')?.touched"
+                          (click)="$event.stopPropagation()"
+                          (focus)="$event.stopPropagation()">
+                          <small>Defina quando a notícia será publicada</small>
+                          <error-message [errorMessage]="displayError()!['published']"></error-message>
+                        </div>
+
+                        <div class="toggle-group">
+                          <span class="toggle-label">Notícia Destaque</span>
+                          <div class="toggle-container">
+                            <input
+                              type="checkbox"
+                              id="isEmphasis"
+                              formControlName="isEmphasis"
+                              class="toggle-input">
+                              <label for="isEmphasis" class="toggle-switch">
+                                <span class="toggle-slider"></span>
+                              </label>
+                              <span class="toggle-text">
+                                {{ form.get('isEmphasis')?.value ? 'Sim' : 'Não' }}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div class="form-group">
+                            <label for="validity">Data de Validade</label>
+                            <input
+                              type="date"
+                              id="validity"
+                              formControlName="validity">
+                              
+                              <small>Até quando a notícia será exibida</small>
+                            </div>
+
+                            <div class="form-group">
+                              <label for="status">Status *</label>
+                              <select
+                                id="status"
+                                formControlName="status"
+                                [class.error]="form.get('status')?.invalid && form.get('status')?.touched">
+                                @for (option of statusOptions; track option) {
+                                  <option [value]="option.value">
+                                    {{ option.label }}
+                                  </option>
+                                }
+                              </select>
+                            </div>
+                          </div>
+
+                          <div class="sidebar-actions">
+                            <button type="submit" class="btn-primary" [disabled]="form.invalid" >
+                              Salvar Notícia
+                            </button>
+                            <button type="button" class="btn-secondary" (click)="onReset()">
+                              Limpar
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </form>
                 </div>
               </div>
-
-              <div class="toggle-group">
-                <span class="toggle-label">Notícia Destaque</span>
-                <div class="toggle-container">
-                  <input 
-                    type="checkbox" 
-                    id="isEmphasis"
-                    formControlName="isEmphasis"
-                    class="toggle-input">
-                  <label for="isEmphasis" class="toggle-switch">
-                    <span class="toggle-slider"></span>
-                  </label>
-                  <span class="toggle-text">
-                    {{ form.get('isEmphasis')?.value ? 'Sim' : 'Não' }}
-                  </span>
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label for="validity">Data de Validade</label>
-                <input 
-                  type="date" 
-                  id="validity"
-                  formControlName="validity">
-                <small>Até quando a notícia será exibida</small>
-              </div>
-
-              <div class="form-group">
-                <label for="status">Status *</label>
-                <select 
-                  id="status"
-                  formControlName="status"
-                  [class.error]="form.get('status')?.invalid && form.get('status')?.touched">
-                  <option *ngFor="let option of statusOptions" [value]="option.value">
-                    {{ option.label }}
-                  </option>
-                </select>
-              </div>
-            </div>
-
-            <div class="sidebar-actions">
-              <button type="submit" class="btn-primary" [disabled]="form.invalid" >
-                Salvar Notícia
-              </button>
-              <button type="button" class="btn-secondary" (click)="onReset()">
-                Limpar
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </form>
-  </div>
-</div>

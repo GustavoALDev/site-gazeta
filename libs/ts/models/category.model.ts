@@ -3,7 +3,7 @@ export interface Category {
   name: string;
   description: string;
   slug: string;
-  isActive: boolean;
+  isActive?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }

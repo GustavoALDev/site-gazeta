@@ -1,10 +1,11 @@
 import { Route } from '@angular/router';
 import { LoginComponent } from './pages/login/login.component';
 import { HomeComponent } from './pages/home/home.component';
+import { authGuard } from './core/auth/auth.guard';
 
 export const appRoutes: Route[] = [
   {path: 'login', component: LoginComponent},
-  {path: '', component: HomeComponent, children:[
+  {path: '', component: HomeComponent, canActivate: [authGuard], children:[
     {path:'', loadComponent: () => import('./pages/metrics/metrics.component').then(m => m.MetricsComponent)},
     {path:'category', loadComponent: () => import('./pages/category/category.component').then(m => m.CategoryComponent)},
     {path:'news', loadComponent: () => import('./pages/news/news.component').then(m => m.NewsComponent)},

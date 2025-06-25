@@ -1,0 +1,58 @@
+<div class="menu-container">
+  <div class="menu-card">
+    <div class="menu-header">
+      <h2>Gerenciar Menu</h2>
+      <p>Configure o menu de navegação do site</p>
+    </div>
+
+    <div class="menu-content">
+      <div class="tab-header">
+        <div class="tab-menu">
+          <button 
+            type="button"
+            class="tab-button"
+            [class.active]="activeTab === 'top'"
+            (click)="setActiveTab('top')">
+            Menu Topo
+          </button>
+          <button 
+            type="button"
+            class="tab-button"
+            [class.active]="activeTab === 'lateral'"
+            (click)="setActiveTab('lateral')">
+            Menu Lateral
+          </button>
+          <button 
+            type="button"
+            class="tab-button"
+            [class.active]="activeTab === 'central'"
+            (click)="setActiveTab('central')">
+            Menu Central
+          </button>
+        </div>
+      </div>
+
+      <div class="tab-content" [class.active]="activeTab === 'top'">
+        <div class="menu-section">
+        
+        </div>
+      </div>
+
+      <div class="tab-content" [class.active]="activeTab === 'lateral'">
+        <div class="menu-section">
+          <h3>Configuração do Menu Lateral</h3>
+          <p>Configure os itens do menu lateral do site</p>
+          <!-- Conteúdo específico do menu lateral -->
+        </div>
+      </div>
+
+      <div class="tab-content" [class.active]="activeTab === 'central'">
+        <div class="menu-section">
+          <h3>Configuração do Menu Central</h3>
+          <p>Configure os itens do menu central do site</p>
+          <!-- Conteúdo específico do menu central -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

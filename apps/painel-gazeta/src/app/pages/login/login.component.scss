@@ -58,6 +58,36 @@
       border-color: #667eea;
     }
   }
+
+  .password-input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    input {
+      padding-right: 3rem;
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: 0.75rem;
+      cursor: pointer;
+      color: #666;
+      font-size: 1.2rem;
+      transition: color 0.3s;
+      user-select: none;
+
+      &:hover {
+        color: #333;
+      }
+
+      &:focus {
+        outline: 2px solid #667eea;
+        outline-offset: 2px;
+        border-radius: 2px;
+      }
+    }
+  }
 }
 
 .form-actions {

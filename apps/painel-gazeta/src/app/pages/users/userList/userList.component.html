@@ -1,0 +1,50 @@
+<div class="news-list">
+  <div class="news-list-header">
+    <h2>Usuários Cadastrados</h2>
+    <span class="news-count">{{ users.length }} usuário(s)</span>
+  </div>
+
+  <div class="news-table-container">
+    <table class="news-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nome</th>
+          <th>Email</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of users" class="news-item">
+          <td>{{ user.id }}</td>
+          <td class="user-name">{{ user.nome }}</td>
+          <td class="user-email">{{ user.email }}</td>
+          <td class="news-actions">
+            <button 
+              class="btn-edit" 
+              (click)="editUser(user)"
+              title="Editar usuário">
+              <i class="fas fa-edit"></i>
+              Editar
+            </button>
+            <button 
+              class="btn-delete" 
+              (click)="deleteUser(user.id)"
+              title="Excluir usuário">
+              <i class="fas fa-trash"></i>
+              Excluir
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="users.length === 0" class="empty-state">
+    <div class="empty-icon">
+      <i class="fas fa-users"></i>
+    </div>
+    <h3>Nenhum usuário encontrado</h3>
+    <p>Comece criando seu primeiro usuário</p>
+  </div>
+</div>

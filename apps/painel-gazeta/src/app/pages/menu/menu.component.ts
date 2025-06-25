@@ -1,10 +1,16 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
   selector: 'app-menu',
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './menu.component.html',
   styleUrl: './menu.component.scss',
 })
-export class MenuComponent {}
+export class MenuComponent {
+  activeTab: 'top' | 'lateral' | 'central' = 'top';
+
+  setActiveTab(tab: 'top' | 'lateral' | 'central') {
+    this.activeTab = tab;
+  }
+}

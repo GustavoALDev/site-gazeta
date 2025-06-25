@@ -1,12 +1,12 @@
 import { Component, forwardRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 import * as CKBuilding from '../ckeditor/build/ckeditor';
 import { CKEditorModule } from '@ckeditor/ckeditor5-angular';
 
 @Component({
   selector: 'lib-text-editor',
-  imports: [CommonModule, CKEditorModule, ReactiveFormsModule],
+  imports: [CKEditorModule, ReactiveFormsModule],
   template: `
     <ckeditor 
       tagName="textarea" 
@@ -34,10 +34,12 @@ import { CKEditorModule } from '@ckeditor/ckeditor5-angular';
 })
 export class TextEditorComponent implements ControlValueAccessor {
   protected editor = CKBuilding.default || CKBuilding;
-  protected value: string = '';
+  protected value = '';
   protected disable = false
   // Funções de callback do ControlValueAccessor
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   private onChange = (value: string) => {};
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   protected onTouched = () => {};
   formControl = new FormControl('');
   constructor(){
