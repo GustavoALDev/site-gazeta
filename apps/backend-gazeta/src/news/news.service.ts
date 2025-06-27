@@ -275,18 +275,22 @@ export class NewsService {
       content: news.content,
       categoryId: news.newsCategories.map(nc => nc.categoryId),
       author: news.author,
-      mediaNews: news.mediaNews.map(media => ({
-        id: media.id,
-        emphasis: media.emphasis,
-        imgSize: media.imgSize,
-        author: media.author,
-        date: media.date
-      })),
-      videoNews: news.videoNews.map(video => ({
-        id: video.id,
-        url: video.url,
-        thumbnail: video.thumbnail
-      })),
+      mediaNews: news.mediaNews && news.mediaNews.length > 0 
+        ? news.mediaNews.map(media => ({
+            id: media.id,
+            emphasis: media.emphasis,
+            imgSize: media.imgSize,
+            author: media.author,
+            date: media.date
+          }))
+        : [], // Array vazio ao invés de null
+      videoNews: news.videoNews && news.videoNews.length > 0 
+        ? news.videoNews.map(video => ({
+            id: video.id,
+            url: video.url,
+            thumbnail: video.thumbnail
+          }))
+        : [], // Array vazio ao invés de null
       published: news.published,
       createdAt: news.createdAt.toISOString(),
       updateAt: news.updateAt.toISOString(),
