@@ -11,16 +11,18 @@ import {
   HttpStatus,
   NotFoundException,
   UseInterceptors,
-  UploadedFile
+  UploadedFile,
+  UploadedFiles
 } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
   ApiParam,
-  ApiConsumes
+  ApiConsumes,
+  ApiBody
 } from '@nestjs/swagger';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { MediaService } from './media.service';
 import { CreateMediaDto } from './dto/create-media.dto';
 import { UpdateMediaDto } from './dto/update-media.dto';
@@ -61,17 +63,77 @@ export class MediaController {
   @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')
   @ApiOperation({
-    summary: 'Upload de imagem para mídia',
-    description: 'Endpoint para fazer upload de uma imagem que será processada em diferentes tamanhos'
+    summary: 'Upload de imagem única para mídia',
+    description: 'Endpoint para fazer upload de uma única imagem que será processada em diferentes tamanhos (original, medium, small, superSmall)'
+  })
+  @ApiBody({
+    description: 'Dados do upload de imagem única',
+    type: 'multipart/form-data',
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+          description: 'Arquivo de imagem (JPG, PNG, WEBP)',
+          example: 'imagem.jpg'
+        },
+        postId: {
+          type: 'string',
+          description: 'ID da postagem/notícia',
+          example: '123'
+        },
+        emphasis: {
+          type: 'string',
+          description: 'Se a imagem terá destaque',
+          example: 'true',
+          enum: ['true', 'false']
+        },
+        author: {
+          type: 'string',
+          description: 'Autor da imagem (opcional)',
+          example: 'João Silva'
+        },
+        date: {
+          type: 'string',
+          description: 'Data da imagem (opcional)',
+          example: '2024-01-15'
+        }
+      },
+      required: ['file', 'postId']
+    }
   })
   @ApiResponse({
     status: 201,
     description: 'Imagem processada e mídia criada com sucesso',
-    type: MediaResponseDto
+    type: MediaResponseDto,
+    schema: {
+      example: {
+        id: 1,
+        postId: 123,
+        emphasis: true,
+        imgSize: {
+          original: "http://localhost:3000/uploads/media_1704067200000_imagem.jpg",
+          medium: "http://localhost:3000/uploads/media_1704067200000_imagem_medium.jpg",
+          small: "http://localhost:3000/uploads/media_1704067200000_imagem_small.jpg",
+          superSmall: "http://localhost:3000/uploads/media_1704067200000_imagem_supersmall.jpg"
+        },
+        author: "João Silva",
+        date: "2024-01-15",
+        createdAt: "2024-01-01T12:00:00.000Z",
+        updatedAt: "2024-01-01T12:00:00.000Z"
+      }
+    }
   })
   @ApiResponse({
     status: 400,
-    description: 'Arquivo inválido ou dados incorretos'
+    description: 'Arquivo inválido ou dados incorretos',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: "Arquivo não fornecido"
+      }
+    }
   })
   async uploadImage(
     @UploadedFile() file: any,
@@ -90,6 +152,159 @@ export class MediaController {
       }
 
       return await this.mediaService.createWithUpload(file, {
+        postId: parseInt(postId),
+        emphasis: emphasis === 'true',
+        author,
+        date
+      });
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Erro no servidor, tente novamente mais tarde',
+        error: 'Internal Server Error'
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Post('upload-multiple')
+  @UseInterceptors(FilesInterceptor('files', 10)) // Máximo 10 arquivos
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({
+    summary: 'Upload múltiplo de imagens para mídia',
+    description: 'Endpoint para fazer upload de múltiplas imagens (máximo 10) que serão processadas em diferentes tamanhos. Apenas a primeira imagem terá emphasis=true.'
+  })
+  @ApiBody({
+    description: 'Dados do upload múltiplo de imagens',
+    type: 'multipart/form-data',
+    schema: {
+      type: 'object',
+      properties: {
+        files: {
+          type: 'array',
+          items: {
+            type: 'string',
+            format: 'binary'
+          },
+          description: 'Múltiplos arquivos de imagem (JPG, PNG, WEBP) - máximo 10',
+          example: ['imagem1.jpg', 'imagem2.jpg', 'imagem3.jpg']
+        },
+        postId: {
+          type: 'string',
+          description: 'ID da postagem/notícia',
+          example: '123'
+        },
+        emphasis: {
+          type: 'string',
+          description: 'Se a primeira imagem terá destaque (apenas a primeira)',
+          example: 'true',
+          enum: ['true', 'false']
+        },
+        author: {
+          type: 'string',
+          description: 'Autor das imagens (opcional)',
+          example: 'João Silva'
+        },
+        date: {
+          type: 'string',
+          description: 'Data das imagens (opcional)',
+          example: '2024-01-15'
+        }
+      },
+      required: ['files', 'postId']
+    }
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Imagens processadas e mídias criadas com sucesso',
+    type: [MediaResponseDto],
+    schema: {
+      example: [
+        {
+          id: 1,
+          postId: 123,
+          emphasis: true, // Primeira imagem
+          imgSize: {
+            original: "http://localhost:3000/uploads/media_1704067200000_abc123_imagem1.jpg",
+            medium: "http://localhost:3000/uploads/media_1704067200000_abc123_imagem1_medium.jpg",
+            small: "http://localhost:3000/uploads/media_1704067200000_abc123_imagem1_small.jpg",
+            superSmall: "http://localhost:3000/uploads/media_1704067200000_abc123_imagem1_supersmall.jpg"
+          },
+          author: "João Silva",
+          date: "2024-01-15",
+          createdAt: "2024-01-01T12:00:00.000Z",
+          updatedAt: "2024-01-01T12:00:00.000Z"
+        },
+        {
+          id: 2,
+          postId: 123,
+          emphasis: false, // Demais imagens
+          imgSize: {
+            original: "http://localhost:3000/uploads/media_1704067200001_def456_imagem2.jpg",
+            medium: "http://localhost:3000/uploads/media_1704067200001_def456_imagem2_medium.jpg",
+            small: "http://localhost:3000/uploads/media_1704067200001_def456_imagem2_small.jpg",
+            superSmall: "http://localhost:3000/uploads/media_1704067200001_def456_imagem2_supersmall.jpg"
+          },
+          author: "João Silva",
+          date: "2024-01-15",
+          createdAt: "2024-01-01T12:00:00.000Z",
+          updatedAt: "2024-01-01T12:00:00.000Z"
+        }
+      ]
+    }
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Arquivos inválidos ou dados incorretos',
+    schema: {
+      examples: {
+        noFiles: {
+          summary: 'Nenhum arquivo enviado',
+          value: {
+            statusCode: 400,
+            message: "Nenhum arquivo fornecido"
+          }
+        },
+        tooManyFiles: {
+          summary: 'Muitos arquivos',
+          value: {
+            statusCode: 400,
+            message: "Máximo 10 arquivos por upload"
+          }
+        },
+        missingPostId: {
+          summary: 'PostId obrigatório',
+          value: {
+            statusCode: 400,
+            message: "ID da postagem é obrigatório"
+          }
+        }
+      }
+    }
+  })
+  async uploadMultipleImages(
+    @UploadedFiles() files: any[],
+    @Body('postId') postId: string,
+    @Body('emphasis') emphasis = 'false',
+    @Body('author') author?: string,
+    @Body('date') date?: string
+  ): Promise<MediaResponseDto[]> {
+    try {
+      if (!files || files.length === 0) {
+        throw new HttpException('Nenhum arquivo fornecido', HttpStatus.BAD_REQUEST);
+      }
+
+      if (files.length > 10) {
+        throw new HttpException('Máximo 10 arquivos por upload', HttpStatus.BAD_REQUEST);
+      }
+
+      if (!postId) {
+        throw new HttpException('ID da postagem é obrigatório', HttpStatus.BAD_REQUEST);
+      }
+
+      return await this.mediaService.createWithMultipleUpload(files, {
         postId: parseInt(postId),
         emphasis: emphasis === 'true',
         author,
