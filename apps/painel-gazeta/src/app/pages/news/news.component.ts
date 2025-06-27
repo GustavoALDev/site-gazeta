@@ -1,38 +1,48 @@
-import { Component, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
+
 import { TextEditorComponent } from '@site-gazeta/text-editor';
-import { NonNullableFormBuilder, Validators, ReactiveFormsModule, FormsModule, FormGroup } from '@angular/forms';
+import {
+  NonNullableFormBuilder,
+  Validators,
+  ReactiveFormsModule,
+  FormsModule,
+  FormGroup,
+} from '@angular/forms';
 import { NewsMidiaComponent } from './news-midia/news-midia.component';
-import { NewsMedia, NewsVideo, Category } from '@site-gazeta/models';
+import { NewsMedia, NewsVideo, Category, News } from '@site-gazeta/models';
+import { FormValidatorComponent, FormValidatorService } from '@site-gazeta/form-validator';
+import { Subject,   takeUntil } from 'rxjs';
+import { ApiService } from '../../core/services/api.service';
 
 @Component({
   selector: 'app-news',
-  imports: [CommonModule, TextEditorComponent, ReactiveFormsModule, FormsModule, NewsMidiaComponent],
+  imports: [
+    TextEditorComponent,
+    ReactiveFormsModule,
+    FormsModule,
+    NewsMidiaComponent,
+    FormValidatorComponent
+],
+  providers: [FormValidatorService],
   templateUrl: './news.component.html',
   styleUrl: './news.component.scss',
 })
-export class NewsComponent {
+export class NewsComponent implements OnInit, OnDestroy {
   fb = inject(NonNullableFormBuilder);
+  formValidator = inject(FormValidatorService);
+  apiService = inject(ApiService);
   activeTab: 'info' | 'content' | 'media' = 'info';
   sidebarOpen = signal<boolean>(true);
-
+  destroy$ = new Subject<void>();
   urlDisplay = signal<string>('');
-  
-  // Mock de categorias - será substituído pela chamada do backend
-  availableCategories: Category[] = [
-    { id: 1, name: 'Política', description: 'Notícias políticas', slug: 'politica', isActive: true },
-    { id: 2, name: 'Esportes', description: 'Notícias esportivas', slug: 'esportes', isActive: true },
-    { id: 3, name: 'Economia', description: 'Notícias econômicas', slug: 'economia', isActive: true },
-    { id: 4, name: 'Cultura', description: 'Notícias culturais', slug: 'cultura', isActive: true },
-    { id: 5, name: 'Tecnologia', description: 'Notícias de tecnologia', slug: 'tecnologia', isActive: true },
-    { id: 6, name: 'Saúde', description: 'Notícias de saúde', slug: 'saude', isActive: true }
-  ];
-  
+  displayError = signal<{ [key: string]: string } | null>({});
+  availableCategories = signal<Category[]>([]);
+
   selectedCategories = signal<Category[]>([]);
   categoryDropdownOpen = signal<boolean>(false);
 
   form = this.fb.group({
-    categoryId: [[] as number[]], 
+    categoryId: [[] as number[], [Validators.required]],
     title: ['', [Validators.required]],
     subtitle: ['', [Validators.required]],
     slug: ['', [Validators.required]],
@@ -42,37 +52,78 @@ export class NewsComponent {
     newsVideo: [[] as NewsVideo[]],
     published: [this.getCurrentDateTime(), [Validators.required]],
     isEmphasis: [false],
-    validity: [''],
-    status: ['active', [Validators.required]],
-    createdAt: [new Date().toISOString()],
-    updateAt: [new Date().toISOString()],
-    views: [0],
+    validity: [null],
+    status: ['ATIVO'],
   });
-  
+
+  errorMessage = {
+    title: {
+      required: 'Título é obrigatório',
+    },
+    subtitle: {
+      required: 'Subtítulo é obrigatório',
+    },
+    slug: {
+      required: 'Slug é obrigatório',
+    },
+    author: {
+      required: 'Autor é obrigatório',
+    },
+    content: {
+      required: 'Conteúdo é obrigatório',
+    },  
+   
+  };
+
   statusOptions = [
     { value: 'active', label: 'Ativa' },
     { value: 'inactive', label: 'Inativa' },
-    { value: 'trash', label: 'Lixeira' }
+    { value: 'trash', label: 'Lixeira' },
   ];
 
-  onSubmit() {
-    const bodyForm = new FormGroup({});
-    const midiaForm = new FormData();
-    Object.keys(this.form.value).forEach(key => {
-      if(key!=='newsMidia'){
-        bodyForm.addControl(key, this.form.get(key)!);
-      }else{
-        this.form.get(key)?.value.forEach(item => {
-          midiaForm.append(key, JSON.stringify(item));
-        });
+  ngOnInit(): void {
+    
+    this.formValidator.InitValidation(this.form, this.errorMessage)
+    .pipe(takeUntil(this.destroy$))
+    .subscribe((errorMessages) => {
+      this.displayError.set(errorMessages);
+    });
+    this.apiService.getCategories().subscribe((categories) => {
+      this.availableCategories.set(categories as Category[]);
+    });
+    this.form.get('slug')?.valueChanges
+    .pipe(takeUntil(this.destroy$))
+    .subscribe((value) => {
+      if(value){
+        this.formatedSlug(value);
       }
     });
+  }
 
-    
-
-
-     
-
+  onSubmit() {
+    const formValue = this.form.value;
+    const newsData = {  
+      title: formValue.title as string,
+      subtitle: formValue.subtitle as string,
+      slug: formValue.slug as string,
+      author: formValue.author as string,
+      content: formValue.content as string,
+      categoryId: formValue.categoryId as number[],
+      published: formValue.published as string,
+      isEmphasis: formValue.isEmphasis as boolean,
+      validity: formValue.validity as string | null,
+      status: formValue.status as string,
+    };
+    console.log(newsData);
+    this.apiService.setNews(newsData as News)
+    .subscribe({
+      next: (res) => {
+        console.log(res);
+      },
+      error: (err) => {
+        console.log(err);
+      }
+    });
   }
 
   setActiveTab(tab: 'info' | 'content' | 'media') {
@@ -83,13 +134,17 @@ export class NewsComponent {
     this.sidebarOpen.set(!this.sidebarOpen());
   }
 
-  urlDisplaySet(urlValue:string){
+  urlDisplaySet(urlValue: string) {
     this.urlDisplay.set(urlValue);
   }
-
-  generateSlug() {
-    const title = this.form.get('title')?.value || '';
-    const slug = title
+  setSlug() {
+   const title = this.form.get('title')?.value as string
+   this.formatedSlug(title)
+  }
+  
+  formatedSlug(value?:string) {
+    if(value){
+      const slug = value
       .toLowerCase()
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
@@ -98,7 +153,10 @@ export class NewsComponent {
       .replace(/-+/g, '-')
       .trim();
     this.form.patchValue({ slug });
-    this.urlDisplaySet(slug); 
+    this.urlDisplaySet(slug);
+    }
+    
+    
   }
 
   toggleCategoryDropdown() {
@@ -107,60 +165,70 @@ export class NewsComponent {
 
   selectCategory(category: Category) {
     const currentSelected = this.selectedCategories();
-    const isAlreadySelected = currentSelected.some(cat => cat.id === category.id);
-    
+    const isAlreadySelected = currentSelected.some(
+      (cat) => cat.id === category.id
+    );
+
     if (!isAlreadySelected) {
       const newSelected = [...currentSelected, category];
       this.selectedCategories.set(newSelected);
       this.updateFormCategories(newSelected);
     }
-    
+
     this.categoryDropdownOpen.set(false);
   }
 
   removeCategory(categoryId: number) {
-    const newSelected = this.selectedCategories().filter(cat => cat.id !== categoryId);
+    const newSelected = this.selectedCategories().filter(
+      (cat) => cat.id !== categoryId
+    );
     this.selectedCategories.set(newSelected);
     this.updateFormCategories(newSelected);
   }
 
   private updateFormCategories(categories: Category[]) {
-    const categoryIds = categories.map(cat => cat.id!);
+    const categoryIds = categories.map((cat) => cat.id as number);
     this.form.patchValue({ categoryId: categoryIds });
   }
 
   getAvailableCategories(): Category[] {
-    const selectedIds = this.selectedCategories().map(cat => cat.id);
-    return this.availableCategories.filter(cat => !selectedIds.includes(cat.id));
+    const selectedIds = this.selectedCategories().map((cat) => cat.id);
+    return this.availableCategories().filter(
+      (cat) => !selectedIds.includes(cat.id as number)
+    );
   }
-  
-  onFormValue(formValue: {newsVideo: NewsVideo[], newsMedia: NewsMedia[]}) {
+
+  onFormValue(formValue: { newsVideo: NewsVideo[]; newsMedia: NewsMedia[] }) {
     this.form.patchValue({
       newsVideo: formValue.newsVideo,
-      newsMidia: formValue.newsMedia
-    })
+      newsMidia: formValue.newsMedia,
+    });
   }
-  
+
   onReset() {
     this.form.reset();
     this.selectedCategories.set([]);
     setTimeout(() => {
-      this.form.patchValue({ 
+      this.form.patchValue({
         published: this.getCurrentDateTime(),
         author: 'Gazeta do Pará',
-        status: 'active'
+        status: 'active',
       });
     }, 0);
     this.activeTab = 'info';
   }
-
 
   // Método melhorado para obter data e hora atual
   private getCurrentDateTime(): string {
     const now = new Date();
     // Ajustar para timezone local
     const offset = now.getTimezoneOffset();
-    const localTime = new Date(now.getTime() - (offset * 60 * 1000));
+    const localTime = new Date(now.getTime() - offset * 60 * 1000);
     return localTime.toISOString().slice(0, 16);
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

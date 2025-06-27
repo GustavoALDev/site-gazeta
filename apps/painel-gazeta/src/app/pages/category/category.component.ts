@@ -1,44 +1,33 @@
-import { Component, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, signal, OnInit } from '@angular/core';
+
 import { Category } from '@site-gazeta/models';
 import { CategoryFormComponent } from './category-form/category-form.component';
 import { CategoryListComponent } from './category-list/category-list.component';
-
+import { ApiService } from '../../core/services/api.service';
+import { firstValueFrom } from 'rxjs';
+  
 @Component({
   selector: 'app-category',
-  imports: [CommonModule, CategoryFormComponent, CategoryListComponent],
+  imports: [CategoryFormComponent, CategoryListComponent],
   templateUrl: './category.component.html',
   styleUrl: './category.component.scss',
 })
-export class CategoryComponent {
+export class CategoryComponent implements OnInit {
   categories = signal<Category[]>([]);
   editingCategory = signal<Category | null>(null);
-
+  apiService = inject(ApiService);
   onCategorySubmit(categoryData: Category) {
-    if (categoryData.id) {
-      // Atualizar categoria existente
-      const updatedCategory: Category = {
-        ...categoryData,
-        updatedAt: new Date().toISOString()
-      };
-      this.categories.update(categories => 
-        categories.map(cat => cat.id === categoryData.id ? updatedCategory : cat)
-      );
-      this.editingCategory.set(null);
+    if (this.categories().find(c => c.id === categoryData.id)) {
+      this.categories.update(categories => categories.map(c => c.id === categoryData.id ? categoryData : c));
     } else {
-      // Criar nova categoria
-      const newCategory: Category = {
-        id: this.categories().length + 1,
-        name: categoryData.name,
-        description: categoryData.description,
-        slug: categoryData.slug,
-        isActive: categoryData.isActive,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      console.log('newCategory', newCategory);
-      this.categories.update(categories => [...categories, newCategory]);
+      this.categories.update(categories => [...categories, categoryData]);
     }
+  }
+
+  ngOnInit(): void {
+    this.apiService.getCategories().subscribe((categories) => {
+      this.categories.set(categories as Category[]);
+    });
   }
 
   onEditCategory(category: Category) {
@@ -46,7 +35,12 @@ export class CategoryComponent {
   }
 
   onDeleteCategory(category: Category) {
-    this.categories.update(categories => categories.filter(c => c.id !== category.id));
+    firstValueFrom(this.apiService.deleteCategory(category.id as number)).then((res) => {
+      console.log(res);
+      this.categories.update(categories => categories.filter(c => c.id !== category.id));
+    }).catch((err) => {
+      console.error(err);
+    });
     
     // Se estava editando a categoria que foi excluída, cancelar edição
     if (this.editingCategory()?.id === category.id) {
