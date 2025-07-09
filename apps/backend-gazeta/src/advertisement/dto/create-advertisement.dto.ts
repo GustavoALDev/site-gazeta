@@ -72,6 +72,7 @@ export class CreateAdvertisementDto {
   @IsInt({ message: 'Prioridade deve ser um número inteiro' })
   @Min(0, { message: 'Prioridade deve ser no mínimo 0' })
   @Max(10, { message: 'Prioridade deve ser no máximo 10' })
+  @Transform(({ value }) => value === '' || value === null || value === undefined ? 0 : parseInt(value, 10))
   priority?: number = 0;
 
   @ApiProperty({ 

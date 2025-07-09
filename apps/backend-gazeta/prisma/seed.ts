@@ -1,5 +1,6 @@
 const { PrismaClient } = require('../generated/prisma');
 const bcrypt = require('bcrypt');
+const { seedMenus } = require('./menu-seed');
 
 const prisma = new PrismaClient();
 
@@ -17,6 +18,9 @@ async function main() {
   });
 
   console.log({ user });
+
+  // Seed menus
+  await seedMenus();
 }
 
 main()
