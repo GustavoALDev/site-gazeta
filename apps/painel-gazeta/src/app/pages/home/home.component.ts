@@ -16,13 +16,14 @@ export class HomeComponent {
   authService = inject(AuthService);
   menuItems: MenuItem[] = [
     { name: 'Metricas', router: '' },
-    { name: 'Categorias', router: 'category'},
     { name: 'Menu', router: 'menu'},
-    { name: 'Videos', router: 'videos'},
+    { name: 'Categorias', router: 'category'},
     { name: 'Notícias', router: 'news', children:[
       { name: 'Criar Notícia', router: 'news' },
       { name:'Lista de Notícias', router: 'newsList'}
     ]},
+    { name: 'Videos', router: 'videos'},
+    { name: 'Anúncios', router: 'ads'},
     { name: 'Usuários', router: 'users'},
     { name: 'Configurações', router: 'config' },
   ]

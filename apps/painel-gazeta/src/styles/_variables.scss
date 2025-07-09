@@ -1,8 +1,8 @@
 // Variáveis CSS Customizadas Globais
 :root {
   // Cores principais
-  --primary: #007bff;
-  --secondary: #6c757d;
+  --primary: #eb3237;
+  --secondary: #0a80c4;
   --success: #28a745;
   --danger: #dc3545;
   --warning: #ffc107;
@@ -26,6 +26,42 @@
   --transition: 0.15s ease-in-out;
   --transition-slow: 0.3s ease-in-out;
 }
+
+// Variáveis SCSS para compatibilidade
+$primary-color: #007bff;
+$secondary-color: #6c757d;
+$success-color: #28a745;
+$danger-color: #dc3545;
+$warning-color: #ffc107;
+$info-color: #17a2b8;
+
+// Cores de texto
+$text-dark: #343a40;
+$text-muted: #6c757d;
+$text-light: #ffffff;
+
+// Cores de fundo
+$white: #ffffff;
+$light: #f8f9fa;
+$gray-100: #f8f9fa;
+$gray-200: #e9ecef;
+$gray-300: #dee2e6;
+$gray-400: #ced4da;
+$gray-500: #adb5bd;
+$gray-600: #6c757d;
+$gray-700: #495057;
+$gray-800: #343a40;
+$gray-900: #212529;
+
+// Cores de borda
+$border-color: #dee2e6;
+$border-light: #f1f3f4;
+
+// Breakpoints
+$mobile: 576px;
+$tablet: 768px;
+$desktop: 992px;
+$large: 1200px;
 
 // Mixins Globais
 @mixin flex($justify: center, $align: center) {
@@ -62,15 +98,15 @@
 }
 
 @mixin mobile {
-  @media (max-width: 767px) { @content; }
+  @media (max-width: #{$mobile - 1px}) { @content; }
 }
 
 @mixin tablet {
-  @media (min-width: 768px) and (max-width: 991px) { @content; }
+  @media (min-width: #{$tablet}) and (max-width: #{$desktop - 1px}) { @content; }
 }
 
 @mixin desktop {
-  @media (min-width: 992px) { @content; }
+  @media (min-width: #{$desktop}) { @content; }
 }
 
 // Classes utilitárias

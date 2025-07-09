@@ -4,5 +4,6 @@ import { News } from './news.model';
 import { NewsMedia } from './newsMedia.model';  
 import { NewsVideo } from './newsVideo.model';
 import { User } from './users.model';
-    
-export { MenuItem, Category, News, NewsMedia, NewsVideo, User };
+import { Ads } from './ads.model';
+        
+export { MenuItem, Category, News, NewsMedia, NewsVideo, User, Ads };

@@ -64,7 +64,7 @@ export class CategoriesController {
   @Get()
   @ApiOperation({ 
     summary: 'Listar todas as categorias', 
-    description: 'Endpoint para obter todas as categorias ativas' 
+    description: 'Endpoint para obter todas as categorias' 
   })
   @ApiResponse({ 
     status: 200, 

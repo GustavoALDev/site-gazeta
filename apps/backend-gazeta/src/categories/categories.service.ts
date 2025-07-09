@@ -37,7 +37,6 @@ export class CategoriesService {
 
   async findAll(): Promise<CategoryResponseDto[]> {
     const categories = await this.prisma.category.findMany({
-      where: { isActive: true },
       orderBy: { name: 'asc' }
     });
 
@@ -71,7 +70,7 @@ export class CategoriesService {
   async update(id: number, updateCategoryDto: UpdateCategoryDto): Promise<CategoryResponseDto> {
     // Verificar se a categoria existe
     const existingCategory = await this.prisma.category.findFirst({
-      where: { id, isActive: true }
+      where: { id }
     });
 
     if (!existingCategory) {
@@ -114,7 +113,7 @@ export class CategoriesService {
 
   async remove(id: number): Promise<void> {
     const category = await this.prisma.category.findFirst({
-      where: { id, isActive: true }
+      where: { id}
     });
 
     if (!category) {

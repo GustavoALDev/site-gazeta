@@ -15,5 +15,6 @@ export const appRoutes: Route[] = [
     {path:'videos', loadComponent: () => import('./pages/videos/videos.component').then(m => m.VideosComponent)},
     {path:'users', loadComponent: () => import('./pages/users/users.component').then(m => m.UsersComponent)},
     {path:'config', loadComponent: () => import('./pages/config/config.component').then(m => m.ConfigComponent)},
+    {path:'ads', loadComponent: () => import('./pages/ads/ads.component').then(m => m.AdsComponent)},
   ]}
 ];
