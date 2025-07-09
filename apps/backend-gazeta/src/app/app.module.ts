@@ -10,6 +10,7 @@ import { MediaModule } from '../media/media.module';
 import { NewsVideoModule } from '../news-video/news-video.module';
 import { AdvertisementModule } from '../advertisement/advertisement.module';
 import { HomeConfigModule } from '../home-config/home-config.module';
+import { MenuModule } from '../menu/menu.module';
 
 @Module({
   imports: [
@@ -24,7 +25,8 @@ import { HomeConfigModule } from '../home-config/home-config.module';
     MediaModule,
     NewsVideoModule,
     AdvertisementModule,
-    HomeConfigModule
+    HomeConfigModule,
+    MenuModule
   ],
   controllers: [AppController],
   providers: [AppService],
