@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString, MinLength, MaxLength } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, MinLength, MaxLength, IsBoolean } from 'class-validator';
 
 export class CreateCategoryDto {
   @ApiProperty({
@@ -35,4 +35,14 @@ export class CreateCategoryDto {
   @MinLength(2, { message: 'Slug deve ter no mínimo 2 caracteres' })
   @MaxLength(100, { message: 'Slug deve ter no máximo 100 caracteres' })
   slug: string;
+
+  @ApiProperty({
+    description: 'Status ativo da categoria',
+    example: true,
+    required: false,
+    default: true
+  })
+  @IsOptional()
+  @IsBoolean({ message: 'isActive deve ser um valor booleano' })
+  isActive?: boolean;
 } 

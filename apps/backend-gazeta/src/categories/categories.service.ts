@@ -9,9 +9,10 @@ export class CategoriesService {
   constructor(private prisma: PrismaService) {}
 
   async create(createCategoryDto: CreateCategoryDto): Promise<CategoryResponseDto> {
-    // Verificar se já existe categoria com esse nome ou slug
+    // Verificar se já existe categoria com esse nome ou slug (apenas categorias ativas)
     const existingCategory = await this.prisma.category.findFirst({
       where: {
+        isActive: true,
         OR: [
           { name: createCategoryDto.name },
           { slug: createCategoryDto.slug }
@@ -21,32 +22,38 @@ export class CategoriesService {
 
     if (existingCategory) {
       if (existingCategory.name === createCategoryDto.name) {
-        throw new ConflictException('Já existe uma categoria com este nome');
+        throw new ConflictException('Já existe uma categoria ativa com este nome');
       }
       if (existingCategory.slug === createCategoryDto.slug) {
-        throw new ConflictException('Já existe uma categoria com este slug');
+        throw new ConflictException('Já existe uma categoria ativa com este slug');
       }
     }
 
     const category = await this.prisma.category.create({
-      data: createCategoryDto
+      data: {
+        ...createCategoryDto,
+        isActive: createCategoryDto.isActive ?? true // Default para true se não fornecido
+      }
     });
 
     return category;
   }
 
-  async findAll(): Promise<CategoryResponseDto[]> {
+  async findAll(includeInactive = false): Promise<CategoryResponseDto[]> {
     const categories = await this.prisma.category.findMany({
-      where: { isActive: true },
+      where: includeInactive ? {} : { isActive: true },
       orderBy: { name: 'asc' }
     });
 
     return categories;
   }
 
-  async findOne(id: number): Promise<CategoryResponseDto> {
+  async findOne(id: number, includeInactive = false): Promise<CategoryResponseDto> {
     const category = await this.prisma.category.findFirst({
-      where: { id, isActive: true }
+      where: { 
+        id, 
+        ...(includeInactive ? {} : { isActive: true })
+      }
     });
 
     if (!category) {
@@ -56,9 +63,12 @@ export class CategoriesService {
     return category;
   }
 
-  async findBySlug(slug: string): Promise<CategoryResponseDto> {
+  async findBySlug(slug: string, includeInactive = false): Promise<CategoryResponseDto> {
     const category = await this.prisma.category.findFirst({
-      where: { slug, isActive: true }
+      where: { 
+        slug, 
+        ...(includeInactive ? {} : { isActive: true })
+      }
     });
 
     if (!category) {
@@ -69,21 +79,22 @@ export class CategoriesService {
   }
 
   async update(id: number, updateCategoryDto: UpdateCategoryDto): Promise<CategoryResponseDto> {
-    // Verificar se a categoria existe
-    const existingCategory = await this.prisma.category.findFirst({
-      where: { id, isActive: true }
+    // Verificar se a categoria existe (incluindo inativas para permitir reativação)
+    const existingCategory = await this.prisma.category.findUnique({
+      where: { id }
     });
 
     if (!existingCategory) {
       throw new NotFoundException('Categoria não encontrada');
     }
 
-    // Verificar conflitos de nome e slug apenas se foram fornecidos
+    // Verificar conflitos de nome e slug apenas com categorias ativas
     if (updateCategoryDto.name || updateCategoryDto.slug) {
       const conflictCategory = await this.prisma.category.findFirst({
         where: {
           AND: [
             { id: { not: id } },
+            { isActive: true }, // Apenas verificar conflitos com categorias ativas
             {
               OR: [
                 updateCategoryDto.name ? { name: updateCategoryDto.name } : {},
@@ -96,10 +107,10 @@ export class CategoriesService {
 
       if (conflictCategory) {
         if (conflictCategory.name === updateCategoryDto.name) {
-          throw new ConflictException('Já existe uma categoria com este nome');
+          throw new ConflictException('Já existe uma categoria ativa com este nome');
         }
         if (conflictCategory.slug === updateCategoryDto.slug) {
-          throw new ConflictException('Já existe uma categoria com este slug');
+          throw new ConflictException('Já existe uma categoria ativa com este slug');
         }
       }
     }
