@@ -21,7 +21,7 @@ async function bootstrap() {
   app.enableCors(devCorsConfig);
 
   // Servir arquivos estáticos
-  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
+  app.useStaticAssets(join(process.cwd(), 'uploads'), {
     prefix: '/uploads/',
   });
 

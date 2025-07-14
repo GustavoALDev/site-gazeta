@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsOptional, IsBoolean, IsInt, IsDateString, IsIn, IsUrl, Min, Max } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional, IsBoolean, IsInt, IsDateString, IsIn, IsUrl, Min, Max, ValidateIf } from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class CreateAdvertisementDto {
@@ -26,8 +26,10 @@ export class CreateAdvertisementDto {
     required: false 
   })
   @IsOptional()
+  @Transform(({ value }) => value === 'null' || value === '' ? null : value)
+  @ValidateIf((o) => o.clickUrl !== null && o.clickUrl !== undefined && o.clickUrl !== '')
   @IsUrl({}, { message: 'URL de clique deve ser uma URL válida' })
-  clickUrl?: string;
+  clickUrl?: string | null;
 
   @ApiProperty({ 
     description: 'Posição do anúncio na página', 

@@ -1,0 +1,194 @@
+<div class="ads-list-container">
+  <div class="list-header">
+    <h2 class="list-title">Anúncios Cadastrados</h2>
+    <div class="list-actions">
+      <button class="btn btn-primary" (click)="loadAdvertisements()">
+        <i class="fas fa-sync-alt"></i>
+        Atualizar
+      </button>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filters-container">
+    <div class="filters-row">
+      <div class="filter-group">
+        <label for="search">Buscar:</label>
+        <input 
+          type="text" 
+          id="search" 
+          [(ngModel)]="filters.search" 
+          (input)="onFilterChange()"
+          placeholder="Título ou descrição..."
+          class="form-control">
+      </div>
+
+      <div class="filter-group">
+        <label for="position">Posição:</label>
+        <select 
+          id="position" 
+          [(ngModel)]="filters.position" 
+          (change)="onFilterChange()"
+          class="form-control">
+          <option *ngFor="let pos of positions" [value]="pos.value">
+            {{ pos.label }}
+          </option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="placement">Página:</label>
+        <select 
+          id="placement" 
+          [(ngModel)]="filters.placement" 
+          (change)="onFilterChange()"
+          class="form-control">
+          <option *ngFor="let place of placements" [value]="place.value">
+            {{ place.label }}
+          </option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="status">Status:</label>
+        <select 
+          id="status" 
+          [(ngModel)]="filters.status" 
+          (change)="onFilterChange()"
+          class="form-control">
+          <option *ngFor="let status of statusOptions" [value]="status.value">
+            {{ status.label }}
+          </option>
+        </select>
+      </div>
+
+      <div class="filter-actions">
+        <button class="btn btn-secondary" (click)="clearFilters()">
+          <i class="fas fa-times"></i>
+          Limpar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Informações dos resultados -->
+  <div class="results-info" *ngIf="!loading">
+    <p>
+      Mostrando {{ (currentPage - 1) * itemsPerPage + 1 }} - 
+      {{ currentPage * itemsPerPage > totalItems ? totalItems : currentPage * itemsPerPage }} 
+      de {{ totalItems }} anúncios
+      <span *ngIf="totalItems !== advertisements.length">
+        (filtrados de {{ advertisements.length }} total)
+      </span>
+    </p>
+  </div>
+
+  <div *ngIf="loading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Carregando anúncios...</p>
+  </div>
+
+  <div *ngIf="!loading && filteredAdvertisements.length === 0 && advertisements.length === 0" class="empty-state">
+    <i class="fas fa-ad fa-3x"></i>
+    <h3>Nenhum anúncio encontrado</h3>
+    <p>Comece criando seu primeiro anúncio na aba "Criar Anúncio".</p>
+  </div>
+
+  <div *ngIf="!loading && filteredAdvertisements.length === 0 && advertisements.length > 0" class="empty-state">
+    <i class="fas fa-filter fa-3x"></i>
+    <h3>Nenhum anúncio encontrado com os filtros aplicados</h3>
+    <p>Tente ajustar os filtros ou limpar a busca.</p>
+  </div>
+
+  <div *ngIf="!loading && filteredAdvertisements.length > 0" class="ads-grid">
+    <div *ngFor="let ad of paginatedAdvertisements" class="ad-card">
+      <div class="ad-image">
+        <img [src]="ad.imageUrl" [alt]="ad.title" >
+        <div class="ad-status" [class.active]="ad.isActive" [class.inactive]="!ad.isActive">
+          {{ ad.isActive ? 'Ativo' : 'Inativo' }}
+        </div>
+      </div>
+      
+      <div class="ad-content">
+        <h3 class="ad-title">{{ ad.title }}</h3>
+        <p class="ad-description" *ngIf="ad.description">{{ ad.description }}</p>
+        
+        <div class="ad-details">
+          <div class="detail-item">
+            <span class="detail-label">Posição:</span>
+            <span class="detail-value">{{ getPositionLabel(ad.position) }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Página:</span>
+            <span class="detail-value">{{ getPlacementLabel(ad.placement) }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Prioridade:</span>
+            <span class="detail-value">{{ ad.priority }}</span>
+          </div>
+          <div class="detail-item" *ngIf="ad.startDate">
+            <span class="detail-label">Início:</span>
+            <span class="detail-value">{{ ad.startDate | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+          <div class="detail-item" *ngIf="ad.endDate">
+            <span class="detail-label">Fim:</span>
+            <span class="detail-value">{{ ad.endDate | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+        </div>
+        
+        <div class="ad-actions">
+          <button class="btn btn-sm btn-secondary" (click)="editAdvertisement(ad)">
+            <i class="fas fa-edit"></i>
+            Editar
+          </button>
+          <button class="btn btn-sm" 
+                  [class.btn-success]="!ad.isActive" 
+                  [class.btn-warning]="ad.isActive"
+                  (click)="toggleStatus(ad)">
+            <i class="fas" [class.fa-play]="!ad.isActive" [class.fa-pause]="ad.isActive"></i>
+            {{ ad.isActive ? 'Desativar' : 'Ativar' }}
+          </button>
+          <button class="btn btn-sm btn-danger" (click)="deleteAdvertisement(ad.id!)">
+            <i class="fas fa-trash"></i>
+            Excluir
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Paginação -->
+  <div *ngIf="!loading && totalPages > 1" class="pagination-container">
+    <div class="pagination">
+      <button 
+        class="pagination-btn" 
+        (click)="previousPage()" 
+        [disabled]="currentPage === 1">
+        <i class="fas fa-chevron-left"></i>
+        Anterior
+      </button>
+
+      <div class="pagination-pages">
+        <button 
+          *ngFor="let page of pageNumbers" 
+          class="pagination-page" 
+          [class.active]="page === currentPage"
+          (click)="goToPage(page)">
+          {{ page }}
+        </button>
+      </div>
+
+      <button 
+        class="pagination-btn" 
+        (click)="nextPage()" 
+        [disabled]="currentPage === totalPages">
+        Próximo
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+
+    <div class="pagination-info">
+      Página {{ currentPage }} de {{ totalPages }}
+    </div>
+  </div>
+</div>

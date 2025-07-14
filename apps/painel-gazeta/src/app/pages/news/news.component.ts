@@ -11,7 +11,7 @@ import {
 import { NewsMidiaComponent } from './news-midia/news-midia.component';
 import { NewsMedia, NewsVideo, Category, News } from '@site-gazeta/models';
 import { FormValidatorComponent, FormValidatorService } from '@site-gazeta/form-validator';
-import { Subject,   takeUntil } from 'rxjs';
+import { first, firstValueFrom, Subject,   takeUntil } from 'rxjs';
 import { ApiService } from '../../core/services/api.service';
 
 @Component({
@@ -118,7 +118,27 @@ export class NewsComponent implements OnInit, OnDestroy {
     this.apiService.setNews(newsData as News)
     .subscribe({
       next: (res) => {
-        console.log(res);
+        const newsId = res.id;
+        const formMidia = new FormData();
+        const newsMedia = formValue.newsMidia as NewsMedia[]
+        newsMedia.forEach((media) => {
+          formMidia.append('postId', newsId.toString());
+          formMidia.append('emphasis', media.emphasis.toString());
+          formMidia.append('author', media.author as string);
+          formMidia.append('date', media.date as string);
+          formMidia.append('file', media.file as File);
+        })
+       
+        
+        
+        firstValueFrom(this.apiService.setNewsMedia(formMidia))
+        .then((res)=> {
+          console.log(res);
+        })
+        .catch((err)=> {
+          console.log(err);
+        })
+        
       },
       error: (err) => {
         console.log(err);

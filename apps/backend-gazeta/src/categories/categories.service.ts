@@ -125,7 +125,7 @@ export class CategoriesService {
 
   async remove(id: number): Promise<void> {
     const category = await this.prisma.category.findFirst({
-      where: { id, isActive: true }
+      where: { id}
     });
 
     if (!category) {
