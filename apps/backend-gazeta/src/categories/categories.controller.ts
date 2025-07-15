@@ -63,17 +63,42 @@ export class CategoriesController {
 
   @Get()
   @ApiOperation({ 
-    summary: 'Listar todas as categorias', 
-    description: 'Endpoint para obter todas as categorias' 
+    summary: 'Listar categorias ativas', 
+    description: 'Endpoint público para obter apenas categorias ativas' 
   })
   @ApiResponse({ 
     status: 200, 
-    description: 'Lista de categorias',
+    description: 'Lista de categorias ativas',
     type: [CategoryResponseDto]
   })
   async findAll(): Promise<CategoryResponseDto[]> {
     try {
       return await this.categoriesService.findAll();
+    } catch (error) {
+      throw new HttpException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Erro no servidor, tente novamente mais tarde',
+        error: 'Internal Server Error'
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Get('all')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ 
+    summary: 'Listar todas as categorias', 
+    description: 'Endpoint administrativo para obter todas as categorias (ativas e inativas)' 
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Lista completa de categorias (ativas e inativas)',
+    type: [CategoryResponseDto]
+  })
+  @ApiResponse({ status: 401, description: 'Token inválido ou não fornecido' })
+  async findAllIncludingInactive(): Promise<CategoryResponseDto[]> {
+    try {
+      return await this.categoriesService.findAll(true);
     } catch (error) {
       throw new HttpException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
