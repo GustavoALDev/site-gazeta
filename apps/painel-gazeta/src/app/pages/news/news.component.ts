@@ -6,12 +6,11 @@ import {
   Validators,
   ReactiveFormsModule,
   FormsModule,
-  FormGroup,
 } from '@angular/forms';
 import { NewsMidiaComponent } from './news-midia/news-midia.component';
 import { NewsMedia, NewsVideo, Category, News } from '@site-gazeta/models';
 import { FormValidatorComponent, FormValidatorService } from '@site-gazeta/form-validator';
-import { first, firstValueFrom, Subject,   takeUntil } from 'rxjs';
+import { concatMap,  from, Subject,   takeUntil, toArray } from 'rxjs';
 import { ApiService } from '../../core/services/api.service';
 
 @Component({
@@ -76,8 +75,8 @@ export class NewsComponent implements OnInit, OnDestroy {
   };
 
   statusOptions = [
-    { value: 'active', label: 'Ativa' },
-    { value: 'inactive', label: 'Inativa' },
+    { value: 'active', label: 'ATIVO' },
+    { value: 'inactive', label: 'INATIVA' },
     { value: 'trash', label: 'Lixeira' },
   ];
 
@@ -114,31 +113,31 @@ export class NewsComponent implements OnInit, OnDestroy {
       validity: formValue.validity as string | null,
       status: formValue.status as string,
     };
-    console.log(newsData);
+
     this.apiService.setNews(newsData as News)
     .subscribe({
       next: (res) => {
-        const newsId = res.id;
-        const formMidia = new FormData();
         const newsMedia = formValue.newsMidia as NewsMedia[]
+        const midias:FormData[] = []
         newsMedia.forEach((media) => {
-          formMidia.append('postId', newsId.toString());
+          const formMidia = new FormData();
+          formMidia.append('postId', res.id.toString());
           formMidia.append('emphasis', media.emphasis.toString());
           formMidia.append('author', media.author as string);
           formMidia.append('date', media.date as string);
           formMidia.append('file', media.file as File);
+          midias.push(formMidia);
         })
-       
-        
-        
-        firstValueFrom(this.apiService.setNewsMedia(formMidia))
-        .then((res)=> {
-          console.log(res);
-        })
-        .catch((err)=> {
-          console.log(err);
-        })
-        
+
+        from(midias)
+        .pipe(
+          concatMap(midia => this.apiService.setNewsMedia(midia)), // uma por vez
+          toArray() // junta os resultados em um array
+        )
+        .subscribe({
+          next: (res) => console.log(res),
+          error: (err) => console.log(err)
+        });
       },
       error: (err) => {
         console.log(err);

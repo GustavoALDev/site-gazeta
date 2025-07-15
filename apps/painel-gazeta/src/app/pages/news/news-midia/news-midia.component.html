@@ -82,11 +82,15 @@
             [class.featured]="media.emphasis"
             [class.selected]="selectedMediaIndex() === $index"
             (click)="selectMedia($index)"
+            tabindex="0"
+            (keydown.enter)="selectMedia($index)"
           >
             @if (media.type === 'photo') {
               <div class="featured-star" 
                    [class.active]="media.emphasis"
-                   (click)="toggleFeatured($index, $event)">
+                   (click)="toggleFeatured($index, $event)"
+                   tabindex="0"
+                   (keydown.enter)="toggleFeatured($index, $event)">
                 <span class="material-icons">{{ media.emphasis ? 'star' : 'star_border' }}</span>
               </div>
 

@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../env/env';
-import { Ads, Category, News, NewsMedia } from '@site-gazeta/models';
+import { Ads, Category, Menu, News, NewsMedia } from '@site-gazeta/models';
 import { firstValueFrom, tap } from 'rxjs';
 
 @Injectable({ 
@@ -16,7 +16,7 @@ export class ApiService {
   }
 
   getCategories(){
-    return this.http.get(`${this.apiUrl}/categories`);
+    return this.http.get<Category[]>(`${this.apiUrl}/categories`);
   }
   
   getCategory(id: number){
@@ -45,7 +45,7 @@ export class ApiService {
   }
 
   getNews(){
-    return this.http.get(`${this.apiUrl}/news`);
+    return this.http.get<News[]>(`${this.apiUrl}/news`);
   }
 
   getNewsById(id: number){
@@ -53,11 +53,11 @@ export class ApiService {
   }
 
   deleteNews(id: number){
-    return this.http.delete(`${this.apiUrl}/news/${id}`);
+    return this.http.delete<{message:string}>(`${this.apiUrl}/news/${id}`);
   }
 
   setNewsMedia( body: FormData){
-    return this.http.post(`${this.apiUrl}/media/upload-multiple`, body);
+    return this.http.post(`${this.apiUrl}/media/upload`, body).pipe(tap(()=>console.log('upload media')));
   }
 
   setAds(body: FormData){
@@ -87,5 +87,28 @@ export class ApiService {
   deleteAds(id: number){
     return this.http.delete(`${this.apiUrl}/advertisements/${id}`);
   }
-  
+
+  setMenu(body: Menu){
+    return this.http.post<Menu>(`${this.apiUrl}/menu`, body);
+  }
+
+  editMenu(id: number, body: Menu){
+    return this.http.patch(`${this.apiUrl}/menu/${id}`, body);
+  }
+
+  orderMenu(body: Menu[]){
+    return this.http.patch(`${this.apiUrl}/menu/reorder/batch`, body);
+  }
+
+  getMenu(){
+    return this.http.get<Menu[]>(`${this.apiUrl}/menu`);
+  }
+
+  getMenuById(id: number){
+    return this.http.get(`${this.apiUrl}/menu/${id}`);
+  }
+
+  deleteMenu(id: number){
+    return this.http.delete(`${this.apiUrl}/menu/${id}`);
+  }
 }

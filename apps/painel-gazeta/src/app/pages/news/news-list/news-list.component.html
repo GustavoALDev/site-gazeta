@@ -1,1 +1,77 @@
-<p>news-list works!</p>
+<div class="news-list-container">
+  <div class="news-list-filters">
+    <div class="filter-group">
+      <label for="filter-date">Data de publicação</label>
+      <input id="filter-date" type="date" class="filter-input" placeholder="Data de publicação" 
+        [value]="filterDate()" (input)="setFilterDate($any($event.target).value)" />
+    </div>
+    <div class="filter-group">
+      <label for="filter-order">Ordem</label>
+      <select id="filter-order" class="filter-input" [value]="filterOrder()" (change)="setFilterOrder($any($event.target).value)">
+        <option value="desc">Mais recente</option>
+        <option value="asc">Mais antigo</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label for="filter-views">Visualizações</label>
+      <select id="filter-views" class="filter-input" [value]="filterViews()" (change)="setFilterViews($any($event.target).value)">
+        <option value="">Mais vistos</option>
+        <option value="asc">Menos vistos</option>
+        <option value="desc">Mais vistos</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label for="filter-category">Categoria</label>
+      <select id="filter-category" class="filter-input" [value]="filterCategory() ?? ''" (change)="setFilterCategory($any($event.target).value)">
+        <option value="">Categoria</option>
+        @for (category of categories(); track category.id) {
+          <option [value]="category.id">{{category.name}}</option>
+        }       
+      </select>
+    </div>
+    <div class="filter-group search-group">
+      <label for="filter-search">Pesquisar</label>
+      <input id="filter-search" type="text" class="filter-input search-input" placeholder="Pesquisar notícia..."
+        [value]="filterSearch()" (input)="setFilterSearch($any($event.target).value)" />
+    </div>
+  </div>
+
+  <div class="news-list">
+    @for(news of filteredNews(); track news.id){
+      <div class="news-card">
+        <div class="news-card-img">
+          @for(media of news.mediaNews; track media.id){
+            @if(media.emphasis){
+              <img [src]="media.imgSize?.small" alt="Imagem da notícia" />
+            }
+          }
+        </div>
+        <div class="news-card-content">
+          <h3 class="news-title">{{news.title}}</h3>
+          <p class="news-subtitle">{{news.subtitle}}</p>
+          <div class="news-meta">
+            <span class="news-author">Por: {{news.author}}</span>
+            <span class="news-date">{{news.published | date:'dd/MM/yyyy - HH:mm'}}</span>
+            <span class="news-categories">
+              @for (categoryId of news.categoryId; track categoryId) {
+                @for (category of categories(); track category.id) {
+                  @if(category.id === categoryId){
+                    <span class="category-chip">{{category.name}}</span>
+                  }
+                }
+              }
+              <!-- Repita para cada categoria da notícia -->
+            </span>
+            <span class="news-views">{{news.views}} visualizações</span>
+          </div>
+          <div class="news-actions">
+            <button class="btn-primary">Ir para página</button>
+            <button class="btn-secondary">Editar</button>
+            <button class="btn-danger" (click)="deleteNews(news.id)">Excluir</button>
+          </div>
+        </div>
+      </div>
+    }
+
+  </div>
+</div>
