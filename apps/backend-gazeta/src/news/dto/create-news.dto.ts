@@ -135,7 +135,7 @@ export class CreateNewsDto {
 
   @ApiProperty({
     description: 'Status da notícia',
-    example: 'ATIVO'
+    example: 'active'
   })
   @IsNotEmpty({ message: 'Status é obrigatório' })
   @IsString({ message: 'Status deve ser uma string' })

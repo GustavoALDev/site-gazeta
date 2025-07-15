@@ -1,0 +1,65 @@
+<div class="menu-list-section">
+  <h2>Itens do Menu</h2>
+  <div class="menu-list"
+       (dragover)="onDragOver($event)"
+       (dragenter)="onDragEnter($event)"
+       (dragleave)="onDragLeave($event)"
+       (drop)="onDrop($event)">
+    @for (item of items(); track item.order; let i = $index) {
+      <!-- Indicador de drop antes do item -->
+      @if (shouldShowDropIndicator(i, 'before')) {
+        <div class="drop-indicator"></div>
+      }
+      
+      <div
+        [class]="getItemClass(i)"
+        [style.transform]="getItemTransform(i)"
+        draggable="true"
+        (dragstart)="onDragStart($event, item, i)"
+        (dragend)="onDragEnd($event)"
+        [attr.data-index]="i"
+      >
+        <div class="drag-handle">
+          <i class="fas fa-grip-vertical"></i>
+        </div>
+        <div class="item-content">
+          <div class="item-info">
+            <span class="item-name">{{ item.name }}</span>
+            <span class="item-type" [class]="'type-' + item.type">{{ types[item.type] }}</span>
+            <span class="item-order">#{{ item.order }}</span>
+          </div>
+          @if (item.routerLink || item.externalLink || item.slug) {
+            <div class="item-details">
+              @if (item.type === 'internal') {
+                <small>Rota: {{ item.routerLink }}</small>
+              }
+              @if (item.type === 'external') {
+                <small>Link: {{ item.externalLink }}</small>
+              }
+              @if (item.slug) {
+                <small>Slug: {{ item.slug }}</small>
+              }
+            </div>
+          }
+        </div>
+        <button
+          type="button"
+          class="delete-btn"
+          (click)="deleteItem(i, item.name)"
+          title="Excluir item"
+        >
+          <i class="material-icons">delete</i>
+        </button>
+      </div>
+
+      <!-- Indicador de drop após o último item -->
+      @if (shouldShowDropIndicator(i, 'after')) {
+        <div class="drop-indicator"></div>
+      }
+    } @empty {
+      <div class="empty-state">
+        <p>Nenhum item no menu. Adicione o primeiro item!</p>
+      </div>
+    }
+  </div>
+</div>

@@ -1,58 +1,140 @@
 <div class="menu-container">
-  <div class="menu-card">
-    <div class="menu-header">
-      <h2>Gerenciar Menu</h2>
-      <p>Configure o menu de navegação do site</p>
-    </div>
+  <div class="menu-content">
+    <!-- Lista de Menu (agora em componente separado) -->
+    <app-menu-list 
+      [items]="menuItems()"
+      (itemsReordered)="onMenuItemsReordered($event)"
+      (itemDeleted)="onMenuItemDeleted($event)">
+    </app-menu-list>
 
-    <div class="menu-content">
-      <div class="tab-header">
-        <div class="tab-menu">
-          <button 
+    <!-- Formulário de Adição -->
+    <div class="menu-form-section">
+      <h2>Adicionar Item ao Menu</h2>
+      
+    
+
+      <form [formGroup]="menuForm" (ngSubmit)="onSubmit()" class="menu-form">
+        <!-- Tipo (sempre primeiro) -->
+        <div class="form-group">
+          <label for="type">Tipo do Item *</label>
+          <select id="type" formControlName="type" class="form-control">
+            <option value="">Selecione o tipo</option>
+            @for (type of menuTypes; track type.value) {
+              <option [value]="type.value">{{ type.label }}</option>
+            }
+          </select>
+          @if (getFieldError('type')) {
+            <span class="error-message">{{ getFieldError('Tipo') }}</span>
+          }
+        </div>
+
+        <!-- Campos Condicionais baseados no tipo -->
+        @switch (currentFormType()) {
+          
+          @case ('category') {
+            <!-- Categoria: apenas selecionar categoria -->
+            <div class="form-group">
+              <label for="categoryId">Categoria *</label>
+              <select id="categoryId" formControlName="categoryId" class="form-control">
+                <option value="">Selecione uma categoria</option>
+                @for (category of categories(); track category.id) {
+                  <option 
+                    [value]="category.id"
+                    [disabled]="!category.isActive"
+                  >
+                    {{ category.name }}
+                  </option>
+                }
+              </select>
+              <small class="field-help">O nome da categoria será usado como nome do menu</small>
+              @if (getFieldError('categoryId')) {
+                <span class="error-message">{{ getFieldError('categoryId') }}</span>
+              }
+            </div>
+          }
+
+          @case ('internal') {
+            <!-- Página: nome personalizado + seleção de página -->
+            <div class="form-group">
+              <label for="name">Nome do Menu *</label>
+              <input
+                type="text"
+                id="name"
+                formControlName="name"
+                class="form-control"
+                placeholder="Ex: Início, Nossa História"
+              >
+              @if (getFieldError('name')) {
+                <span class="error-message">{{ getFieldError('Nome do Menu') }}</span>
+              }
+            </div>
+            
+            <div class="form-group">
+              <label for="pageId">Página de Destino *</label>
+              <select id="pageId" formControlName="pageId" class="form-control">
+                <option value="">Selecione uma página</option>
+                @for (page of availablePages; track page.value) {
+                  <option [value]="page.value">
+                    {{ page.label }} ({{ page.routerLink }})
+                  </option>
+                }
+              </select>
+              @if (getFieldError('pageId')) {
+                <span class="error-message">{{ getFieldError('Pagina de destino') }}</span>
+              }
+            </div>
+          }
+
+          @case ('external') {
+            <!-- Link Externo: nome + URL -->
+            <div class="form-group">
+              <label for="name">Nome do Menu *</label>
+              <input
+                type="text"
+                id="name"
+                formControlName="name"
+                class="form-control"
+                placeholder="Ex: Facebook, Site Parceiro"
+              >
+              @if (getFieldError('name')) {
+                <span class="error-message">{{ getFieldError('Nome do Menu') }}</span>
+              }
+            </div>
+            
+            <div class="form-group">
+              <label for="externalLink">URL de Destino *</label>
+              <input
+                type="url"
+                id="externalLink"
+                formControlName="externalLink"
+                class="form-control"
+                placeholder="https://exemplo.com"
+              >
+              @if (getFieldError('externalLink')) {
+                <span class="error-message">{{ getFieldError('externalLink') }}</span>
+              }
+            </div>
+          }
+        }
+
+        <!-- Botões -->
+        <div class="form-actions">
+          <button
             type="button"
-            class="tab-button"
-            [class.active]="activeTab === 'top'"
-            (click)="setActiveTab('top')">
-            Menu Topo
+            class="btn btn-secondary"
+            (click)="clearForm()"
+          >
+            Limpar
           </button>
-          <button 
-            type="button"
-            class="tab-button"
-            [class.active]="activeTab === 'lateral'"
-            (click)="setActiveTab('lateral')">
-            Menu Lateral
-          </button>
-          <button 
-            type="button"
-            class="tab-button"
-            [class.active]="activeTab === 'central'"
-            (click)="setActiveTab('central')">
-            Menu Central
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="!isFormValid()"
+          >
+            Adicionar Item
           </button>
         </div>
-      </div>
-
-      <div class="tab-content" [class.active]="activeTab === 'top'">
-        <div class="menu-section">
-        
-        </div>
-      </div>
-
-      <div class="tab-content" [class.active]="activeTab === 'lateral'">
-        <div class="menu-section">
-          <h3>Configuração do Menu Lateral</h3>
-          <p>Configure os itens do menu lateral do site</p>
-          <!-- Conteúdo específico do menu lateral -->
-        </div>
-      </div>
-
-      <div class="tab-content" [class.active]="activeTab === 'central'">
-        <div class="menu-section">
-          <h3>Configuração do Menu Central</h3>
-          <p>Configure os itens do menu central do site</p>
-          <!-- Conteúdo específico do menu central -->
-        </div>
-      </div>
+      </form>
     </div>
   </div>
 </div>
