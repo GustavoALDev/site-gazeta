@@ -3,6 +3,9 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateNewsDto } from './dto/create-news.dto';
 import { UpdateNewsDto } from './dto/update-news.dto';
 import { NewsResponseDto } from './dto/news-response.dto';
+import { UpdateNewsStatusDto } from './dto/update-news-status.dto';
+import { NewsQueryDto } from './dto/news-query.dto';
+import { NewsStatus } from './dto/news-status.enum';
 
 @Injectable()
 export class NewsService {
@@ -40,6 +43,7 @@ export class NewsService {
       const news = await this.prisma.news.create({
         data: {
           ...newsData,
+          status: createNewsDto.status || NewsStatus.ACTIVE,
           authorId,
           newsCategories: {
             create: categoryId.map(catId => ({ categoryId: catId }))
@@ -78,8 +82,28 @@ export class NewsService {
     }
   }
 
-  async findAll(): Promise<NewsResponseDto[]> {
+  async findAll(query?: NewsQueryDto): Promise<NewsResponseDto[]> {
+    const whereCondition: any = {};
+    
+    // Se não incluir trash, filtrar apenas ACTIVE e INACTIVE
+    if (!query?.includeTrash) {
+      whereCondition.status = {
+        in: [NewsStatus.ACTIVE, NewsStatus.INACTIVE]
+      };
+    }
+    
+    // Se um status específico foi fornecido, usar ele
+    if (query?.status) {
+      whereCondition.status = query.status;
+    }
+    
+    // Se nenhum filtro foi aplicado, mostrar apenas ACTIVE por padrão
+    if (!query?.status && !query?.includeTrash) {
+      whereCondition.status = NewsStatus.ACTIVE;
+    }
+
     const news = await this.prisma.news.findMany({
+      where: whereCondition,
       include: {
         newsCategories: {
           include: {
@@ -250,6 +274,88 @@ export class NewsService {
 
     if (!news) {
       throw new NotFoundException('Notícia não encontrada');
+    }
+
+    await this.prisma.news.delete({
+      where: { id }
+    });
+  }
+
+  async updateStatus(id: number, updateStatusDto: UpdateNewsStatusDto): Promise<NewsResponseDto> {
+    const news = await this.prisma.news.findFirst({
+      where: { id }
+    });
+
+    if (!news) {
+      throw new NotFoundException('Notícia não encontrada');
+    }
+
+    const updatedNews = await this.prisma.news.update({
+      where: { id },
+      data: { status: updateStatusDto.status },
+      include: {
+        newsCategories: {
+          include: {
+            category: true
+          }
+        },
+        mediaNews: true,
+        videoNews: true
+      }
+    });
+
+    return this.formatNewsResponse(updatedNews);
+  }
+
+  async activate(id: number): Promise<NewsResponseDto> {
+    return this.updateStatus(id, { status: NewsStatus.ACTIVE });
+  }
+
+  async deactivate(id: number): Promise<NewsResponseDto> {
+    return this.updateStatus(id, { status: NewsStatus.INACTIVE });
+  }
+
+  async moveToTrash(id: number): Promise<NewsResponseDto> {
+    return this.updateStatus(id, { status: NewsStatus.TRASH });
+  }
+
+  async restore(id: number): Promise<NewsResponseDto> {
+    const news = await this.prisma.news.findFirst({
+      where: { id, status: NewsStatus.TRASH }
+    });
+
+    if (!news) {
+      throw new NotFoundException('Notícia não encontrada no lixo');
+    }
+
+    return this.updateStatus(id, { status: NewsStatus.ACTIVE });
+  }
+
+  async findTrash(): Promise<NewsResponseDto[]> {
+    const news = await this.prisma.news.findMany({
+      where: { status: NewsStatus.TRASH },
+      include: {
+        newsCategories: {
+          include: {
+            category: true
+          }
+        },
+        mediaNews: true,
+        videoNews: true
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    return news.map(this.formatNewsResponse);
+  }
+
+  async permanentDelete(id: number): Promise<void> {
+    const news = await this.prisma.news.findFirst({
+      where: { id, status: NewsStatus.TRASH }
+    });
+
+    if (!news) {
+      throw new NotFoundException('Notícia não encontrada no lixo');
     }
 
     await this.prisma.news.delete({

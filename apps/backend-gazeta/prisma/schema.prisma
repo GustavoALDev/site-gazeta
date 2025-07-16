@@ -44,7 +44,7 @@ model News {
   author         String         @db.VarChar(200)
   published      String         @db.VarChar(50) @default("false")
   views          Int            @default(0)
-  status         String         @db.VarChar(50)
+  status         String         @db.VarChar(50) @default("ACTIVE")
   validity       String?        @db.VarChar(50)
   slug           String         @unique @db.VarChar(255)
   isEmphasis     Boolean        @default(false) @map("is_emphasis")

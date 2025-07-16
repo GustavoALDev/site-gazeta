@@ -12,19 +12,23 @@ import {
   HttpStatus,
   ConflictException,
   NotFoundException,
-  ParseIntPipe
+  ParseIntPipe,
+  Query
 } from '@nestjs/common';
 import { 
   ApiTags, 
   ApiOperation, 
   ApiResponse, 
   ApiBearerAuth,
-  ApiParam 
+  ApiParam,
+  ApiQuery 
 } from '@nestjs/swagger';
 import { NewsService } from './news.service';
 import { CreateNewsDto } from './dto/create-news.dto';
 import { UpdateNewsDto } from './dto/update-news.dto';
 import { NewsResponseDto } from './dto/news-response.dto';
+import { UpdateNewsStatusDto } from './dto/update-news-status.dto';
+import { NewsQueryDto } from './dto/news-query.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('Notícias')
@@ -76,16 +80,56 @@ export class NewsController {
   @Get()
   @ApiOperation({ 
     summary: 'Listar todas as notícias', 
-    description: 'Endpoint para obter todas as notícias com suas mídias e vídeos' 
+    description: 'Endpoint para obter todas as notícias com suas mídias e vídeos. Por padrão, retorna apenas notícias ativas.' 
+  })
+  @ApiQuery({ 
+    name: 'status', 
+    enum: ['ACTIVE', 'INACTIVE', 'TRASH'], 
+    required: false, 
+    description: 'Filtrar por status específico' 
+  })
+  @ApiQuery({ 
+    name: 'includeTrash', 
+    type: 'boolean', 
+    required: false, 
+    description: 'Incluir itens do lixo na consulta' 
   })
   @ApiResponse({ 
     status: 200, 
     description: 'Lista de notícias com mídias e vídeos',
     type: [NewsResponseDto]
   })
-  async findAll(): Promise<NewsResponseDto[]> {
+  async findAll(@Query() query: NewsQueryDto): Promise<NewsResponseDto[]> {
     try {
-      return await this.newsService.findAll();
+      return await this.newsService.findAll(query);
+    } catch (error) {
+      throw new HttpException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Erro no servidor, tente novamente mais tarde',
+        error: 'Internal Server Error'
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Get('trash')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ 
+    summary: 'Listar notícias no lixo', 
+    description: 'Endpoint para obter todas as notícias que estão no lixo' 
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Lista de notícias no lixo',
+    type: [NewsResponseDto]
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: 'Token inválido ou não fornecido' 
+  })
+  async findTrash(): Promise<NewsResponseDto[]> {
+    try {
+      return await this.newsService.findTrash();
     } catch (error) {
       throw new HttpException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -217,6 +261,214 @@ export class NewsController {
     }
   }
 
+  @Patch(':id/status')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ 
+    summary: 'Atualizar status da notícia', 
+    description: 'Endpoint para alterar o status de uma notícia (ACTIVE, INACTIVE, TRASH)' 
+  })
+  @ApiParam({ 
+    name: 'id', 
+    description: 'ID da notícia', 
+    type: 'number',
+    example: 1
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Status da notícia atualizado com sucesso',
+    type: NewsResponseDto
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: 'Token inválido ou não fornecido' 
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Notícia não encontrada' 
+  })
+  async updateStatus(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateStatusDto: UpdateNewsStatusDto
+  ): Promise<NewsResponseDto> {
+    try {
+      return await this.newsService.updateStatus(id, updateStatusDto);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new HttpException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Erro no servidor, tente novamente mais tarde',
+        error: 'Internal Server Error'
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Patch(':id/activate')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ 
+    summary: 'Ativar notícia', 
+    description: 'Endpoint para ativar uma notícia (status = ACTIVE)' 
+  })
+  @ApiParam({ 
+    name: 'id', 
+    description: 'ID da notícia', 
+    type: 'number',
+    example: 1
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Notícia ativada com sucesso',
+    type: NewsResponseDto
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: 'Token inválido ou não fornecido' 
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Notícia não encontrada' 
+  })
+  async activate(@Param('id', ParseIntPipe) id: number): Promise<NewsResponseDto> {
+    try {
+      return await this.newsService.activate(id);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new HttpException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Erro no servidor, tente novamente mais tarde',
+        error: 'Internal Server Error'
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Patch(':id/deactivate')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ 
+    summary: 'Desativar notícia', 
+    description: 'Endpoint para desativar uma notícia (status = INACTIVE)' 
+  })
+  @ApiParam({ 
+    name: 'id', 
+    description: 'ID da notícia', 
+    type: 'number',
+    example: 1
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Notícia desativada com sucesso',
+    type: NewsResponseDto
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: 'Token inválido ou não fornecido' 
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Notícia não encontrada' 
+  })
+  async deactivate(@Param('id', ParseIntPipe) id: number): Promise<NewsResponseDto> {
+    try {
+      return await this.newsService.deactivate(id);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new HttpException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Erro no servidor, tente novamente mais tarde',
+        error: 'Internal Server Error'
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Patch(':id/trash')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ 
+    summary: 'Mover notícia para o lixo', 
+    description: 'Endpoint para mover uma notícia para o lixo (status = TRASH)' 
+  })
+  @ApiParam({ 
+    name: 'id', 
+    description: 'ID da notícia', 
+    type: 'number',
+    example: 1
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Notícia movida para o lixo com sucesso',
+    type: NewsResponseDto
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: 'Token inválido ou não fornecido' 
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Notícia não encontrada' 
+  })
+  async moveToTrash(@Param('id', ParseIntPipe) id: number): Promise<NewsResponseDto> {
+    try {
+      return await this.newsService.moveToTrash(id);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new HttpException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Erro no servidor, tente novamente mais tarde',
+        error: 'Internal Server Error'
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Patch(':id/restore')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ 
+    summary: 'Restaurar notícia do lixo', 
+    description: 'Endpoint para restaurar uma notícia do lixo (status = ACTIVE)' 
+  })
+  @ApiParam({ 
+    name: 'id', 
+    description: 'ID da notícia', 
+    type: 'number',
+    example: 1
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Notícia restaurada com sucesso',
+    type: NewsResponseDto
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: 'Token inválido ou não fornecido' 
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Notícia não encontrada no lixo' 
+  })
+  async restore(@Param('id', ParseIntPipe) id: number): Promise<NewsResponseDto> {
+    try {
+      return await this.newsService.restore(id);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new HttpException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Erro no servidor, tente novamente mais tarde',
+        error: 'Internal Server Error'
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -246,6 +498,47 @@ export class NewsController {
     try {
       await this.newsService.remove(id);
       return { message: 'Notícia excluída com sucesso' };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new HttpException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Erro no servidor, tente novamente mais tarde',
+        error: 'Internal Server Error'
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Delete(':id/permanent')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ 
+    summary: 'Excluir permanentemente do lixo', 
+    description: 'Endpoint para excluir permanentemente uma notícia que está no lixo' 
+  })
+  @ApiParam({ 
+    name: 'id', 
+    description: 'ID da notícia', 
+    type: 'number',
+    example: 1
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Notícia excluída permanentemente com sucesso' 
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: 'Token inválido ou não fornecido' 
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Notícia não encontrada no lixo' 
+  })
+  async permanentDelete(@Param('id', ParseIntPipe) id: number): Promise<{ message: string }> {
+    try {
+      await this.newsService.permanentDelete(id);
+      return { message: 'Notícia excluída permanentemente com sucesso' };
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;

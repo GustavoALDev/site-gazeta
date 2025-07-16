@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsArray, IsBoolean, IsOptional, IsObject, MinLength, MaxLength, ValidateNested, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsString, IsArray, IsBoolean, IsOptional, IsObject, MinLength, MaxLength, ValidateNested, IsNumber, IsEnum } from 'class-validator';
 import { Type } from 'class-transformer';
+import { NewsStatus } from './news-status.enum';
 
 export class CreateNewsMediaDto {
   @ApiProperty({ description: 'ID da mídia (opcional)', example: 1, required: false })
@@ -135,11 +136,13 @@ export class CreateNewsDto {
 
   @ApiProperty({
     description: 'Status da notícia',
-    example: 'active'
+    enum: NewsStatus,
+    example: NewsStatus.ACTIVE,
+    default: NewsStatus.ACTIVE
   })
-  @IsNotEmpty({ message: 'Status é obrigatório' })
-  @IsString({ message: 'Status deve ser uma string' })
-  status: string;
+  @IsOptional()
+  @IsEnum(NewsStatus, { message: 'Status deve ser ACTIVE, INACTIVE ou TRASH' })
+  status?: NewsStatus;
 
   @ApiProperty({
     description: 'Validade da notícia (opcional)',
