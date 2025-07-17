@@ -16,6 +16,10 @@ export class ApiService {
   }
 
   getCategories(){
+    return this.http.get<Category[]>(`${this.apiUrl}/categories/all`);
+  }
+
+  getActiveCategories(){
     return this.http.get<Category[]>(`${this.apiUrl}/categories`);
   }
   

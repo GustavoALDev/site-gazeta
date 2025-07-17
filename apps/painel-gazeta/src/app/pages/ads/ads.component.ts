@@ -167,8 +167,10 @@ export class AdsComponent implements OnInit {
               alert('Anúncio atualizado com sucesso');
             },
             error: (err) => {
+              
               console.log(err.error.message);
               alert('Erro ao atualizar anúncio. ' + err.error.message);
+              throw err
             },
           });
        
