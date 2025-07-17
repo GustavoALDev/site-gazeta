@@ -223,4 +223,32 @@ export class CategoriesController {
       }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
+  @Delete(':id/permanent')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ 
+    summary: 'Excluir categoria permanentemente', 
+    description: 'Endpoint para excluir permanentemente uma categoria que já foi desativada (soft delete). Só funciona em categorias inativas e que não estão sendo usadas.' 
+  })
+  @ApiParam({ name: 'id', description: 'ID da categoria', type: 'number' })
+  @ApiResponse({ status: 200, description: 'Categoria excluída permanentemente com sucesso' })
+  @ApiResponse({ status: 401, description: 'Token inválido ou não fornecido' })
+  @ApiResponse({ status: 404, description: 'Categoria não encontrada ou ainda está ativa' })
+  @ApiResponse({ status: 409, description: 'Categoria está sendo usada em notícias ou configurações' })
+  async permanentDelete(@Param('id', ParseIntPipe) id: number): Promise<{ message: string }> {
+    try {
+      await this.categoriesService.permanentDelete(id);
+      return { message: 'Categoria excluída permanentemente com sucesso' };
+    } catch (error) {
+      if (error instanceof NotFoundException || error instanceof ConflictException) {
+        throw error;
+      }
+      throw new HttpException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Erro no servidor, tente novamente mais tarde',
+        error: 'Internal Server Error'
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
 } 

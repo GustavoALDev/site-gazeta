@@ -138,4 +138,37 @@ export class CategoriesService {
       data: { isActive: false }
     });
   }
+
+  async permanentDelete(id: number): Promise<void> {
+    const category = await this.prisma.category.findFirst({
+      where: { id, isActive: false } // Só permite deletar categorias já inativas
+    });
+
+    if (!category) {
+      throw new NotFoundException('Categoria não encontrada ou categoria ainda está ativa. Desative a categoria primeiro antes de deletá-la permanentemente.');
+    }
+
+    // Verificar se a categoria está sendo usada em notícias
+    const newsCount = await this.prisma.newsCategory.count({
+      where: { categoryId: id }
+    });
+
+    if (newsCount > 0) {
+      throw new ConflictException('Não é possível deletar esta categoria pois ela está sendo usada em notícias. Remova a categoria das notícias primeiro.');
+    }
+
+    // Verificar se a categoria está sendo usada em configurações de home
+    const homeConfigCount = await this.prisma.homeCategoryConfig.count({
+      where: { categoryId: id }
+    });
+
+    if (homeConfigCount > 0) {
+      throw new ConflictException('Não é possível deletar esta categoria pois ela está sendo usada em configurações da home. Remova a categoria das configurações primeiro.');
+    }
+
+    // Deleção permanente
+    await this.prisma.category.delete({
+      where: { id }
+    });
+  }
 } 
