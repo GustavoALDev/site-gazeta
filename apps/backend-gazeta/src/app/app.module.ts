@@ -11,6 +11,7 @@ import { NewsVideoModule } from '../news-video/news-video.module';
 import { AdvertisementModule } from '../advertisement/advertisement.module';
 import { HomeConfigModule } from '../home-config/home-config.module';
 import { MenuModule } from '../menu/menu.module';
+import { YoutubePlaylistModule } from '../youtube-playlist/youtube-playlist.module';
 
 @Module({
   imports: [
@@ -26,7 +27,8 @@ import { MenuModule } from '../menu/menu.module';
     NewsVideoModule,
     AdvertisementModule,
     HomeConfigModule,
-    MenuModule
+    MenuModule,
+    YoutubePlaylistModule
   ],
   controllers: [AppController],
   providers: [AppService],

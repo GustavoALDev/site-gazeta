@@ -18,6 +18,7 @@ model User {
   news                 News[]
   advertisements       Advertisement[]
   homeCategoryConfigs  HomeCategoryConfig[]
+  youtubePlaylist      YoutubePlaylist[]
 
   @@map("users")
 }
@@ -164,4 +165,27 @@ model Menu {
   @@unique([order], map: "menu_order_unique")
   @@index([order, isActive], map: "menu_order_active_idx")
   @@map("menus")
+}
+
+model YoutubePlaylist {
+  id            Int      @id @default(autoincrement())
+  title         String   @db.VarChar(255)
+  description   String?  @db.Text
+  youtubeUrl    String   @db.VarChar(500) @map("youtube_url")
+  thumbnail     String   @db.VarChar(500)
+  duration      String?  @db.VarChar(20) // formato HH:MM:SS ou MM:SS
+  videoId       String   @db.VarChar(50) @map("video_id") // ID do vídeo do YouTube
+  displayOrder  Int      @map("display_order") // ordem de exibição
+  isActive      Boolean  @default(true) @map("is_active")
+  isEmphasis    Boolean  @default(false) @map("is_emphasis") // destaque na playlist
+  publishedAt   DateTime? @map("published_at") // data de publicação do vídeo no YouTube
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  createdBy     Int      @map("created_by")
+  creator       User     @relation(fields: [createdBy], references: [id])
+
+  @@unique([displayOrder], map: "youtube_playlist_order_unique")
+  @@index([displayOrder, isActive], map: "youtube_playlist_order_active_idx")
+  @@index([createdBy], map: "youtube_playlist_created_by_fkey")
+  @@map("youtube_playlists")
 }
