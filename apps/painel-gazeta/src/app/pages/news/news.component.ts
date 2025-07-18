@@ -10,8 +10,9 @@ import {
 import { NewsMidiaComponent } from './news-midia/news-midia.component';
 import { NewsMedia, NewsVideo, Category, News } from '@site-gazeta/models';
 import { FormValidatorComponent, FormValidatorService } from '@site-gazeta/form-validator';
-import { concatMap,  from, Subject,   takeUntil, toArray } from 'rxjs';
+import { concatMap,  first,  firstValueFrom,  from, Subject,   takeUntil, toArray } from 'rxjs';
 import { ApiService } from '../../core/services/api.service';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-news',
@@ -20,7 +21,8 @@ import { ApiService } from '../../core/services/api.service';
     ReactiveFormsModule,
     FormsModule,
     NewsMidiaComponent,
-    FormValidatorComponent
+    FormValidatorComponent,
+    RouterModule
 ],
   providers: [FormValidatorService],
   templateUrl: './news.component.html',
@@ -30,16 +32,17 @@ export class NewsComponent implements OnInit, OnDestroy {
   fb = inject(NonNullableFormBuilder);
   formValidator = inject(FormValidatorService);
   apiService = inject(ApiService);
+  activeRouter = inject(ActivatedRoute)
   activeTab: 'info' | 'content' | 'media' = 'info';
   sidebarOpen = signal<boolean>(true);
   destroy$ = new Subject<void>();
   urlDisplay = signal<string>('');
   displayError = signal<{ [key: string]: string } | null>({});
   availableCategories = signal<Category[]>([]);
-
   selectedCategories = signal<Category[]>([]);
   categoryDropdownOpen = signal<boolean>(false);
-
+  isEdit = signal<boolean>(false)
+  exportEditNewsMedia = signal<{newsMedia:NewsMedia[], newsVideos:NewsVideo[]}| null>(null)
   form = this.fb.group({
     categoryId: [[] as number[], [Validators.required]],
     title: ['', [Validators.required]],
@@ -53,6 +56,7 @@ export class NewsComponent implements OnInit, OnDestroy {
     isEmphasis: [false],
     validity: [null],
     status: ['ATIVO'],
+    
   });
 
   errorMessage = {
@@ -75,19 +79,18 @@ export class NewsComponent implements OnInit, OnDestroy {
   };
 
   statusOptions = [
-    { value: 'active', label: 'ATIVO' },
-    { value: 'inactive', label: 'INATIVA' },
-    { value: 'trash', label: 'Lixeira' },
+    { value: 'active', label: 'Ativo' },
+    { value: 'inactive', label: 'Inativo' },
   ];
 
-  ngOnInit(): void {
-    
+  async ngOnInit() {
+    await this.checkEdit()
     this.formValidator.InitValidation(this.form, this.errorMessage)
     .pipe(takeUntil(this.destroy$))
     .subscribe((errorMessages) => {
       this.displayError.set(errorMessages);
     });
-    this.apiService.getCategories().subscribe((categories) => {
+    this.apiService.getActiveCategories().subscribe((categories) => {
       this.availableCategories.set(categories as Category[]);
     });
     this.form.get('slug')?.valueChanges
@@ -97,6 +100,26 @@ export class NewsComponent implements OnInit, OnDestroy {
         this.formatedSlug(value);
       }
     });
+  }
+  async checkEdit(){
+   return firstValueFrom(this.activeRouter.params)
+    .then((param)=>{
+      const newsId = param['id']
+      if(newsId){
+        console.log(newsId)
+        this.isEdit.set(true)
+        firstValueFrom(this.apiService.getNewsById(newsId))
+        .then((resp)=>{
+          const news:News = resp as News
+          this.form.patchValue(resp)
+          this.exportEditNewsMedia.set({newsMedia:news.mediaNews,newsVideos:news.videoNews})
+        })
+        console.log(this.isEdit())
+      }
+    })
+    .catch(error=> {
+      throw error
+    })
   }
 
   onSubmit() {

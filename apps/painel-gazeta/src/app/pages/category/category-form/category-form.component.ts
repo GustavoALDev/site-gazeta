@@ -1,3 +1,4 @@
+import { tap } from 'rxjs';
 import { Component,  inject, input, output, signal } from '@angular/core';
 
 import { NonNullableFormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
@@ -56,16 +57,23 @@ export class CategoryFormComponent {
         name: formValue.name as string,
         description: formValue.description as string,
         slug: this.generateSlug(formValue.name as string),
+        isActive:formValue.isActive
       };
 
       if (this.isEditing()) {
         categoryData.id = this.editingCategory()?.id as number;
         
-
+        console.log('chamou')
         this.apiService.editCategory(categoryData.id, categoryData)
+        .pipe(
+          tap(()=> console.log('passou aqui'))
+        )
         .subscribe({
           next: (res) => {
             this.categorySubmit.emit(res as Category);
+          },
+          error:(error)=>{
+            throw error
           }
         });
       }else{

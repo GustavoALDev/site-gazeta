@@ -1,5 +1,11 @@
 <div class="news-container">
   <div class="news-card">
+    @if (isEdit()) {
+      <button class="back-btn" [routerLink]="['/newsList']">
+        <span class="material-icons">arrow_back</span>
+        Voltar
+      </button>
+    }
     <div class="news-header">
       <h2>Gerenciar Notícias</h2>
       <p>Crie e edite suas notícias</p>
@@ -161,7 +167,10 @@
                   </div>
 
                   <div class="tab-content" [class.active]="activeTab === 'media'">
-                    <app-news-midia (formValue)="onFormValue($event)"></app-news-midia>
+                    <app-news-midia (formValue)="onFormValue($event)" 
+                    [newsMedia]="this.exportEditNewsMedia()?.newsMedia"
+                    [newsVideo]="this.exportEditNewsMedia()?.newsVideos"
+                    ></app-news-midia>
                   </div>
                 </div>
 

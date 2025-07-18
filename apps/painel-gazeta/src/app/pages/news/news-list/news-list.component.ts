@@ -3,11 +3,12 @@ import { ApiService } from '../../../core/services/api.service';
 import { Category, News } from '@site-gazeta/models';
 import { CommonModule } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
+import { RouterModule } from '@angular/router';
 
 
 @Component({
   selector: 'app-news-list',
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './news-list.component.html',
   styleUrl: './news-list.component.scss',
 })
@@ -79,7 +80,7 @@ export class NewsListComponent implements OnInit {
         throw error;
       }
     });
-  };;
+  };
 
   getCategories(){
     firstValueFrom(this.apiService.getCategories())

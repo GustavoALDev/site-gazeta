@@ -66,7 +66,7 @@
           </div>
           <div class="news-actions">
             <button class="btn-primary">Ir para página</button>
-            <button class="btn-secondary">Editar</button>
+            <button class="btn-secondary" [routerLink]="['/news',news.id]">Editar</button>
             <button class="btn-danger" (click)="deleteNews(news.id)">Excluir</button>
           </div>
         </div>
