@@ -29,11 +29,12 @@ export class CreateYoutubePlaylistDto {
 
   @ApiProperty({ 
     description: 'URL da thumbnail do vídeo', 
-    example: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg' 
+    example: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg',
+    required: false
   })
-  @IsNotEmpty({ message: 'Thumbnail é obrigatória' })
+  @IsOptional()
   @IsString({ message: 'Thumbnail deve ser uma string' })
-  thumbnail: string;
+  thumbnail?: string;
 
   @ApiProperty({ 
     description: 'Duração do vídeo (formato MM:SS ou HH:MM:SS)', 

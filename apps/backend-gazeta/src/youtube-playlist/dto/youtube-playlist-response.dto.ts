@@ -22,9 +22,10 @@ export class YoutubePlaylistResponseDto {
 
   @ApiProperty({ 
     description: 'URL da thumbnail do vídeo', 
-    example: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg' 
+    example: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg',
+    nullable: true
   })
-  thumbnail: string;
+  thumbnail: string | null;
 
   @ApiProperty({ 
     description: 'Duração do vídeo', 
