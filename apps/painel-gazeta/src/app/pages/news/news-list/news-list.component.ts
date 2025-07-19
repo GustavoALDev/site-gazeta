@@ -71,10 +71,12 @@ export class NewsListComponent implements OnInit {
   }
 
   getNews(){
+    console.log('getNews')
     this.apiService.getNews()
     .subscribe({
       next:(news)=>{
-        this.news.set(news); 
+        console.log(news)
+        this.news.set(news);
       },
       error:(error)=>{
         throw error;
@@ -86,7 +88,7 @@ export class NewsListComponent implements OnInit {
     firstValueFrom(this.apiService.getCategories())
     .then((categories)=>{
       console.log(categories)
-      this.categories.set(categories) 
+      this.categories.set(categories)
     })
     .catch((error)=> {
       throw error
@@ -114,9 +116,9 @@ export class NewsListComponent implements OnInit {
       .catch((error)=>{
         throw error
       });
-      
+
     }
-    
+
   }
 
   // Métodos para atualizar filtros

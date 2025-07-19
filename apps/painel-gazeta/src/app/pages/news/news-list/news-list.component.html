@@ -50,7 +50,7 @@
           <h3 class="news-title">{{news.title}}</h3>
           <p class="news-subtitle">{{news.subtitle}}</p>
           <div class="news-meta">
-            <span class="news-author">Por: {{news.author}}</span>
+            <span class="news-author"><b>Por:</b> {{news.author}}</span>
             <span class="news-date">{{news.published | date:'dd/MM/yyyy - HH:mm'}}</span>
             <span class="news-categories">
               @for (categoryId of news.categoryId; track categoryId) {

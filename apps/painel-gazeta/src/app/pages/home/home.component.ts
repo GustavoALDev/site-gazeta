@@ -22,7 +22,7 @@ export class HomeComponent {
       { name: 'Criar Notícia', router: 'news' },
       { name:'Lista de Notícias', router: 'newsList'}
     ]},
-    // { name: 'Videos', router: 'videos'},
+    { name: 'Videos', router: 'videos'},
     { name: 'Anúncios', router: 'ads'},
     // { name: 'Usuários', router: 'users'},
     // { name: 'Configurações', router: 'config' },

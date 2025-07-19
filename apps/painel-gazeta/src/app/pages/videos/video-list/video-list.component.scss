@@ -1,0 +1,215 @@
+@use '../../../../styles/variables' as vars;
+
+.video-list-container {
+  width: 100%;
+  padding: 1rem 1rem;
+  background: whitesmoke;
+  min-height: 100vh;
+}
+
+.video-list-filters {
+  @include vars.flex(flex-start, center);
+  gap: var(--space-md);
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  padding: 1rem 2rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 180px;
+
+    label {
+      font-size: 0.95rem;
+      color: var(--secondary);
+      font-weight: 600;
+      margin-bottom: 0.15rem;
+    }
+  }
+
+  .search-group {
+    min-width: 260px;
+    flex: 1;
+  }
+
+  .filter-input {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    transition: border-color var(--transition);
+
+    &:focus {
+      border-color: var(--accent-blue);
+      outline: none;
+    }
+  }
+}
+
+.video-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.video-card {
+  @include vars.card;
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  padding: 1.5rem;
+  animation: slideUp 0.6s ease-out;
+  background: white;
+
+  .video-card-img {
+    position: relative;
+    flex-shrink: 0;
+    width: 280px;
+    height: 157px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--light);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+
+    youtube-player {
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+  }
+
+  .video-card-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+
+    .video-title {
+      color: var(--accent-blue);
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .video-description {
+      color: var(--text);
+      font-size: 0.95rem;
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    .video-meta {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin: 0.5rem 0;
+
+      .video-date {
+        font-weight: 500;
+      }
+
+      .video-status, .video-emphasis {
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-weight: 500;
+      }
+
+      .video-status {
+        background: var(--light);
+        color: var(--text-muted);
+
+        &.active {
+          background: rgba(40, 167, 69, 0.1);
+          color: var(--success);
+        }
+      }
+
+      .video-emphasis {
+        background: var(--light);
+        color: var(--text-muted);
+
+        &.emphasis {
+          background: rgba(255, 193, 7, 0.1);
+          color: var(--warning);
+        }
+      }
+    }
+
+    .video-actions {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+
+      .btn-primary {
+        @include vars.btn(var(--accent-blue));
+      }
+
+      .btn-secondary {
+        @include vars.btn(var(--light));
+        color: var(--accent-blue);
+        border: 1.5px solid var(--accent-blue);
+
+        &:hover {
+          background: var(--accent-blue);
+          color: white;
+        }
+      }
+
+      .btn-danger {
+        @include vars.btn(var(--danger));
+      }
+
+      button, a {
+        padding: 0.5rem 1rem;
+        font-size: 0.95rem;
+        font-weight: 600;
+        border-radius: var(--radius);
+        text-decoration: none;
+        text-align: center;
+        transition: all var(--transition);
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+      }
+    }
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsividade
+@include vars.mobile {
+  .video-list-filters {
+    flex-direction: column;
+    gap: var(--space-sm);
+    padding: 1rem;
+  }
+
+  .video-card {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 1rem;
+
+    .video-card-img {
+      width: 100%;
+      height: 200px;
+    }
+  }
+}

@@ -1,0 +1,52 @@
+<div class="video-list-container">
+  <div class="video-list-filters">
+    <div class="filter-group">
+      <label for="filter-date">Data de publicação</label>
+      <input id="filter-date" type="date" class="filter-input"
+        [value]="filterDate()" (input)="setFilterDate($any($event.target).value)" />
+    </div>
+    <div class="filter-group">
+      <label for="filter-order">Ordem</label>
+      <select id="filter-order" class="filter-input"
+        [value]="filterOrder()" (change)="setFilterOrder($any($event.target).value)">
+        <option value="desc">Mais recente</option>
+        <option value="asc">Mais antigo</option>
+      </select>
+    </div>
+    <div class="filter-group search-group">
+      <label for="filter-search">Pesquisar</label>
+      <input id="filter-search" type="text" class="filter-input search-input"
+        placeholder="Pesquisar vídeo..." [value]="filterSearch()"
+        (input)="setFilterSearch($any($event.target).value)" />
+    </div>
+  </div>
+
+  <div class="video-list">
+    @for(video of filteredVideos(); track video.id) {
+      <div class="video-card">
+        <div class="video-card-img">
+          <youtube-player [videoId]="video.videoId" width="100%" height="100%" ></youtube-player>
+
+        </div>
+        <div class="video-card-content">
+          <h3 class="video-title">{{video.title}}</h3>
+          <p class="video-description">{{video.description}}</p>
+          <div class="video-meta">
+            <span class="video-date">{{video.publishedAt | date:'dd/MM/yyyy - HH:mm'}}</span>
+            <span class="video-status" [class.active]="video.isActive">
+              {{video.isActive ? 'Ativo' : 'Inativo'}}
+            </span>
+            <span class="video-emphasis" [class.emphasis]="video.isEmphasis">
+              {{video.isEmphasis ? 'Em destaque' : 'Sem destaque'}}
+            </span>
+          </div>
+          <div class="video-actions">
+            <a [href]="video.youtubeUrl" target="_blank" class="btn-primary">Ver no YouTube</a>
+            <button class="btn-secondary" (click)="editVideo(video)">Editar</button>
+            <button class="btn-danger" (click)="deleteVideo(video.id!)">Excluir</button>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>

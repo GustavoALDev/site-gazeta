@@ -79,8 +79,8 @@ export class NewsComponent implements OnInit, OnDestroy {
   };
 
   statusOptions = [
-    { value: 'active', label: 'Ativo' },
-    { value: 'inactive', label: 'Inativo' },
+    { value: 'ACTIVE', label: 'Ativo' },
+    { value: 'INACTIVE', label: 'Inativo' },
   ];
 
   async ngOnInit() {

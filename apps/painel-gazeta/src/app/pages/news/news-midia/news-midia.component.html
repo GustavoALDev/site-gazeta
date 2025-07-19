@@ -5,7 +5,7 @@
       <div class="image-preview-container">
         <div class="image-preview" [class.has-image]="featuredImage()">
           @if (featuredImage(); as featured) {
-            <img [src]="featured.isNew ? featured.preview : featured.imgSize?.medium"
+            <img [src]="isEdit() ? featured.imgSize?.medium :featured.preview"
                  alt="Imagem de destaque selecionada" />
           } @else {
             <div class="image-placeholder">
@@ -96,7 +96,7 @@
               </div>
 
               <div class="photo-preview">
-                <img [src]="media.isNew ? media.preview : media.imgSize?.medium"
+                <img [src]="isEdit()? media.imgSize?.medium: media.preview "
                      [alt]="'Foto ' + ($index + 1)" />
                 
                 <button type="button" class="remove-media-btn top-left" (click)="removeMedia($index, $event)">

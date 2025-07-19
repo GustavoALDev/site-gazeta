@@ -1,15 +1,15 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../env/env';
-import { Ads, Category, Menu, News, NewsMedia } from '@site-gazeta/models';
+import { Ads, Category, Menu, News, NewsMedia, YoutubeVideo } from '@site-gazeta/models';
 import { firstValueFrom, tap } from 'rxjs';
 
-@Injectable({ 
+@Injectable({
   providedIn: 'root'
 })
 export class ApiService {
   private http = inject(HttpClient);
-  private apiUrl = environment.apiUrl;  
+  private apiUrl = environment.apiUrl;
 
   setCategory(body: Category){
     return this.http.post(`${this.apiUrl}/categories`, body);
@@ -22,11 +22,11 @@ export class ApiService {
   getActiveCategories(){
     return this.http.get<Category[]>(`${this.apiUrl}/categories`);
   }
-  
+
   getCategory(id: number){
     return this.http.get(`${this.apiUrl}/categories/${id}`);
   }
-  
+
   editCategory(id: number, body: Category){
     return this.http.patch(`${this.apiUrl}/categories/${id}`, body)
     .pipe(
@@ -37,7 +37,7 @@ export class ApiService {
   }
 
   deleteCategory(id: number){
-    return this.http.delete(`${this.apiUrl}/categories/${id}`);
+    return this.http.delete(`${this.apiUrl}/categories/${id}/permanent`);
   }
 
   setNews(body: News){
@@ -114,5 +114,14 @@ export class ApiService {
 
   deleteMenu(id: number){
     return this.http.delete(`${this.apiUrl}/menu/${id}`);
+  }
+  setVideos(body: YoutubeVideo) {
+    return this.http.post<YoutubeVideo>(`${this.apiUrl}/youtube-playlist`, body);
+  }
+  getVideos() {
+    return this.http.get<YoutubeVideo[]>(`${this.apiUrl}/youtube-playlist/all`);
+  }
+  deleteVideo(id: number) {
+    return this.http.delete<{message:string}>(`${this.apiUrl}/videos/${id}`);
   }
 }
