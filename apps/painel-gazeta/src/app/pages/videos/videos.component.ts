@@ -28,7 +28,9 @@ export class VideosComponent implements OnDestroy {
 
   activeTab = signal<'form' | 'list'>('form');
   displayError = signal<{ [key: string]: string }>({});
-
+  isEdit = signal<boolean>(false);
+  id = signal<number | null>(null);
+  updateList = signal<string | undefined>(undefined);
   form = this.fb.group({
     title: ['', [Validators.required]],
     description: ['', [Validators.required]],
@@ -84,9 +86,30 @@ export class VideosComponent implements OnDestroy {
   setActiveTab(tab: 'form' | 'list') {
     this.activeTab.set(tab);
   }
+  editVideo(video: YoutubeVideo) {
+    this.id.set(video.id as number);
+    this.isEdit.set(true);
+    this.activeTab.set('form');
+    console.log('Editing video:', video);
+    this.form.patchValue(video);
+    this.form.get('publishedAt')?.setValue(video.publishedAt ? new Date(video.publishedAt).toISOString().slice(0, 16) : this.getCurrentDateTime());
+  }
 
   onSubmit() {
     if (this.form.valid) {
+      if(this.isEdit()) {
+        this.apiService.editVideo(this.id() as number, this.form.value as YoutubeVideo).subscribe({
+          next: (response) => {
+            console.log('Video updated successfully:', response);
+            this.onReset();
+            this.activeTab.set('list');
+            this.updateList.set(new Date().toISOString());
+          },
+          error: (error) => {
+            console.error('Error updating video:', error);
+          }
+        });
+      } else {
       const formValue = this.form.value as YoutubeVideo;
       formValue.videoId = this.extractYoutubeId(formValue.youtubeUrl);
       // Implementar lógica de envio
@@ -99,6 +122,7 @@ export class VideosComponent implements OnDestroy {
         }
       });
     }
+    }
   }
 
   onReset() {
@@ -108,7 +132,11 @@ export class VideosComponent implements OnDestroy {
       isEmphasis: false,
       publishedAt: this.getCurrentDateTime()
     });
+    this.isEdit.set(false);
+    this.id.set(null);
   }
+
+
 
   private getCurrentDateTime(): string {
     const now = new Date();

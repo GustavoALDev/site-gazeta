@@ -37,19 +37,19 @@
             <div class="photo-edit-form">
               <div class="form-group">
                 <label for="mediaAuthor">Autor da Foto</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   id="mediaAuthor"
                   [value]="editingMedia().author || ''"
                   (input)="updateEditingAuthor($any($event.target).value)"
                   placeholder="Digite o nome do autor"
                 />
               </div>
-              
+
               <div class="form-group">
                 <label for="mediaDate">Data da Foto</label>
-                <input 
-                  type="date" 
+                <input
+                  type="date"
                   id="mediaDate"
                   [value]="editingMedia().date || ''"
                   (input)="updateEditingDate($any($event.target).value)"
@@ -76,7 +76,7 @@
       <h4>Mídias Adicionadas</h4>
       <div class="media-items-container">
         @for (media of previewMidias(); track $index) {
-          <div 
+          <div
             class="media-item"
             [class.photo]="media.type === 'photo'"
             [class.video]="media.type === 'video'"
@@ -87,7 +87,7 @@
             (keydown.enter)="selectMedia($index)"
           >
             @if (media.type === 'photo') {
-              <div class="featured-star" 
+              <div class="featured-star"
                    [class.active]="media.emphasis"
                    (click)="toggleFeatured($index, $event)"
                    tabindex="0"
@@ -96,13 +96,18 @@
               </div>
 
               <div class="photo-preview">
-                <img [src]="isEdit()? media.imgSize?.medium: media.preview "
-                     [alt]="'Foto ' + ($index + 1)" />
-                
+                @if(media.imgSize){
+                  <img [src]="media.imgSize?.medium"
+                       [alt]="'Foto ' + ($index + 1)" />
+                }@else{
+                  <img [src]="media.preview"
+                       [alt]="'Foto ' + ($index + 1)" />
+                }
+
                 <button type="button" class="remove-media-btn top-left" (click)="removeMedia($index, $event)">
                   <span class="material-icons">delete</span>
                 </button>
-                
+
                 <div class="photo-info">
                   @if (media.author) {
                     <div class="info-item">
@@ -147,8 +152,8 @@
     </div>
   }
 
-  <input 
-    type="file" 
+  <input
+    type="file"
     #photoInput
     accept="image/*"
     multiple

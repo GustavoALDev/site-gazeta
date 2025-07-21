@@ -5,7 +5,7 @@ import { CategoryFormComponent } from './category-form/category-form.component';
 import { CategoryListComponent } from './category-list/category-list.component';
 import { ApiService } from '../../core/services/api.service';
 import { firstValueFrom } from 'rxjs';
-  
+
 @Component({
   selector: 'app-category',
   imports: [CategoryFormComponent, CategoryListComponent],
@@ -17,10 +17,12 @@ export class CategoryComponent implements OnInit {
   editingCategory = signal<Category | null>(null);
   apiService = inject(ApiService);
   onCategorySubmit(categoryData: Category) {
-    if (this.categories().find(c => c.id === categoryData.id)) {
-      this.categories.update(categories => categories.map(c => c.id === categoryData.id ? categoryData : c));
+    if (this.categories().find((c) => c.id === categoryData.id)) {
+      this.categories.update((categories) =>
+        categories.map((c) => (c.id === categoryData.id ? categoryData : c))
+      );
     } else {
-      this.categories.update(categories => [...categories, categoryData]);
+      this.categories.update((categories) => [...categories, categoryData]);
     }
   }
 
@@ -35,17 +37,21 @@ export class CategoryComponent implements OnInit {
   }
 
   onDeleteCategory(category: Category) {
-    firstValueFrom(this.apiService.deleteCategory(category.id as number)).then((res) => {
-      console.log(res);
-      this.categories.update(categories => categories.filter(c => c.id !== category.id));
-    }).catch((err) => {
-      console.error(err);
-    });
-    
-    // Se estava editando a categoria que foi excluída, cancelar edição
-    if (this.editingCategory()?.id === category.id) {
-      this.editingCategory.set(null);
+    if (category.isActive === false) {
+      return firstValueFrom(this.apiService.deleteCategory(category.id as number))
+        .then((res) => {
+          alert('Categoria excluída com sucesso!');
+
+          this.categories.update((categories) =>
+            categories.filter((c) => c.id !== category.id)
+          );
+        })
+        .catch((err) => {
+          throw err;
+        });
     }
+    return alert('A categoria não pode ser excluída porque está ativa!');
+
   }
 
   onCancelEdit() {

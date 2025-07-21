@@ -33,6 +33,7 @@
           <p class="video-description">{{video.description}}</p>
           <div class="video-meta">
             <span class="video-date">{{video.publishedAt | date:'dd/MM/yyyy - HH:mm'}}</span>
+            <span class="video-date">Ordem de exibição: {{video.displayOrder}}º</span>
             <span class="video-status" [class.active]="video.isActive">
               {{video.isActive ? 'Ativo' : 'Inativo'}}
             </span>
@@ -43,7 +44,7 @@
           <div class="video-actions">
             <a [href]="video.youtubeUrl" target="_blank" class="btn-primary">Ver no YouTube</a>
             <button class="btn-secondary" (click)="editVideo(video)">Editar</button>
-            <button class="btn-danger" (click)="deleteVideo(video.id!)">Excluir</button>
+            <button class="btn-danger" (click)="deleteVideo(video.id!, video.isActive)">Excluir</button>
           </div>
         </div>
       </div>

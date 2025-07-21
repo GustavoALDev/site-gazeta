@@ -80,6 +80,7 @@ export class AdsComponent implements OnInit {
     this.isEdit = true;
     ad.startDate = this.formatDate(ad.startDate);
     ad.endDate = this.formatDate(ad.endDate);
+    this.adForm.get('image')?.clearValidators()
     this.adId = ad.id as number;
     this.adForm.patchValue(ad);
     this.setActiveTab('form');
@@ -137,15 +138,12 @@ export class AdsComponent implements OnInit {
   }
 
   onSubmit(): void {
-   
-   
-    
-    if (this.adForm.valid && this.selectedFile) {
+
       console.log(this.adForm.value);
       console.log(this.adForm.value);
       const formData = new FormData();
       const data: any = this.adForm.value;
-  
+
       // Adicionar todos os campos exceto a imagem
       Object.keys(data).forEach((key) => {
         if (key !== 'image' && key !== 'priority') {
@@ -155,9 +153,14 @@ export class AdsComponent implements OnInit {
       formData.forEach((value, key) => {
         console.log(key, value);
       });
-      formData.append('image', this.selectedFile);
-      if (this.isEdit) {
+      if (this.selectedFile) {
         formData.append('image', this.selectedFile);
+      }
+      if (this.isEdit) {
+        formData.forEach((value, key) => {
+          console.log(key, value);
+        });
+        this.activeTab = 'list';
         this.apiService
           .editAds(this.adId, formData)
           .pipe()
@@ -167,14 +170,14 @@ export class AdsComponent implements OnInit {
               alert('Anúncio atualizado com sucesso');
             },
             error: (err) => {
-              
+
               console.log(err.error.message);
               alert('Erro ao atualizar anúncio. ' + err.error.message);
               throw err
             },
           });
-       
-        
+
+
       } else {
         this.apiService
           .setAds(formData)
@@ -189,12 +192,9 @@ export class AdsComponent implements OnInit {
               console.log(err.error.message);
               alert('Erro ao criar anúncio. ' + err.error.message);
             },
-          });    
+          });
       }
-    } else {
-      console.log('Form is invalid or no file selected');
-      this.markFormGroupTouched();
-    }
+
   }
 
   private markFormGroupTouched(): void {

@@ -15,16 +15,16 @@ import { ApiService } from '../../core/services/api.service';
 export class MenuComponent implements OnInit {
   private fb = inject(FormBuilder);
   private apiService = inject(ApiService);
-  // Signals para estado reativo
+
   menuItems = signal<Menu[]>([]);
   categories = signal<Category[]>([]);
   currentFormType = signal<string>('');
-  isFormValid = signal<boolean>(false); // Agora como signal separado
+  isFormValid = signal<boolean>(false); 
 
-  // Form tradicional (não como signal)
+ 
   menuForm!: FormGroup;
 
-  // Constantes
+
   readonly menuTypes = [
     { value: 'internal', label: 'Página' },
     { value: 'category', label: 'Categoria' },

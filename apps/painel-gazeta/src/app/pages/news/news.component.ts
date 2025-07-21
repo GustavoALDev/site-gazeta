@@ -42,6 +42,7 @@ export class NewsComponent implements OnInit, OnDestroy {
   selectedCategories = signal<Category[]>([]);
   categoryDropdownOpen = signal<boolean>(false);
   isEdit = signal<boolean>(false)
+  newsId:number |null = null
   exportEditNewsMedia = signal<{newsMedia:NewsMedia[], newsVideos:NewsVideo[]}| null>(null)
   form = this.fb.group({
     categoryId: [[] as number[], [Validators.required]],
@@ -55,8 +56,8 @@ export class NewsComponent implements OnInit, OnDestroy {
     published: [this.getCurrentDateTime(), [Validators.required]],
     isEmphasis: [false],
     validity: [null],
-    status: ['ATIVO'],
-    
+    status: ['ACTIVE'],
+
   });
 
   errorMessage = {
@@ -74,8 +75,8 @@ export class NewsComponent implements OnInit, OnDestroy {
     },
     content: {
       required: 'Conteúdo é obrigatório',
-    },  
-   
+    },
+
   };
 
   statusOptions = [
@@ -85,13 +86,11 @@ export class NewsComponent implements OnInit, OnDestroy {
 
   async ngOnInit() {
     await this.checkEdit()
+    this.getCategories();
     this.formValidator.InitValidation(this.form, this.errorMessage)
     .pipe(takeUntil(this.destroy$))
     .subscribe((errorMessages) => {
       this.displayError.set(errorMessages);
-    });
-    this.apiService.getActiveCategories().subscribe((categories) => {
-      this.availableCategories.set(categories as Category[]);
     });
     this.form.get('slug')?.valueChanges
     .pipe(takeUntil(this.destroy$))
@@ -106,25 +105,37 @@ export class NewsComponent implements OnInit, OnDestroy {
     .then((param)=>{
       const newsId = param['id']
       if(newsId){
-        console.log(newsId)
+        this.getCategories();
         this.isEdit.set(true)
+        this.newsId = newsId
         firstValueFrom(this.apiService.getNewsById(newsId))
         .then((resp)=>{
+          console.log(resp);
           const news:News = resp as News
+          news.categoryId.forEach((categoryId) => {
+            const category = this.availableCategories().find(cat => cat.id === categoryId);
+            this.selectedCategories.update((cats) => [...cats, category!]);
+          });
           this.form.patchValue(resp)
           this.exportEditNewsMedia.set({newsMedia:news.mediaNews,newsVideos:news.videoNews})
         })
-        console.log(this.isEdit())
       }
     })
     .catch(error=> {
       throw error
     })
   }
+  getCategories(){
+    this.apiService.getActiveCategories()
+    .pipe(first())
+    .subscribe((categories) => {
+      this.availableCategories.set(categories as Category[]);
+    });
+  }
 
   onSubmit() {
     const formValue = this.form.value;
-    const newsData = {  
+    const newsData = {
       title: formValue.title as string,
       subtitle: formValue.subtitle as string,
       slug: formValue.slug as string,
@@ -136,8 +147,55 @@ export class NewsComponent implements OnInit, OnDestroy {
       validity: formValue.validity as string | null,
       status: formValue.status as string,
     };
+    if(this.isEdit()){
+      this.apiService.editNews(this.newsId as number,newsData as News)
+    .subscribe({
+      next: (res) => {
 
-    this.apiService.setNews(newsData as News)
+        const newsMedia = formValue.newsMidia as NewsMedia[]
+        const midias:FormData[] = []
+        console.log(newsMedia)
+        newsMedia.forEach((media) => {
+          if(media.file){
+            const formMidia = new FormData();
+          formMidia.append('postId', res.id.toString());
+          formMidia.append('emphasis', media.emphasis.toString());
+          formMidia.append('author', media.author as string);
+          formMidia.append('date', media.date as string);
+          formMidia.append('file', media.file as File);
+          midias.push(formMidia);
+          }
+        })
+        newsMedia.forEach((media) => {
+          console.log(media)
+        })
+
+
+        from(midias)
+        .pipe(
+          concatMap(midia => this.apiService.setNewsMedia(midia)), // uma por vez
+          toArray() // junta os resultados em um array
+        )
+        .subscribe({
+          next: (res) => {
+            console.log(res);
+            alert('Notícia editada com sucesso!');
+            this.onReset();
+            this.checkEdit();
+          },
+          error: (err) => {
+            alert('Erro ao salvar midia de notícia!');
+            throw err;
+          }
+        });
+      },
+      error: (err) => {
+        alert('Erro ao editar notícia!');
+        throw err;
+      }
+    });
+    }else{
+      this.apiService.setNews(newsData as News)
     .subscribe({
       next: (res) => {
         const newsMedia = formValue.newsMidia as NewsMedia[]
@@ -158,14 +216,24 @@ export class NewsComponent implements OnInit, OnDestroy {
           toArray() // junta os resultados em um array
         )
         .subscribe({
-          next: (res) => console.log(res),
-          error: (err) => console.log(err)
+          next: (res) => {
+            console.log(res);
+            alert('Notícia criada com sucesso!');
+            this.onReset();
+          },
+          error: (err) => {
+            alert('Erro ao salvar midia de notícia!');
+            throw err;
+          }
         });
       },
       error: (err) => {
-        console.log(err);
+        alert('Erro ao criar notícia!');
+        throw err;
       }
     });
+    }
+
   }
 
   setActiveTab(tab: 'info' | 'content' | 'media') {
@@ -183,7 +251,7 @@ export class NewsComponent implements OnInit, OnDestroy {
    const title = this.form.get('title')?.value as string
    this.formatedSlug(title)
   }
-  
+
   formatedSlug(value?:string) {
     if(value){
       const slug = value
@@ -197,8 +265,8 @@ export class NewsComponent implements OnInit, OnDestroy {
     this.form.patchValue({ slug });
     this.urlDisplaySet(slug);
     }
-    
-    
+
+
   }
 
   toggleCategoryDropdown() {
@@ -254,7 +322,7 @@ export class NewsComponent implements OnInit, OnDestroy {
       this.form.patchValue({
         published: this.getCurrentDateTime(),
         author: 'Gazeta do Pará',
-        status: 'active',
+        status: 'ACTIVE',
       });
     }, 0);
     this.activeTab = 'info';

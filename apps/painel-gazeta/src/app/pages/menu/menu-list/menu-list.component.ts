@@ -36,7 +36,7 @@ export class MenuListComponent {
     this.draggedItem.set(item);
     this.draggedIndex.set(index);
     this.isDragging.set(true);
-    
+
     // Capturar altura do item para cálculos
     const draggedElement = event.target as HTMLElement;
     const itemElement = draggedElement.closest('.menu-item') as HTMLElement;
@@ -48,7 +48,7 @@ export class MenuListComponent {
     event.dataTransfer?.setData('text/plain', '');
     if (event.dataTransfer) {
       event.dataTransfer.effectAllowed = 'move';
-      
+
       // Criar uma imagem de preview customizada
       const dragImage = this.createDragPreview(item);
       event.dataTransfer.setDragImage(dragImage, 10, 10);
@@ -79,14 +79,14 @@ export class MenuListComponent {
       z-index: 9999;
     `;
     document.body.appendChild(preview);
-    
+
     // Remove depois de um tempo
     setTimeout(() => {
       if (document.body.contains(preview)) {
         document.body.removeChild(preview);
       }
     }, 100);
-    
+
     return preview;
   }
 
@@ -106,7 +106,7 @@ export class MenuListComponent {
 
     const items = Array.from(listElement.querySelectorAll('.menu-item')) as HTMLElement[];
     const draggedIdx = this.draggedIndex();
-    
+
     if (draggedIdx === -1) return;
 
     let targetIndex = -1;
@@ -131,7 +131,7 @@ export class MenuListComponent {
     if (targetIndex === -1) {
       targetIndex = items.length - 1;
       indicatorPosition = 'after';
-      
+
       // Se o item arrastado é o último, mantém na mesma posição
       if (draggedIdx === items.length - 1) {
         targetIndex = draggedIdx;
@@ -153,38 +153,45 @@ export class MenuListComponent {
 
   onDrop(event: DragEvent): void {
     event.preventDefault();
-    
+
     const draggedItem = this.draggedItem();
     const draggedIdx = this.draggedIndex();
     const dropTarget = this.dropTargetIndex();
-    
+
     if (draggedItem && draggedIdx !== -1 && dropTarget !== -1 && draggedIdx !== dropTarget) {
       const currentItems = [...this.items()];
-      
+
       // Remover o item da posição original
       const [movedItem] = currentItems.splice(draggedIdx, 1);
-      
+
       // Inserir na nova posição
       const finalTargetIndex = dropTarget > draggedIdx ? dropTarget : dropTarget;
       currentItems.splice(finalTargetIndex, 0, movedItem);
-      
+
       // Atualizar ordens: garantir que o primeiro seja 1, o segundo 2, etc.
       const updatedItems = currentItems.map((item, index) => ({
         ...item,
         order: index + 1
       }));
-      
+
       // Salvar a nova ordem na API
       this.saveMenuOrder(updatedItems);
     }
-    
+
     this.resetDrag();
   }
 
   private saveMenuOrder(updatedItems: Menu[]): void {
-    console.log(updatedItems);
+    const menuOrder = updatedItems.map((item)=>{
+      return {
+        id: item.id as number,
+        order: item.order as number
+      };
+    })
+    const menuBody = { menu: menuOrder };
     this.itemsReordered.emit(updatedItems);
-    this.apiService.orderMenu(updatedItems).subscribe({
+    console.log(menuBody);;
+    this.apiService.orderMenu({menus:menuOrder}).subscribe({
       next: (response) => {
         console.log('resposta da api', response);
         // Emitir o evento apenas após sucesso na API
@@ -194,7 +201,7 @@ export class MenuListComponent {
         console.error('Erro ao salvar ordem do menu:', error);
         // Aqui você pode adicionar uma notificação de erro para o usuário
         // Por exemplo: this.showError('Erro ao reordenar itens do menu');
-        
+
         // Reverter para a ordem original em caso de erro
         // (os itens não serão atualizados na UI)
       }
@@ -245,11 +252,11 @@ export class MenuListComponent {
 
   getItemClass(index: number): string {
     const classes = ['menu-item'];
-    
+
     if (index === this.draggedIndex() && this.isDragging()) {
       classes.push('dragging');
     }
-    
+
     if (index === this.dropTargetIndex() && index !== this.draggedIndex() && this.isDragging()) {
       classes.push('drop-target');
     }
@@ -266,21 +273,21 @@ export class MenuListComponent {
 
   shouldShowDropIndicator(index: number, position: 'before' | 'after'): boolean {
     if (!this.isDragging()) return false;
-    
+
     const draggedIdx = this.draggedIndex();
     const dropTarget = this.dropTargetIndex();
     const indicatorPos = this.dropIndicatorPosition();
-    
+
     if (index === draggedIdx) return false;
-    
+
     if (position === 'before' && index === dropTarget && indicatorPos === 'before') {
       return true;
     }
-    
+
     if (position === 'after' && index === dropTarget && indicatorPos === 'after') {
       return true;
     }
-    
+
     return false;
   }
 }

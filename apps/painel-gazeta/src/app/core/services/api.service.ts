@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../env/env';
-import { Ads, Category, Menu, News, NewsMedia, YoutubeVideo } from '@site-gazeta/models';
+import { Ads, Category, Menu, News, NewsMedia, NewsVideo, YoutubeVideo } from '@site-gazeta/models';
 import { firstValueFrom, tap } from 'rxjs';
 
 @Injectable({
@@ -45,7 +45,7 @@ export class ApiService {
   }
 
   editNews(id: number, body: News){
-    return this.http.patch(`${this.apiUrl}/news/${id}`, body);
+    return this.http.patch<News>(`${this.apiUrl}/news/${id}`, body);
   }
 
   getNews(){
@@ -63,7 +63,21 @@ export class ApiService {
   setNewsMedia( body: FormData){
     return this.http.post(`${this.apiUrl}/media/upload`, body).pipe(tap(()=>console.log('upload media')));
   }
-
+  editNewsMedia(id: number, body:NewsMedia){
+    return this.http.patch(`${this.apiUrl}/media/${id}`, body);
+  }
+  deleteNewsMedia(id: number){
+    return this.http.delete(`${this.apiUrl}/media/${id}`);
+  }
+  setNewsVideo(body: FormData){
+    return this.http.post(`${this.apiUrl}/news-videos`, body);
+  }
+  editNewsVideo(id: number, body: NewsVideo){
+    return this.http.patch(`${this.apiUrl}/news-videos/${id}`, body);
+  }
+  deleteNewsVideo(id: number){
+    return this.http.delete(`${this.apiUrl}/news-videos/${id}`);
+  }
   setAds(body: FormData){
     return this.http.post(`${this.apiUrl}/advertisements`, body);
   }
@@ -100,7 +114,7 @@ export class ApiService {
     return this.http.patch(`${this.apiUrl}/menu/${id}`, body);
   }
 
-  orderMenu(body: Menu[]){
+  orderMenu(body: {menus: {id: number, order: number}[]}){
     return this.http.patch(`${this.apiUrl}/menu/reorder/batch`, body);
   }
 
@@ -118,10 +132,13 @@ export class ApiService {
   setVideos(body: YoutubeVideo) {
     return this.http.post<YoutubeVideo>(`${this.apiUrl}/youtube-playlist`, body);
   }
+  editVideo(id: number, body: YoutubeVideo) {
+    return this.http.patch<YoutubeVideo>(`${this.apiUrl}/youtube-playlist/${id}`, body);
+  }
   getVideos() {
     return this.http.get<YoutubeVideo[]>(`${this.apiUrl}/youtube-playlist/all`);
   }
   deleteVideo(id: number) {
-    return this.http.delete<{message:string}>(`${this.apiUrl}/videos/${id}`);
+    return this.http.delete<{message:string}>(`${this.apiUrl}/youtube-playlist/${id}/permanent`);
   }
 }

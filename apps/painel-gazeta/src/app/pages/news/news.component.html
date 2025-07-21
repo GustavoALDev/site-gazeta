@@ -167,7 +167,7 @@
                   </div>
 
                   <div class="tab-content" [class.active]="activeTab === 'media'">
-                    <app-news-midia (formValue)="onFormValue($event)" 
+                    <app-news-midia (formValue)="onFormValue($event)"
                     [newsMedia]="this.exportEditNewsMedia()?.newsMedia"
                     [newsVideo]="this.exportEditNewsMedia()?.newsVideos"
                     ></app-news-midia>
@@ -215,7 +215,7 @@
                               type="date"
                               id="validity"
                               formControlName="validity">
-                              
+
                               <small>Até quando a notícia será exibida</small>
                             </div>
 
@@ -236,7 +236,7 @@
 
                           <div class="sidebar-actions">
                             <button type="submit" class="btn-primary" [disabled]="form.invalid" >
-                              Salvar Notícia
+                              {{isEdit() ? 'Atualizar Notícia' : 'Criar Notícia'}}
                             </button>
                             <button type="button" class="btn-secondary" (click)="onReset()">
                               Limpar
