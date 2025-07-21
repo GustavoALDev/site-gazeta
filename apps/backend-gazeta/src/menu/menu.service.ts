@@ -148,15 +148,21 @@ export class MenuService {
       throw new ConflictException('Não é possível ter ordens duplicadas');
     }
 
-    // Atualizar as ordens
-    await this.prisma.$transaction(
-      menuOrders.map(({ id, order }) =>
-        this.prisma.menu.update({
+    await this.prisma.$transaction(async (prisma) => {
+      for (let i = 0; i < menuOrders.length; i++) {
+        await prisma.menu.update({
+          where: { id: menuOrders[i].id },
+          data: { order: 10000 + i }
+        });
+      }
+
+      for (const { id, order } of menuOrders) {
+        await prisma.menu.update({
           where: { id },
           data: { order }
-        })
-      )
-    );
+        });
+      }
+    });
 
     // Retornar menus atualizados
     return await this.findAll();
