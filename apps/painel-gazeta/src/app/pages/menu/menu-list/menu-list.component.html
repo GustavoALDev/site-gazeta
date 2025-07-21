@@ -10,7 +10,7 @@
       @if (shouldShowDropIndicator(i, 'before')) {
         <div class="drop-indicator"></div>
       }
-      
+
       <div
         [class]="getItemClass(i)"
         [style.transform]="getItemTransform(i)"
@@ -45,7 +45,7 @@
         <button
           type="button"
           class="delete-btn"
-          (click)="deleteItem(i, item.name)"
+          (click)="deleteItem(item.id!, i)"
           title="Excluir item"
         >
           <i class="material-icons">delete</i>
