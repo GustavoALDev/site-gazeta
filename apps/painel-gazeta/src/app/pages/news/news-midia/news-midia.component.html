@@ -97,7 +97,7 @@
 
               <div class="photo-preview">
                 @if(media.imgSize){
-                  <img [src]="media.imgSize?.medium"
+                  <img [src]="media.imgSize.medium"
                        [alt]="'Foto ' + ($index + 1)" />
                 }@else{
                   <img [src]="media.preview"
