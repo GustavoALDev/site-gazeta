@@ -19,16 +19,19 @@ import {
   ApiResponse, 
   ApiBearerAuth,
   ApiParam,
-  ApiBody
+  ApiBody,
+  ApiExtraModels
 } from '@nestjs/swagger';
 import { MenuService } from './menu.service';
 import { CreateMenuDto } from './dto/create-menu.dto';
 import { UpdateMenuDto } from './dto/update-menu.dto';
 import { MenuResponseDto } from './dto/menu-response.dto';
 import { ReorderMenuDto } from './dto/reorder-menu.dto';
+import { MenuExamplesDto } from './dto/menu-examples.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('Menu')
+@ApiExtraModels(MenuExamplesDto)
 @Controller('menu')
 export class MenuController {
   constructor(private readonly menuService: MenuService) {}
@@ -38,16 +41,67 @@ export class MenuController {
   @ApiBearerAuth()
   @ApiOperation({ 
     summary: 'Criar novo menu', 
-    description: 'Endpoint para criar um novo item de menu' 
+    description: `Endpoint para criar um novo item de menu. 
+    
+**Validações por tipo:**
+- **category**: Requer apenas o campo 'slug'
+- **internal**: Requer apenas o campo 'routerLink' 
+- **external**: Requer apenas o campo 'externalLink'
+
+**Observações:**
+- Apenas o campo correspondente ao tipo será salvo
+- Campos de outros tipos serão automaticamente removidos
+- A ordem deve ser única no sistema` 
   })
   @ApiResponse({ 
     status: 201, 
     description: 'Menu criado com sucesso', 
     type: MenuResponseDto 
   })
-  @ApiResponse({ status: 400, description: 'Dados inválidos' })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'Dados inválidos - campos obrigatórios ausentes ou formato incorreto',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: 'Slug é obrigatório para menus do tipo category',
+        error: 'Bad Request'
+      }
+    }
+  })
   @ApiResponse({ status: 401, description: 'Token inválido ou não fornecido' })
-  @ApiResponse({ status: 409, description: 'Ordem já existe ou dados conflitantes' })
+  @ApiResponse({ 
+    status: 409, 
+    description: 'Conflito de dados - ordem duplicada ou campos conflitantes',
+    schema: {
+      example: {
+        statusCode: 409,
+        message: 'Já existe um menu com esta ordem',
+        error: 'Conflict'
+      }
+    }
+  })
+  @ApiBody({
+    type: CreateMenuDto,
+    description: 'Dados do menu a ser criado. Escolha apenas um dos exemplos baseado no tipo desejado.',
+    examples: {
+      category: {
+        summary: 'Menu do tipo Category',
+        description: 'Exemplo de menu para categoria de notícias',
+        value: MenuExamplesDto.categoryExample
+      },
+      internal: {
+        summary: 'Menu do tipo Internal',
+        description: 'Exemplo de menu para link interno da aplicação',
+        value: MenuExamplesDto.internalExample
+      },
+      external: {
+        summary: 'Menu do tipo External',
+        description: 'Exemplo de menu para link externo',
+        value: MenuExamplesDto.externalExample
+      }
+    }
+  })
   async create(@Body() createMenuDto: CreateMenuDto): Promise<MenuResponseDto> {
     try {
       return await this.menuService.create(createMenuDto);
@@ -76,7 +130,7 @@ export class MenuController {
   async findAll(): Promise<MenuResponseDto[]> {
     try {
       return await this.menuService.findAll();
-    } catch (error) {
+    } catch {
       throw new HttpException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         message: 'Erro no servidor, tente novamente mais tarde',
@@ -117,7 +171,18 @@ export class MenuController {
   @ApiBearerAuth()
   @ApiOperation({ 
     summary: 'Atualizar menu', 
-    description: 'Endpoint para atualizar um menu existente' 
+    description: `Endpoint para atualizar um menu existente.
+
+**Validações por tipo:**
+- Se o tipo for alterado, as validações do novo tipo serão aplicadas
+- **category**: Requer apenas o campo 'slug'
+- **internal**: Requer apenas o campo 'routerLink'
+- **external**: Requer apenas o campo 'externalLink'
+
+**Comportamento:**
+- Campos desnecessários para o tipo são automaticamente removidos
+- Campos existentes são preservados se não especificados na atualização
+- A ordem deve continuar única no sistema` 
   })
   @ApiParam({ name: 'id', description: 'ID do menu', type: 'number' })
   @ApiResponse({ 
@@ -125,10 +190,30 @@ export class MenuController {
     description: 'Menu atualizado com sucesso',
     type: MenuResponseDto
   })
-  @ApiResponse({ status: 400, description: 'Dados inválidos' })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'Dados inválidos - campos obrigatórios ausentes ou formato incorreto',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: 'Router link é obrigatório para menus do tipo internal',
+        error: 'Bad Request'
+      }
+    }
+  })
   @ApiResponse({ status: 401, description: 'Token inválido ou não fornecido' })
   @ApiResponse({ status: 404, description: 'Menu não encontrado' })
-  @ApiResponse({ status: 409, description: 'Ordem já existe ou dados conflitantes' })
+  @ApiResponse({ 
+    status: 409, 
+    description: 'Conflito de dados - ordem duplicada ou campos conflitantes',
+    schema: {
+      example: {
+        statusCode: 409,
+        message: 'Menus do tipo external devem usar apenas o campo externalLink',
+        error: 'Conflict'
+      }
+    }
+  })
   async update(
     @Param('id', ParseIntPipe) id: number, 
     @Body() updateMenuDto: UpdateMenuDto

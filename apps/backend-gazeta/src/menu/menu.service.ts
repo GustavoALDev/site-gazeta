@@ -18,26 +18,18 @@ export class MenuService {
       throw new ConflictException('Já existe um menu com esta ordem');
     }
 
-    // Validar que pelo menos um dos campos de link foi fornecido
-    if (!createMenuDto.slug && !createMenuDto.routerLink && !createMenuDto.externalLink) {
-      throw new ConflictException('Pelo menos um dos campos deve ser fornecido: slug, routerLink ou externalLink');
-    }
+    // Validar campos baseado no tipo e garantir exclusividade
+    this.validateMenuByType(createMenuDto.type, {
+      slug: createMenuDto.slug,
+      routerLink: createMenuDto.routerLink,
+      externalLink: createMenuDto.externalLink
+    });
 
-    // Validar que apenas um tipo de link é fornecido baseado no tipo
-    if (createMenuDto.type === 'category' && !createMenuDto.slug) {
-      throw new ConflictException('Slug é obrigatório para menus do tipo category');
-    }
-
-    if (createMenuDto.type === 'internal' && !createMenuDto.routerLink) {
-      throw new ConflictException('Router link é obrigatório para menus do tipo internal');
-    }
-
-    if (createMenuDto.type === 'external' && !createMenuDto.externalLink) {
-      throw new ConflictException('Link externo é obrigatório para menus do tipo external');
-    }
+    // Limpar campos não necessários baseado no tipo
+    const cleanedData = this.cleanMenuDataByType(createMenuDto) as CreateMenuDto;
 
     const menu = await this.prisma.menu.create({
-      data: createMenuDto
+      data: cleanedData
     });
 
     return menu;
@@ -88,27 +80,29 @@ export class MenuService {
       }
     }
 
-    // Validar baseado no tipo atualizado ou existente
+    // Combinar dados existentes com os novos para validação
     const finalType = updateMenuDto.type || existingMenu.type;
     const finalSlug = updateMenuDto.slug !== undefined ? updateMenuDto.slug : existingMenu.slug;
     const finalRouterLink = updateMenuDto.routerLink !== undefined ? updateMenuDto.routerLink : existingMenu.routerLink;
     const finalExternalLink = updateMenuDto.externalLink !== undefined ? updateMenuDto.externalLink : existingMenu.externalLink;
 
-    if (finalType === 'category' && !finalSlug) {
-      throw new ConflictException('Slug é obrigatório para menus do tipo category');
-    }
+    // Validar campos baseado no tipo final
+    this.validateMenuByType(finalType, {
+      slug: finalSlug,
+      routerLink: finalRouterLink,
+      externalLink: finalExternalLink
+    });
 
-    if (finalType === 'internal' && !finalRouterLink) {
-      throw new ConflictException('Router link é obrigatório para menus do tipo internal');
-    }
-
-    if (finalType === 'external' && !finalExternalLink) {
-      throw new ConflictException('Link externo é obrigatório para menus do tipo external');
-    }
+    // Limpar campos não necessários baseado no tipo
+    const cleanedData = this.cleanMenuDataByType({
+      ...existingMenu,
+      ...updateMenuDto,
+      type: finalType
+    });
 
     const menu = await this.prisma.menu.update({
       where: { id },
-      data: updateMenuDto
+      data: cleanedData
     });
 
     return menu;
@@ -166,5 +160,71 @@ export class MenuService {
 
     // Retornar menus atualizados
     return await this.findAll();
+  }
+
+  /**
+   * Valida os campos baseado no tipo do menu
+   */
+  private validateMenuByType(type: string, data: { slug?: string; routerLink?: string; externalLink?: string }) {
+    switch (type) {
+      case 'category':
+        if (!data.slug) {
+          throw new ConflictException('Slug é obrigatório para menus do tipo category');
+        }
+        if (data.routerLink || data.externalLink) {
+          throw new ConflictException('Menus do tipo category devem usar apenas o campo slug');
+        }
+        break;
+
+      case 'internal':
+        if (!data.routerLink) {
+          throw new ConflictException('Router link é obrigatório para menus do tipo internal');
+        }
+        if (data.slug || data.externalLink) {
+          throw new ConflictException('Menus do tipo internal devem usar apenas o campo routerLink');
+        }
+        break;
+
+      case 'external':
+        if (!data.externalLink) {
+          throw new ConflictException('Link externo é obrigatório para menus do tipo external');
+        }
+        if (data.slug || data.routerLink) {
+          throw new ConflictException('Menus do tipo external devem usar apenas o campo externalLink');
+        }
+        break;
+
+      default:
+        throw new ConflictException('Tipo de menu inválido. Use: category, internal ou external');
+    }
+  }
+
+  /**
+   * Limpa campos não necessários baseado no tipo do menu
+   */
+  private cleanMenuDataByType(menuData: CreateMenuDto | (UpdateMenuDto & { type: string })): CreateMenuDto | UpdateMenuDto {
+    const cleanedData = { ...menuData };
+
+    switch (menuData.type) {
+      case 'category':
+        // Para categoria, manter apenas slug
+        delete cleanedData.routerLink;
+        delete cleanedData.externalLink;
+        break;
+
+      case 'internal':
+        // Para interno, manter apenas routerLink
+        delete cleanedData.slug;
+        delete cleanedData.externalLink;
+        break;
+
+      case 'external':
+        // Para externo, manter apenas externalLink
+        delete cleanedData.slug;
+        delete cleanedData.routerLink;
+        break;
+    }
+
+    return cleanedData;
   }
 } 

@@ -20,30 +20,34 @@ export class MenuResponseDto {
   name: string;
 
   @ApiProperty({
-    description: 'Tipo do menu',
+    description: 'Tipo do menu que determina qual campo de link será preenchido',
     example: 'internal',
-    enum: ['internal', 'external', 'category']
+    enum: ['internal', 'external', 'category'],
+    enumName: 'MenuType'
   })
   type: string;
 
   @ApiProperty({
-    description: 'Slug do menu (usado para categorias)',
+    description: 'Slug do menu - preenchido apenas para tipo "category"',
     example: 'tecnologia',
-    required: false
+    required: false,
+    nullable: true
   })
   slug?: string;
 
   @ApiProperty({
-    description: 'Link interno do router (usado para rotas internas)',
+    description: 'Link interno do router - preenchido apenas para tipo "internal"',
     example: '/sobre',
-    required: false
+    required: false,
+    nullable: true
   })
   routerLink?: string;
 
   @ApiProperty({
-    description: 'Link externo (usado para links externos)',
+    description: 'Link externo - preenchido apenas para tipo "external"',
     example: 'https://exemplo.com',
-    required: false
+    required: false,
+    nullable: true
   })
   externalLink?: string;
 

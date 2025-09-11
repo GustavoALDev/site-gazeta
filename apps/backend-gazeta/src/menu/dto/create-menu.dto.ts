@@ -24,9 +24,24 @@ export class CreateMenuDto {
   name: string;
 
   @ApiProperty({
-    description: 'Tipo do menu',
+    description: 'Tipo do menu que determina qual campo de link é obrigatório',
     example: 'internal',
-    enum: ['internal', 'external', 'category']
+    enum: ['internal', 'external', 'category'],
+    enumName: 'MenuType',
+    examples: {
+      internal: {
+        value: 'internal',
+        description: 'Para links internos da aplicação. Requer campo routerLink.'
+      },
+      external: {
+        value: 'external', 
+        description: 'Para links externos. Requer campo externalLink.'
+      },
+      category: {
+        value: 'category',
+        description: 'Para categorias de notícias. Requer campo slug.'
+      }
+    }
   })
   @IsNotEmpty({ message: 'Tipo é obrigatório' })
   @IsString({ message: 'Tipo deve ser uma string' })
@@ -34,10 +49,24 @@ export class CreateMenuDto {
   type: string;
 
   @ApiProperty({
-    description: 'Slug do menu (usado para categorias)',
+    description: 'Slug do menu - OBRIGATÓRIO para tipo "category". Usado para gerar URLs de categorias como /categoria/{slug}',
     example: 'tecnologia',
     required: false,
-    maxLength: 255
+    maxLength: 255,
+    examples: {
+      technology: {
+        value: 'tecnologia',
+        description: 'Categoria de tecnologia'
+      },
+      sports: {
+        value: 'esportes',
+        description: 'Categoria de esportes'  
+      },
+      politics: {
+        value: 'politica',
+        description: 'Categoria de política'
+      }
+    }
   })
   @IsOptional()
   @IsString({ message: 'Slug deve ser uma string' })
@@ -45,10 +74,24 @@ export class CreateMenuDto {
   slug?: string;
 
   @ApiProperty({
-    description: 'Link interno do router (usado para rotas internas)',
+    description: 'Link interno do router - OBRIGATÓRIO para tipo "internal". Usado para navegação interna da aplicação',
     example: '/sobre',
     required: false,
-    maxLength: 500
+    maxLength: 500,
+    examples: {
+      home: {
+        value: '/',
+        description: 'Página inicial'
+      },
+      about: {
+        value: '/sobre',
+        description: 'Página sobre nós'
+      },
+      contact: {
+        value: '/contato',
+        description: 'Página de contato'
+      }
+    }
   })
   @IsOptional()
   @IsString({ message: 'Router link deve ser uma string' })
@@ -56,10 +99,24 @@ export class CreateMenuDto {
   routerLink?: string;
 
   @ApiProperty({
-    description: 'Link externo (usado para links externos)',
+    description: 'Link externo - OBRIGATÓRIO para tipo "external". Deve ser uma URL válida completa',
     example: 'https://exemplo.com',
     required: false,
-    maxLength: 500
+    maxLength: 500,
+    examples: {
+      website: {
+        value: 'https://www.exemplo.com',
+        description: 'Site externo completo'
+      },
+      social: {
+        value: 'https://www.facebook.com/exemplo',
+        description: 'Rede social'
+      },
+      partner: {
+        value: 'https://www.parceiro.com.br',
+        description: 'Site de parceiro'
+      }
+    }
   })
   @IsOptional()
   @IsString({ message: 'Link externo deve ser uma string' })
