@@ -19,9 +19,9 @@ export class MenuComponent implements OnInit {
   menuItems = signal<Menu[]>([]);
   categories = signal<Category[]>([]);
   currentFormType = signal<string>('');
-  isFormValid = signal<boolean>(false); 
+  isFormValid = signal<boolean>(false);
 
- 
+
   menuForm!: FormGroup;
 
 
@@ -157,13 +157,13 @@ export class MenuComponent implements OnInit {
   onMenuItemDeleted(index: number): void {
     const currentItems = this.menuItems();
     const updatedItems = currentItems.filter((_, i) => i !== index);
-    
+
     // Reordenar após remoção
     const reorderedItems = updatedItems.map((item, i) => ({
       ...item,
       order: i + 1
     }));
-    
+
     this.menuItems.set(reorderedItems);
   }
 
@@ -176,7 +176,7 @@ export class MenuComponent implements OnInit {
 
     const formValue = this.menuForm.value;
     const currentItems = this.menuItems();
-    
+
     // Base do item com todos os campos obrigatórios
     const newItem: Menu = {
       order: currentItems.length + 1,
@@ -194,7 +194,7 @@ export class MenuComponent implements OnInit {
           newItem.name = selectedCategory.name;
           newItem.slug = selectedCategory.slug;
           newItem.routerLink = `/categoria/${selectedCategory.slug}`;
-          newItem.externalLink = 'http://';
+          newItem.externalLink = 'http://exemplo.com';
         }
         break;
       }
@@ -217,7 +217,7 @@ export class MenuComponent implements OnInit {
     }
 
     console.log('Item a ser enviado:', newItem);
-    
+
     this.apiService.setMenu(newItem)
     .subscribe({
       next: (response: Menu) => {
@@ -255,5 +255,5 @@ export class MenuComponent implements OnInit {
     return '';
   }
 
- 
+
 }

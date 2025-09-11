@@ -2,6 +2,7 @@ import { Component, input, output, signal, computed, ElementRef, inject } from '
 import { CommonModule } from '@angular/common';
 import { Menu } from '@site-gazeta/models';
 import { ApiService } from '../../../core/services/api.service';
+import { first, firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-menu-list',
@@ -264,10 +265,20 @@ export class MenuListComponent {
     return classes.join(' ');
   }
 
-  deleteItem(index: number, name: string): void {
-    const conf = confirm(`Tem certeza que deseja excluir o item "${name}"?`);
+  deleteItem(id: number, index: number): void {
+    const conf = confirm(`Tem certeza que deseja excluir o item?`);
     if (conf) {
       this.itemDeleted.emit(index);
+      firstValueFrom(this.apiService.deleteMenu(id))
+      .then(()=>{
+        alert('Item excluído com sucesso!');
+      })
+      .catch((error) => {
+        console.error('Erro ao excluir item do menu:', error);
+        alert('Erro ao excluir item. Tente novamente mais tarde.');
+      });
+
+
     }
   }
 
