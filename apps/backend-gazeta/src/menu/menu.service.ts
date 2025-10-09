@@ -117,10 +117,9 @@ export class MenuService {
       throw new NotFoundException('Menu não encontrado');
     }
 
-    // Soft delete - apenas marca como inativo
-    await this.prisma.menu.update({
-      where: { id },
-      data: { isActive: false }
+    // Hard delete - remove o registro do banco de dados
+    await this.prisma.menu.delete({
+      where: { id }
     });
   }
 

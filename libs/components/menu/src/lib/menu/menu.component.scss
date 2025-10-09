@@ -1,0 +1,388 @@
+// Variables
+$primary-gradient: linear-gradient(135deg, #c44569, #54016e);
+$dark-gradient: linear-gradient(135deg, #2d3436 0%, #636e72 50%, #74b9ff 100%);
+$font-stack: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+$transition-smooth: all 0.3s ease;
+$transition-cubic: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+// Mixins
+@mixin button-base($size: 42px, $bg: rgba(255, 255, 255, 0.25)) {
+  background: $bg;
+  border: none;
+  border-radius: 8px;
+  width: $size;
+  height: $size;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #ffffff;
+  transition: $transition-smooth;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.35);
+    transform: scale(1.05);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+@mixin icon-size($size: 22px, $stroke: 2) {
+  svg {
+    width: $size;
+    height: $size;
+    stroke-width: $stroke;
+  }
+}
+
+@mixin hidden-state {
+  &.hidden {
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0.8);
+  }
+}
+
+@mixin search-button($size: 34px, $radius: 50%) {
+  @include button-base($size, rgba(255, 255, 255, 0.2));
+  border-radius: $radius;
+  margin-left: 6px;
+  transition: all 0.2s ease;
+
+  @include icon-size(16px, 2.5);
+}
+
+:host {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.menu {
+  position: relative;
+  width: 100%;
+  background: $primary-gradient;
+  padding: 10px 0px;
+  border-radius: 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  margin: 10px 0;
+
+  .menu-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0 auto;
+    padding: 0 35px;
+    position: relative;
+    overflow: hidden;
+
+    .right-icons {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .hamburger-menu {
+        display: none;
+        transition: $transition-smooth;
+        opacity: 1;
+        visibility: visible;
+        @include hidden-state;
+        
+        .hamburger-btn {
+          @include button-base;
+          @include icon-size;
+        }
+      }
+    }
+
+    .menu-items {
+      display: flex;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      align-items: center;
+      transition: $transition-cubic;
+      transform: translateX(0);
+      opacity: 1;
+
+      &.hidden {
+        transform: translateX(-100%);
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .menu-item {
+        margin: 0;
+
+        .menu-link {
+          display: block;
+          padding: 16px 22px;
+          color: #ffffff;
+          text-decoration: none;
+          font-weight: 500;
+          font-size: 16px;
+          font-family: $font-stack;
+          transition: $transition-smooth;
+          border-radius: 8px;
+          margin: 0 1px;
+          letter-spacing: 0.3px;
+
+          &:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-1px);
+          }
+
+          &:active {
+            transform: translateY(0);
+          }
+        }
+      }
+    }
+
+    .search-bar {
+      position: absolute;
+      left: 20px;
+      right: 140px;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      transform: translateX(100%);
+      opacity: 0;
+      transition: $transition-cubic;
+      pointer-events: none;
+
+      &.active {
+        transform: translateX(0);
+        opacity: 1;
+        pointer-events: all;
+      }
+
+      .search-input-container {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 25px;
+        padding: 8px 12px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+
+        .search-input {
+          flex: 1;
+          background: transparent;
+          border: none;
+          outline: none;
+          color: #ffffff;
+          font-size: 16px;
+          font-family: $font-stack;
+          padding: 8px 12px;
+          
+          &::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+          }
+
+          &:focus::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+          }
+        }
+
+        .search-submit-btn {
+          @include search-button;
+        }
+
+        .search-close-btn {
+          @include search-button;
+          background: rgba(255, 255, 255, 0.15);
+          
+          &:hover {
+            background: rgba(255, 0, 0, 0.2);
+          }
+        }
+      }
+    }
+
+    .search-icon .search-btn {
+      @include button-base;
+      @include icon-size(22px, 2.5);
+    }
+  }
+}
+
+
+// Dark mode mixin
+@mixin dark-theme-colors {
+  color: #e8e8e8;
+  
+  &:hover {
+    color: #ffffff;
+  }
+}
+
+@mixin dark-button-theme {
+  background: rgba(255, 255, 255, 0.2);
+  @include dark-theme-colors;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+  }
+}
+
+// Dark mode support
+::ng-deep .dark-mode .menu {
+  background: $dark-gradient;
+
+  .menu-link {
+    @include dark-theme-colors;
+    
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+  }
+
+  .search-input-container {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.15);
+
+    .search-input {
+      @include dark-theme-colors;
+      
+      &::placeholder {
+        color: rgba(232, 232, 232, 0.6);
+      }
+
+      &:focus::placeholder {
+        color: rgba(232, 232, 232, 0.4);
+      }
+    }
+
+    .search-submit-btn {
+      @include dark-button-theme;
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .search-close-btn {
+      @include dark-button-theme;
+      background: rgba(255, 255, 255, 0.1);
+      
+      &:hover {
+        background: rgba(255, 100, 100, 0.2);
+      }
+    }
+  }
+
+  .search-btn,
+  .hamburger-btn {
+    @include dark-button-theme;
+  }
+}
+
+
+// Responsive mixins
+@mixin mobile-layout($padding: 10px 15px, $gap: 8px, $border-radius: 12px, $margin: 8px) {
+  border-radius: $border-radius;
+  margin: $margin;
+
+  .menu-container {
+    padding: $padding;
+    justify-content: flex-end;
+
+    .right-icons {
+      gap: $gap;
+      
+      .hamburger-menu {
+        display: block;
+      }
+    }
+
+    .menu-items {
+      display: none;
+    }
+  }
+}
+
+@mixin responsive-search-bar($left: 15px, $right: 120px) {
+  .search-bar {
+    left: $left;
+    right: $right;
+  }
+}
+
+@mixin responsive-buttons($btn-size: 38px, $search-btn-size: 30px, $icon-size: 20px, $search-icon-size: 14px) {
+  .hamburger-btn {
+    @include button-base($btn-size);
+    @include icon-size($icon-size);
+  }
+
+  .search-btn {
+    @include button-base($btn-size);
+    @include icon-size($icon-size);
+  }
+
+  .search-submit-btn,
+  .search-close-btn {
+    @include search-button($search-btn-size);
+    @include icon-size($search-icon-size);
+    margin-left: 4px;
+  }
+}
+
+@mixin responsive-input($font-size: 15px, $padding: 6px 10px, $container-padding: 6px 10px) {
+  .search-input-container {
+    padding: $container-padding;
+
+    .search-input {
+      font-size: $font-size;
+      padding: $padding;
+    }
+  }
+}
+
+@mixin responsive-menu-links($padding: 14px 18px, $font-size: 15px, $margin: 0) {
+  .menu-link {
+    padding: $padding;
+    font-size: $font-size;
+    margin: $margin;
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .menu {
+    @include mobile-layout;
+    @include responsive-search-bar(15px, 120px);
+
+    .menu-container {
+      @include responsive-buttons(38px, 30px, 20px, 14px);
+      @include responsive-input(15px, 6px 10px, 6px 10px);
+
+      .menu-item {
+        @include responsive-menu-links(14px 18px, 15px);
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .menu {
+    @include mobile-layout(10px, 6px, 10px, 5px);
+    @include responsive-search-bar(10px, 100px);
+
+    .menu-container {
+      @include responsive-buttons(36px, 28px, 20px, 12px);
+      @include responsive-input(14px, 5px 8px, 5px 8px);
+
+      .menu-item {
+        @include responsive-menu-links(12px 16px, 14px, 2px);
+      }
+
+      .search-submit-btn,
+      .search-close-btn {
+        margin-left: 3px;
+      }
+    }
+  }
+}

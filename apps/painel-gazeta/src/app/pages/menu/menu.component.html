@@ -35,11 +35,11 @@
             <!-- Categoria: apenas selecionar categoria -->
             <div class="form-group">
               <label for="categoryId">Categoria *</label>
-              <select id="categoryId" formControlName="categoryId" class="form-control">
+              <select id="categoryId" formControlName="categoryName" class="form-control">
                 <option value="">Selecione uma categoria</option>
                 @for (category of categories(); track category.id) {
                   <option 
-                    [value]="category.id"
+                    [value]="category.name"
                     [disabled]="!category.isActive"
                   >
                     {{ category.name }}
@@ -47,8 +47,8 @@
                 }
               </select>
               <small class="field-help">O nome da categoria será usado como nome do menu</small>
-              @if (getFieldError('categoryId')) {
-                <span class="error-message">{{ getFieldError('categoryId') }}</span>
+              @if (getFieldError('categoryName')) {
+                <span class="error-message">{{ getFieldError('categoryName') }}</span>
               }
             </div>
           }

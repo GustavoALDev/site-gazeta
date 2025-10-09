@@ -1,8 +1,85 @@
-<div class="sidecontent">
-  @if(isOpened()) {
-    <div [ngClass]="{'backdrop': backdrop()}" role="button" tabindex="0" (click)="toggleSidebar()" (keydown.enter)="toggleSidebar()" (keydown.space)="toggleSidebar()"></div>
+<!-- Modo Overlay: Renderizado no topo do body -->
+@if(type() === 'overlay') {
+  @if(isOpened_()) {
+    <div class="sidebar-overlay">
+      <!-- Backdrop: apenas quando backdrop=true -->
+      @if(backdrop()) {
+        <div class="backdrop" 
+             role="button" 
+             tabindex="0" 
+             (click)="toggleSidebar()" 
+             (keydown.enter)="toggleSidebar()" 
+             (keydown.space)="toggleSidebar()">
+        </div>
+      }
+      
+      <!-- Sidebar -->
+      <div class="sidebar" [class.sidebar_opened]="isOpened_()">
+        <div class="toggle_sidebar"></div>
+        <div class="sidebar__header">
+          <div class="logo">
+            <img src="img/logo02.webp" alt="logo">
+          </div>
+        </div>
+        <div class="sidebar__content">
+          <div class="sidebar__content__menu">
+            @for (menu of menuItems(); track menu.name) {
+              <div class="menu-item">
+                @if (hasChildren(menu)) {
+                  <!-- Menu pai com filhos -->
+                  <div class="menu-parent" 
+                     (click)="toggleMenu(menu.name)"
+                     (keydown.enter)="toggleMenu(menu.name)"
+                     (keydown.space)="toggleMenu(menu.name)"
+                     [class.expanded]="isMenuExpanded(menu.name)"
+                     tabindex="0"
+                     role="button">
+                  <span class="menu-text">{{ menu.name }}</span>
+                  <span class="expand-icon material-icons">
+                    {{ isMenuExpanded(menu.name) ? 'expand_less' : 'expand_more' }}
+                  </span>
+                </div>
+                
+                <!-- Submenu -->
+                <div class="submenu" 
+                     [class.expanded]="isMenuExpanded(menu.name)">
+                  @for (child of menu.children; track child.name) {
+                    <a [routerLink]="child.router" 
+                       routerLinkActive="active"
+                       [routerLinkActiveOptions]="{exact: true}"
+                       class="submenu-item">
+                      {{ child.name }}
+                    </a>
+                  }
+                </div>
+              } @else {
+                <!-- Menu simples sem filhos -->
+                <a [routerLink]="menu.router" 
+                   routerLinkActive="active"
+                   [routerLinkActiveOptions]="{exact: true}"
+                   class="menu-simple">
+                  {{ menu.name }}
+                </a>
+              }
+            </div>
+            }
+          </div>
+        </div>
+        <div class="sidebar__footer">
+          <span class="divider"></span>
+          <div class="footer_auth">
+            <ng-content ></ng-content>
+          </div>
+          <div class="footer__content">
+            <p>© 2025 - Todos os direitos reservados</p>
+          </div>
+        </div>
+      </div>
+    </div>
   }
-   <div class="sidebar" [class.sidebar_opened]="isOpened()" [class.opened_mode]="opened()"> 
+} @else {
+  <!-- Modo Static: Renderizado dentro do componente -->
+  <div class="sidebar sidebar-static" [class.sidebar_opened]="isOpened_()">
     <div class="toggle_sidebar"></div>
     <div class="sidebar__header">
       <div class="logo">
@@ -16,40 +93,40 @@
             @if (hasChildren(menu)) {
               <!-- Menu pai com filhos -->
               <div class="menu-parent" 
-                   (click)="toggleMenu(menu.name)"
-                   (keydown.enter)="toggleMenu(menu.name)"
-                   (keydown.space)="toggleMenu(menu.name)"
-                   [class.expanded]="isMenuExpanded(menu.name)"
-                   tabindex="0"
-                   role="button">
-                <span class="menu-text">{{ menu.name }}</span>
-                <span class="expand-icon material-icons">
-                  {{ isMenuExpanded(menu.name) ? 'expand_less' : 'expand_more' }}
-                </span>
-              </div>
-              
-              <!-- Submenu -->
-              <div class="submenu" 
-                   [class.expanded]="isMenuExpanded(menu.name)">
-                @for (child of menu.children; track child.name) {
-                  <a [routerLink]="child.router" 
-                     routerLinkActive="active"
-                     [routerLinkActiveOptions]="{exact: true}"
-                     class="submenu-item">
-                    {{ child.name }}
-                  </a>
-                }
-              </div>
-            } @else {
-              <!-- Menu simples sem filhos -->
-              <a [routerLink]="menu.router" 
-                 routerLinkActive="active"
-                 [routerLinkActiveOptions]="{exact: true}"
-                 class="menu-simple">
-                {{ menu.name }}
-              </a>
-            }
-          </div>
+                 (click)="toggleMenu(menu.name)"
+                 (keydown.enter)="toggleMenu(menu.name)"
+                 (keydown.space)="toggleMenu(menu.name)"
+                 [class.expanded]="isMenuExpanded(menu.name)"
+                 tabindex="0"
+                 role="button">
+              <span class="menu-text">{{ menu.name }}</span>
+              <span class="expand-icon material-icons">
+                {{ isMenuExpanded(menu.name) ? 'expand_less' : 'expand_more' }}
+              </span>
+            </div>
+            
+            <!-- Submenu -->
+            <div class="submenu" 
+                 [class.expanded]="isMenuExpanded(menu.name)">
+              @for (child of menu.children; track child.name) {
+                <a [routerLink]="child.router" 
+                   routerLinkActive="active"
+                   [routerLinkActiveOptions]="{exact: true}"
+                   class="submenu-item">
+                  {{ child.name }}
+                </a>
+              }
+            </div>
+          } @else {
+            <!-- Menu simples sem filhos -->
+            <a [routerLink]="menu.router" 
+               routerLinkActive="active"
+               [routerLinkActiveOptions]="{exact: true}"
+               class="menu-simple">
+              {{ menu.name }}
+            </a>
+          }
+        </div>
         }
       </div>
     </div>
@@ -63,5 +140,5 @@
       </div>
     </div>
   </div>
-</div>
+}
 

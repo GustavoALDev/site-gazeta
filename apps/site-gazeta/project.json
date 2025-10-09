@@ -19,7 +19,7 @@
         "assets": [
           {
             "glob": "**/*",
-            "input": "apps/site-gazeta/public"
+            "input": "public/"
           }
         ],
         "styles": ["apps/site-gazeta/src/styles.scss"],

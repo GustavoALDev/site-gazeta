@@ -189,22 +189,15 @@ export class MenuListComponent {
         order: item.order as number
       };
     })
-    const menuBody = { menu: menuOrder };
+    const menuBody = { menus: menuOrder };
     this.itemsReordered.emit(updatedItems);
-    console.log(menuBody);;
-    this.apiService.orderMenu({menus:menuOrder}).subscribe({
+    this.apiService.orderMenu(menuBody).subscribe({
       next: (response) => {
         console.log('resposta da api', response);
-        // Emitir o evento apenas após sucesso na API
         console.log('Ordem do menu salva com sucesso:', response);
       },
       error: (error) => {
         console.error('Erro ao salvar ordem do menu:', error);
-        // Aqui você pode adicionar uma notificação de erro para o usuário
-        // Por exemplo: this.showError('Erro ao reordenar itens do menu');
-
-        // Reverter para a ordem original em caso de erro
-        // (os itens não serão atualizados na UI)
       }
     });
   }
@@ -266,11 +259,21 @@ export class MenuListComponent {
   }
 
   deleteItem(id: number, index: number): void {
+    console.log(this.items());
+    
+    
     const conf = confirm(`Tem certeza que deseja excluir o item?`);
     if (conf) {
       this.itemDeleted.emit(index);
       firstValueFrom(this.apiService.deleteMenu(id))
       .then(()=>{
+        const currentItems = this.items();
+        const updateOrder:Menu[] = currentItems.map((item, index) => ({
+          ...item,
+          order: index + 1
+        }));
+        console.log(updateOrder);
+        this.saveMenuOrder(updateOrder);
         alert('Item excluído com sucesso!');
       })
       .catch((error) => {

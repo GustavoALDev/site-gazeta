@@ -1,0 +1,46 @@
+<section class="news-cluster-container">
+  <div class="news-cluster-grid">
+    
+    @for (section of categorySections(); track section.categoryName) {
+      <div class="news-cluster">
+        <div class="news-cluster__header">
+          <h2 class="news-cluster__title" [style.color]="section.themeColor">
+            {{ section.categoryName }}
+          </h2>
+          <div class="news-cluster__title-line" [style.background-color]="section.themeColor"></div>
+        </div>
+
+        <div class="news-cluster__cards">
+          @for (newsItem of section.news; track newsItem.id) {
+            <article class="news-card">
+              <div class="news-card__image-container">
+                <img 
+                  [src]="getNewsImage(newsItem)" 
+                  [alt]="getNewsTitle(newsItem)"
+                  class="news-card__image"
+                >
+              </div>
+              
+              <div class="news-card__content">
+                @if (getNewsOverline(newsItem)) {
+                  <p class="news-card__overline">
+                    {{ getNewsOverline(newsItem) }}
+                  </p>
+                }
+                
+                <h3 class="news-card__title" [style.color]="section.themeColor">
+                  {{ getNewsTitle(newsItem) }}
+                </h3>
+                
+                <p class="news-card__metadata">
+                  {{ getNewsMetadata(newsItem) }}
+                </p>
+              </div>
+            </article>
+          }
+        </div>
+      </div>
+    }
+    
+  </div>
+</section>

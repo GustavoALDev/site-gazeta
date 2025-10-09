@@ -1,0 +1,18 @@
+<div class="category-horizontal-container">
+  <div class="category-header">
+    <h2>{{ categoryName() }}</h2>
+    <div class="category-underline" [style.background]="categoryColor()"></div>
+  </div>
+  <div class="news-cards-row">
+    @for (news of newsList().slice(0, 3); track news.id) {
+      <div class="news-card">
+        <img [src]="news.mediaNews[0].imgSize?.medium" [alt]="news.title" (error)="onImageError($event)" />
+        <div class="news-title">{{ news.title }}</div>
+      </div>
+    }
+    <div class="ads-container">
+      <span>Conteúdo Publicitário</span>
+      <img src="https://http2.mlstatic.com/D_NQ_NP_627090-MLB89289453722_082025-O.webp" alt="advertisement" class="adv">
+    </div>
+  </div>
+</div>

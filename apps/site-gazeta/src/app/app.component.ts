@@ -1,12 +1,23 @@
 import { Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { NxWelcomeComponent } from './nx-welcome.component';
-
+import { HeaderComponent } from '@site-gazeta/header';
+import { FooterComponent } from '@site-gazeta/footer';
 @Component({
-  imports: [NxWelcomeComponent, RouterModule],
+  imports: [RouterModule,HeaderComponent, FooterComponent],
   selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.scss',
+  template: `
+    <lib-header></lib-header>
+    <router-outlet></router-outlet>
+    <lib-footer></lib-footer>
+  `,
+  styles:[`
+    :host{
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      width: 100%;
+    }
+  `]
 })
 export class AppComponent {
   title = 'site-gazeta';

@@ -1,5 +1,7 @@
 export interface NewsVideo {
-    id?:number;
-    url:string;   
-    thumbnail:string;
+    id?: number;
+    url: string;   
+    thumbnail: string;
+    title: string;
+    duration: string;
 }

@@ -1,6 +1,6 @@
 import { RouterModule } from '@angular/router';
-import { Component, input, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, input, signal, effect, OnDestroy, model, output, inject, Renderer2, DOCUMENT, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { MenuItem } from '@site-gazeta/models';
 
 @Component({
@@ -8,20 +8,44 @@ import { MenuItem } from '@site-gazeta/models';
   imports: [CommonModule, RouterModule],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss',
-  host:{
-    class: 'host-sidebar',
-  }
 })
-export class SidebarComponent {
+export class SidebarComponent implements OnDestroy {
+  private readonly renderer = inject(Renderer2);
+  private readonly document = inject(DOCUMENT);
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly isBrowser = isPlatformBrowser(this.platformId);
+  
   backdrop = input(true);
-  openSidebar = input(() => this.toggleSidebar());
-  opened = input(false);
-  isOpened = signal<boolean>(false);
+  type = input<'overlay' | 'static'>('overlay');
+  opened = model<boolean>(false);
   menuItems = input<MenuItem[]>([]);
+  
+  isOpened_ = signal<boolean>(false);
   expandedMenus = signal<Set<string>>(new Set());
+  
+  isOpened = output<boolean>();
+  
+  constructor() {
+    effect(() => {
+      this.isOpened_.set(this.opened());
+      this.isOpened.emit(this.isOpened_());
+    });
+
+    effect(() => {
+      // Só manipula o DOM se estivermos no browser
+      if (this.isBrowser && this.type() === 'overlay' && this.backdrop()) {
+        if (this.isOpened_()) {
+          this.renderer.setStyle(this.document.body, 'overflow', 'hidden');
+        } else {
+          this.renderer.removeStyle(this.document.body, 'overflow');
+        }
+      }
+    });
+  }
 
   toggleSidebar() {
-    this.isOpened.set(!this.isOpened());
+    const newState = !this.opened();
+    this.opened.set(newState);
   }
 
   toggleMenu(menuName: string) {
@@ -43,5 +67,12 @@ export class SidebarComponent {
 
   hasChildren(menu: MenuItem): boolean {
     return menu.children ? menu.children.length > 0 : false;
+  }
+
+  ngOnDestroy() {
+    // Só limpa o overflow se estivermos no browser
+    if (this.isBrowser && this.type() === 'overlay' && this.backdrop()) {
+      this.renderer.removeStyle(this.document.body, 'overflow');
+    }
   }
 }

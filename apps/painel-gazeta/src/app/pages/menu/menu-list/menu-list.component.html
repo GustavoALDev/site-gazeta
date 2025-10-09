@@ -44,6 +44,14 @@
         </div>
         <button
           type="button"
+          class="update-btn "
+          (click)="deleteItem(item.id!, i)"
+          title="Excluir item"
+        >
+          <i class="material-icons">edit</i>
+        </button>
+        <button
+          type="button"
           class="delete-btn"
           (click)="deleteItem(item.id!, i)"
           title="Excluir item"

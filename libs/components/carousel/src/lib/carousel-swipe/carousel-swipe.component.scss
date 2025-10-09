@@ -1,0 +1,441 @@
+:host {
+  width: 100%;
+  margin: 20px 0;
+  display: block;
+}
+
+.carousel-swipe-container {
+  position: relative;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0;
+}
+
+// Wrapper principal do carousel
+.carousel-swipe-wrapper {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 16px;
+  position: relative;
+}
+
+// Track que contém todos os slides
+.carousel-swipe-track {
+  display: flex;
+  width: 100%;
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: transform;
+  
+  // Quando está sendo arrastado, remove a transição para seguir o dedo
+  &.dragging {
+    transition: none;
+  }
+  
+  // Quando está fazendo o reposicionamento do loop infinito, remove a transição
+  &.transitioning {
+    transition: none;
+  }
+}
+
+// Cada slide individual
+.carousel-swipe-slide {
+  flex: 0 0 100%;
+  width: 100%;
+  position: relative;
+  
+  // Adiciona um pouco de padding nas laterais para evitar corte
+  padding: 0 2px;
+  box-sizing: border-box;
+}
+
+// Animação de entrada dos cards
+@keyframes cardSwipeFadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+// Estilos do card de notícia (adaptado do desktop)
+.news-card {
+  width: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  transition: box-shadow 0.3s ease;
+  animation: cardSwipeFadeIn 0.6s ease-out;
+  background: #fff;
+  
+  &:active {
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+  }
+}
+
+// Container da imagem
+.news-card__image-container {
+  position: relative;
+  width: 100%;
+  height: 400px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+// Imagem principal
+.news-card__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: transform 0.4s ease;
+  
+  .news-card:active & {
+    transform: scale(1.02);
+  }
+}
+
+// Overlay gradiente
+.news-card__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg, 
+    rgba(0,0,0,0.1) 0%, 
+    rgba(0,0,0,0.3) 40%, 
+    rgba(0,0,0,0.7) 80%, 
+    rgba(0,0,0,0.85) 100%
+  );
+  z-index: 1;
+}
+
+// Conteúdo sobreposto na imagem
+.news-card__content-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 24px 20px;
+}
+
+// Container das tags
+.news-card__tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+// Tags individuais
+.news-card__tag {
+  display: inline-block;
+  padding: 6px 12px;
+  background: #FFD700;
+  color: #000;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  border-radius: 6px;
+  line-height: 1;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  
+  // Variações de cores por tipo de tag
+  &--destaque {
+    background: #FFD700;
+    color: #000;
+  }
+  
+  &--politica {
+    background: #FF6B6B;
+    color: #fff;
+  }
+  
+  &--concurso {
+    background: #4ECDC4;
+    color: #fff;
+  }
+  
+  &--esporte {
+    background: #45B7D1;
+    color: #fff;
+  }
+}
+
+// Container do conteúdo principal
+.news-card__content {
+  width: 100%;
+  max-width: 100%;
+}
+
+// Título da notícia
+.news-card__title {
+  color: white;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.3;
+  margin: 0 0 16px 0;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+  
+  // Limita a 3 linhas
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+}
+
+// Metadados (autor, data, etc.)
+.news-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.95);
+  background: rgba(0, 0, 0, 0.35);
+  padding: 12px 16px;
+  border-radius: 10px;
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.news-card__meta-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  
+  svg {
+    width: 14px;
+    height: 14px;
+    opacity: 0.9;
+    flex-shrink: 0;
+  }
+  
+  &--author { 
+    font-weight: 700; 
+  }
+  
+  &--date { 
+    text-transform: uppercase; 
+    font-weight: 700; 
+    letter-spacing: 0.5px; 
+    font-size: 11px;
+  }
+  
+  &--comments, &--views { 
+    font-weight: 600; 
+  }
+}
+
+// Indicadores (dots)
+.carousel-swipe-indicators {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+  padding: 0 20px;
+}
+
+.carousel-swipe-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: #6B7280; // Cinza escuro que funciona em ambos os modos
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0;
+  
+  &--active {
+    background: #FFD700;
+    transform: scale(1.2);
+  }
+  
+  &:hover:not(&--active) {
+    background: #4B5563; // Cinza mais escuro no hover
+    transform: scale(1.1);
+  }
+}
+
+// Navegação por botões (opcional, pode ser ocultada)
+.carousel-swipe-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 16px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.carousel-swipe-nav-btn {
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  pointer-events: all;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  
+  &:hover {
+    background: rgba(0, 0, 0, 0.8);
+    transform: scale(1.05);
+  }
+  
+  &:active {
+    transform: scale(0.95);
+  }
+  
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+// Responsividade
+
+// Tablets pequenos e celulares grandes
+@media (max-width: 480px) {
+  .news-card__image-container {
+    height: 350px;
+  }
+  
+  .news-card__content-overlay {
+    padding: 20px 18px;
+  }
+  
+  .news-card__title {
+    font-size: 16px;
+    line-height: 1.25;
+  }
+  
+  .news-card__meta {
+    gap: 12px;
+    font-size: 11px;
+    padding: 10px 14px;
+  }
+  
+  .news-card__tag {
+    padding: 5px 10px;
+    font-size: 9px;
+  }
+  
+  .carousel-swipe-indicators {
+    margin-top: 16px;
+  }
+  
+  .carousel-swipe-nav-btn {
+    width: 40px;
+    height: 40px;
+    
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+}
+
+// Celulares pequenos
+@media (max-width: 360px) {
+  .news-card__image-container {
+    height: 300px;
+  }
+  
+  .news-card__content-overlay {
+    padding: 18px 16px;
+  }
+  
+  .news-card__title {
+    font-size: 15px;
+  }
+  
+  .news-card__meta {
+    gap: 10px;
+    font-size: 10px;
+    padding: 8px 12px;
+  }
+  
+  .carousel-swipe-nav-btn {
+    width: 36px;
+    height: 36px;
+    
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+  
+  .carousel-swipe-nav {
+    padding: 0 12px;
+  }
+}
+
+// Estados de loading/carregamento
+.news-card.loading {
+  .news-card__image {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+  }
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+// Melhorias de acessibilidade
+@media (prefers-reduced-motion: reduce) {
+  .carousel-swipe-track {
+    transition: none;
+  }
+  
+  .news-card {
+    animation: none;
+  }
+  
+  .news-card__image {
+    transition: none;
+  }
+}
+
+// Modo escuro (se aplicável)
+@media (prefers-color-scheme: dark) {
+  .news-card {
+    background: #1a1a1a;
+  }
+  
+  .carousel-swipe-indicator {
+    background: #6B7280; // Mantém a mesma cor em ambos os modos
+    
+    &--active {
+      background: #FFD700;
+    }
+    
+    &:hover:not(&--active) {
+      background: #9CA3AF; // Cinza mais claro no hover para dark mode
+    }
+  }
+}

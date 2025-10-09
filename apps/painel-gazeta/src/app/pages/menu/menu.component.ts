@@ -60,7 +60,7 @@ export class MenuComponent implements OnInit {
     this.menuForm = this.fb.group({
       type: ['', Validators.required],
       name: [''],
-      categoryId: [''],
+      categoryName: [''],
       pageId: [''],
       externalLink: ['']
     });
@@ -89,6 +89,7 @@ export class MenuComponent implements OnInit {
   private loadMenuItems(): void {
     this.apiService.getMenu()
     .subscribe((response: Menu[]) => {
+      console.log(response);
       this.menuItems.set(response);
     });
   }
@@ -180,43 +181,23 @@ export class MenuComponent implements OnInit {
     // Base do item com todos os campos obrigatórios
     const newItem: Menu = {
       order: currentItems.length + 1,
-      name: '',
+      name: formValue.name,
       type: formValue.type,
-      slug: '',
-      routerLink: '',
-      externalLink: ''
     };
 
     switch (formValue.type) {
-      case 'category': {
-        const selectedCategory = this.categories().find(c => c.id === parseInt(formValue.categoryId));
-        if (selectedCategory) {
-          newItem.name = selectedCategory.name;
-          newItem.slug = selectedCategory.slug;
-          newItem.routerLink = `/categoria/${selectedCategory.slug}`;
-          newItem.externalLink = 'http://exemplo.com';
-        }
+      case 'category':
+        console.log(formValue.categoryName);
+        newItem.name = formValue.categoryName;
+        newItem.slug = formValue.categoryName;
         break;
-      }
-      case 'internal': {
-        const selectedPage = this.availablePages.find(p => p.value === formValue.pageId);
-        if (selectedPage) {
-          newItem.name = formValue.name;
-          newItem.slug = formValue.pageId; // Usar o valor da página como slug
-          newItem.routerLink = selectedPage.routerLink;
-          newItem.externalLink = 'https://'+formValue.name+'.com'; // Colocar o routerLink como externalLink também
-        }
+      case 'internal':
+        newItem.routerLink = formValue.pageId;
         break;
-      }
       case 'external':
-        newItem.name = formValue.name;
-        newItem.slug = formValue.name.toLowerCase().replace(/\s+/g, '-'); // Converter nome para slug
-        newItem.routerLink = formValue.externalLink; // Colocar o link externo como routerLink também
         newItem.externalLink = formValue.externalLink;
         break;
     }
-
-    console.log('Item a ser enviado:', newItem);
 
     this.apiService.setMenu(newItem)
     .subscribe({
@@ -235,6 +216,7 @@ export class MenuComponent implements OnInit {
 
   clearForm(): void {
     this.menuForm.reset();
+    this.menuForm.get('type')?.setValue('');
     this.currentFormType.set('');
     this.isFormValid.set(false);
   }

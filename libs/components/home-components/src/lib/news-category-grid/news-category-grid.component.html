@@ -1,0 +1,66 @@
+<div class="news-category-grid">
+  @for (categoryData of categorizedNews(); track categoryData.category.id) {
+    <div class="category-section" [attr.data-category]="categoryData.category.slug">
+      <!-- Header da Categoria -->
+      <div class="category-header" [style.border-bottom-color]="categoryData.category.color">
+        <h2 class="category-title" [style.color]="categoryData.category.color">
+          {{ categoryData.category.name }}
+        </h2>
+      </div>
+
+      <!-- Grid de Cards da Categoria -->
+      <div class="category-grid">
+        <!-- Card Principal (Featured) -->
+        @if (categoryData.featured) {
+          <article class="news-card featured-card" [style.--category-color]="categoryData.category.color">
+            <div class="card-image">
+              <img 
+                [src]="categoryData.featured.mediaNews[0].imgSize?.medium" 
+                [alt]="categoryData.featured.title"
+                loading="lazy"
+                (error)="onImageError($event)"
+              >
+              <div class="image-overlay"></div>
+            </div>
+            <div class="card-content">
+              <h3 class="card-title">{{ categoryData.featured.title }}</h3>
+              @if (categoryData.featured.subtitle) {
+                <p class="card-subtitle">{{ categoryData.featured.subtitle }}</p>
+              }
+              <div class="card-meta">
+                <span class="card-author">{{ categoryData.featured.author }}</span>
+                <span class="card-date">{{ categoryData.featured.published | date:'dd/MM/yyyy HH:mm' }}</span>
+              </div>
+            </div>
+          </article>
+        }
+
+        <!-- Cards Secundários -->
+        @if (categoryData.secondary.length > 0) {
+          <div class="secondary-cards">
+            @for (news of categoryData.secondary; track news.id) {
+              <article class="news-card secondary-card" [style.--category-color]="categoryData.category.color">
+                <div class="card-image">
+                  <img 
+                    [src]="news.mediaNews[0].imgSize?.medium" 
+                    [alt]="news.title"
+                    loading="lazy"
+                    (error)="onImageError($event)"
+                  >
+                  <div class="image-overlay"></div>
+                </div>
+                <div class="card-content">
+                  <h4 class="card-title">{{ news.title }}</h4>
+                  <div class="card-meta">
+                    <span class="card-author">{{ news.author }}</span>
+                    <span class="card-date">{{ news.published  | date:'dd/MM/yyyy HH:mm' }}</span>
+                  </div>
+                </div>
+              </article>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

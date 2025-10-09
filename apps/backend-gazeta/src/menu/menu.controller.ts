@@ -237,7 +237,7 @@ export class MenuController {
   @ApiBearerAuth()
   @ApiOperation({ 
     summary: 'Excluir menu', 
-    description: 'Endpoint para excluir um menu (soft delete)' 
+    description: 'Endpoint para excluir permanentemente um menu do banco de dados' 
   })
   @ApiParam({ name: 'id', description: 'ID do menu', type: 'number' })
   @ApiResponse({ status: 200, description: 'Menu excluído com sucesso' })

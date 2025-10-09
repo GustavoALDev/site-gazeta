@@ -1,0 +1,82 @@
+<nav class="menu">
+  <div class="menu-container" [class.search-active]="showSearchBar()">
+    <!-- Menu normal -->
+    <ul class="menu-items" [class.hidden]="showSearchBar()">
+      <li class="menu-item">
+        <a href="#" class="menu-link">Home</a>
+      </li>
+      <li class="menu-item">
+        <a href="#" class="menu-link">Novidades</a>
+      </li>
+      <li class="menu-item">
+        <a href="#" class="menu-link">Saúde</a>
+      </li>
+      <li class="menu-item">
+        <a href="#" class="menu-link">Política</a>
+      </li>
+      <li class="menu-item">
+        <a href="#" class="menu-link">Esporte</a>
+      </li>
+      <li class="menu-item">
+        <a href="#" class="menu-link">Brasil</a>
+      </li>
+      <li class="menu-item">
+        <a href="#" class="menu-link">Mundo</a>
+      </li>
+    </ul>
+    
+    <!-- Barra de pesquisa -->
+    <div class="search-bar" [class.active]="showSearchBar()">
+      <div class="search-input-container">
+        <input 
+          type="text" 
+          class="search-input" 
+          placeholder="Digite sua pesquisa..."
+          [ngModel]="searchTerm()"
+          (ngModelChange)="searchTerm.set($event)"
+          (keydown)="onSearchKeydown($event)"
+          autocomplete="off">
+        <button class="search-submit-btn" (click)="onSearch()" aria-label="Pesquisar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M21 21L16.514 16.506L21 21ZM19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <button class="search-close-btn" (click)="onCloseSearch()" aria-label="Fechar pesquisa">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    
+    <!-- Ícones da direita -->
+    <div class="right-icons">
+      <!-- Ícone de busca -->
+      @if (!showSearchBar()) {
+      <div class="search-icon">
+        <button class="search-btn" (click)="onSearchClick()" [attr.aria-label]="showSearchBar() ? 'Fechar busca' : 'Buscar'">
+          <svg *ngIf="!showSearchBar()" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M21 21L16.514 16.506L21 21ZM19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <svg *ngIf="showSearchBar()" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+      }
+      <!-- Botão hambúrguer para mobile -->
+      <div class="hamburger-menu" [class.hidden]="showSearchBar()">
+        <button class="hamburger-btn" (click)="sidebar.toggleSidebar()" aria-label="Menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>
+<lib-sidebar 
+#sidebar
+[opened]="showSideMenu()"
+[menuItems]="menuItems()">
+</lib-sidebar>

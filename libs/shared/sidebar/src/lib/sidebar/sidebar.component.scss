@@ -31,22 +31,40 @@ $font-size-xsmall: 0.625rem; // 10px
 
 //Host styles
 :host {
-  display: flex;
-  z-index: 9999;
-  height: 100vh;
+  display: contents;
+  
+  // Quando em modo static, o host deve ocupar espaço
+  &:has(.sidebar-static) {
+    display: block;
+    width: $sidebar-width;
+    height: 100%;
+  }
 }
 
-// Sidebar Container
-.sidecontent {
-  position: relative;
-  height: 100vh;
+// Sidebar Overlay - renderizado no topo do body
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10000;
+  display: flex;
+}
+
+// Backdrop
+.backdrop {
+  @include fullscreen-fixed;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 10001;
+  cursor: pointer;
 }
 
 // Main Sidebar
 .sidebar {
-  z-index: 9999;
+  z-index: 10002;
   background: white;
-  position: fixed;
+  position: relative;
   top: 0;
   left: 0;
   width: $sidebar-width;
@@ -56,6 +74,28 @@ $font-size-xsmall: 0.625rem; // 10px
   box-shadow: $box-shadow-default;
   transform: translateX(-100%);
   transition: transform $transition-default;
+
+  &.sidebar_opened {
+    transform: translateX(0);
+  }
+
+  // Modo Static: renderizado dentro do layout
+  &.sidebar-static {
+    position: relative;
+    height: 100%;
+    transform: translateX(0);
+    box-shadow: none;
+    border-right: 1px solid rgba(0, 0, 0, 0.1);
+
+    &.sidebar_opened {
+      transform: translateX(0);
+    }
+
+    // No modo static, não precisamos da animação de slide
+    &:not(.sidebar_opened) {
+      transform: translateX(0);
+    }
+  }
 
   // Header
   &__header {
