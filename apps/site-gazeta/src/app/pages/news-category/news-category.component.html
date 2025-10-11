@@ -32,7 +32,7 @@
               </div>
             }
             <div class="news-title-overlay">
-              <h2 class="news-title" [style.color]="category()!.color">{{ featuredNews()!.title }}</h2>
+              <h2 class="news-title" >{{ featuredNews()!.title }}</h2>
             </div>
           </div>
         </article>
@@ -55,7 +55,7 @@
                 </div>
               }
               <div class="news-title-overlay">
-                <h3 class="news-title" [style.color]="category()!.color">{{ newsItem.title }}</h3>
+                <h3 class="news-title" >{{ newsItem.title }}</h3>
               </div>
             </div>
           </article>
@@ -63,7 +63,8 @@
       </div>
     </div>
     <div class="more-news">
-      <lib-more-news [moreNews]="remainingNews()" [category]="category()!"></lib-more-news>
+      <lib-more-news [moreNews]="remainingNews()" [slice]="3"></lib-more-news>
+      <lib-side-news [newsList]="remainingNews()" [category]="category()!"></lib-side-news>
     </div>
     } @else {
       <div class="no-news">

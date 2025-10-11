@@ -234,7 +234,11 @@
         }
     }
 }
-
+.more-news {
+    display: flex;
+    gap: 1rem;
+    
+}
 
 .no-news {
     text-align: center;

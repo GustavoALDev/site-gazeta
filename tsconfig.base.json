@@ -34,6 +34,7 @@
       "@site-gazeta/related-news": [
         "libs/components/related-news/src/index.ts"
       ],
+      "@site-gazeta/side-news": ["libs/components/side-news/src/index.ts"],
       "@site-gazeta/sidebar": ["libs/shared/sidebar/src/index.ts"],
       "@site-gazeta/text-editor": ["libs/components/text-editor/src/index.ts"],
       "@site-gazeta/video-player": ["libs/components/video-player/src/index.ts"]

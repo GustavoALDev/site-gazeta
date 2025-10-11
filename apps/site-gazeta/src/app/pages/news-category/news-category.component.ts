@@ -5,9 +5,10 @@ import { Category, News } from '@site-gazeta/models';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { MoreNewsComponent } from '@site-gazeta/more-news';
+import { SideNewsComponent } from '@site-gazeta/side-news';
 @Component({
   selector: 'app-news-category',
-  imports: [CommonModule, RouterLink, MoreNewsComponent],
+  imports: [CommonModule, RouterLink, MoreNewsComponent, SideNewsComponent],
   templateUrl: './news-category.component.html',
   styleUrl: './news-category.component.scss',
 })

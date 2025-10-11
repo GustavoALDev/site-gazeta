@@ -12,12 +12,15 @@ import { Category, News } from '@site-gazeta/models';
 export class MoreNewsComponent implements OnInit{
   moreNews = input<News[]>([]);
   category = input<Category>();
-  slice = input<number>();
+  slice = input<number>(0);
   showNews = signal<number>(0);
 
   
   ngOnInit(): void {
     this.sliceNews();
+    console.log(this.slice());
+    console.log(this.moreNews());
+    console.log(this.category());
   }
 
   sliceNews(){
