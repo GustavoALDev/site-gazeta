@@ -1,3 +1,4 @@
+import { RouterModule } from '@angular/router';
 import { Component, signal, computed, input, ElementRef, ViewChild, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { News } from '@site-gazeta/models';
@@ -7,7 +8,7 @@ import { Category } from '@site-gazeta/models';
 
 @Component({
   selector: 'lib-carousel',
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './carousel.component.html',
   styleUrl: './carousel.component.scss',
 })
@@ -27,7 +28,9 @@ export class CarouselComponent implements OnInit, OnDestroy {
   
   // Computed que usa input ou fallback para mock
   newsItems = computed(() => {
-    const inputItems = this.news();
+    const inputItems = this.news()
+    .sort((a, b) => new Date(b.published).getTime() - new Date(a.published).getTime())
+    .slice(0, 5);
     return inputItems
   });
 

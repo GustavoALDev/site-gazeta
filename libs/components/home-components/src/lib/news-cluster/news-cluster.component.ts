@@ -1,4 +1,5 @@
 import { Component, input, computed } from '@angular/core';
+import { RouterModule } from '@angular/router';
 import { News } from '@site-gazeta/models';
 
 interface CategorySection {
@@ -14,12 +15,13 @@ interface NewsClusterItem {
   overline: string;
   title: string;
   metadata: string;
+  slug?: string;
 }
 
 @Component({
   selector: 'lib-news-cluster',
   standalone: true,
-  imports: [],
+  imports: [RouterModule],
   templateUrl: './news-cluster.component.html',
   styleUrl: './news-cluster.component.scss',
 })
@@ -187,5 +189,13 @@ export class NewsClusterComponent {
     if ('metadata' in newsItem) return newsItem.metadata || '';
     if ('author' in newsItem) return newsItem.author || '';
     return '';
+  }
+
+  // Helper: pega o slug para navegação
+  getNewsSlug(newsItem: News | NewsClusterItem): string[] {
+    if ('slug' in newsItem && newsItem.slug) {
+      return ['/news', newsItem.slug];
+    }
+    return ['/news', String(newsItem.id)];
   }
 }

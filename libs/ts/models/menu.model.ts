@@ -9,4 +9,6 @@ export interface Menu {
     isActive?:boolean;
     createdAt?:string;
     updatedAt?:string;
+    children?:Menu[];
+    router?:string;
 }

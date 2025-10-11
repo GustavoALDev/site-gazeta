@@ -28,8 +28,12 @@
         "libs/components/home-components/src/index.ts"
       ],
       "@site-gazeta/menu": ["libs/components/menu/src/index.ts"],
-      "@site-gazeta/models": ["libs/ts/models/index.ts"],
       "@site-gazeta/mock": ["libs/ts/mock/index.ts"],
+      "@site-gazeta/models": ["libs/ts/models/index.ts"],
+      "@site-gazeta/more-news": ["libs/components/more-news/src/index.ts"],
+      "@site-gazeta/related-news": [
+        "libs/components/related-news/src/index.ts"
+      ],
       "@site-gazeta/sidebar": ["libs/shared/sidebar/src/index.ts"],
       "@site-gazeta/text-editor": ["libs/components/text-editor/src/index.ts"],
       "@site-gazeta/video-player": ["libs/components/video-player/src/index.ts"]

@@ -14,7 +14,7 @@
   <div class="carousel-wrapper" #carouselWrapper>
     <div class="carousel-track" [class.dragging]="isDragging()">
       @for (item of visibleItems(); track item.id; let i = $index) {
-        <div class="news-card" [class.news-card--center]="isCenterItem()(i)">
+        <div class="news-card" [class.news-card--center]="isCenterItem()(i)" [routerLink]="['/news', item.slug]">
           <!-- Container da imagem -->
           <div class="news-card__image-container">
             <!-- Imagem -->

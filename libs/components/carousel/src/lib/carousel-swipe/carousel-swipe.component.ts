@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { News } from '@site-gazeta/models';
 import { mockCategories } from '@site-gazeta/mock';
 import { Category } from '@site-gazeta/models';
+import { RouterModule } from '@angular/router';
 
 // Interface para itens com clones mínimos
 interface NewsWithClone extends Omit<News, 'id'> {
@@ -13,7 +14,7 @@ interface NewsWithClone extends Omit<News, 'id'> {
 
 @Component({
   selector: 'lib-carousel-swipe',
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './carousel-swipe.component.html',
   styleUrl: './carousel-swipe.component.scss',
 })

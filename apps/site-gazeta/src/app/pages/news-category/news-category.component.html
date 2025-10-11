@@ -1,0 +1,74 @@
+@if (isLoading()) {
+  <div class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Carregando notícias...</p>
+  </div>
+} @else {
+  <section class="news-category-container">
+      <button class="back-button" routerLink="/" aria-label="Voltar para página anterior" routerLink="/">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+          <span>Voltar</span>
+        </button>
+      <div class="category-name" [style.border-color]="category()!.color">
+          <h2 [style.color]="category()!.color">{{ category()!.name }}</h2>
+      </div>
+    @if (news().length > 0) {
+    <div class="news-grid" >
+      <!-- Notícia principal (imagem grande) -->
+      @if (featuredNews()) {
+        <article class="featured-news" [routerLink]="['/news', featuredNews()!.slug]" >
+          <div class="news-image">
+            @if (featuredNews()!.mediaNews && featuredNews()!.mediaNews.length > 0) {
+              <img 
+                [src]="featuredNews()!.mediaNews[0].imgSize?.medium || featuredNews()!.mediaNews[0].imgSize?.original" 
+                [alt]="featuredNews()!.title"
+                loading="lazy"
+              />
+            } @else {
+              <div class="placeholder-image">
+                <span>Sem imagem</span>
+              </div>
+            }
+            <div class="news-title-overlay">
+              <h2 class="news-title" [style.color]="category()!.color">{{ featuredNews()!.title }}</h2>
+            </div>
+          </div>
+        </article>
+      }
+
+      <!-- Notícias secundárias (2 imagens menores) -->
+      <div class="secondary-news">
+        @for (newsItem of secondaryNews(); track newsItem.id) {
+          <article class="secondary-news-item" [routerLink]="['/news', newsItem.slug]">
+            <div class="news-image">
+              @if (newsItem.mediaNews && newsItem.mediaNews.length > 0) {
+                <img 
+                  [src]="newsItem.mediaNews[0].imgSize?.small || newsItem.mediaNews[0].imgSize?.original" 
+                  [alt]="newsItem.title"
+                  loading="lazy"
+                />
+              } @else {
+                <div class="placeholder-image">
+                  <span>Sem imagem</span>
+                </div>
+              }
+              <div class="news-title-overlay">
+                <h3 class="news-title" [style.color]="category()!.color">{{ newsItem.title }}</h3>
+              </div>
+            </div>
+          </article>
+        }
+      </div>
+    </div>
+    <div class="more-news">
+      <lib-more-news [moreNews]="remainingNews()" [category]="category()!"></lib-more-news>
+    </div>
+    } @else {
+      <div class="no-news">
+        <p>Nenhuma notícia encontrada para esta categoria.</p>
+      </div>
+    }
+  </section>
+}

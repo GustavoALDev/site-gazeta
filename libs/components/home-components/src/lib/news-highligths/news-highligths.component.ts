@@ -1,4 +1,5 @@
 import { Component, input, computed } from '@angular/core';
+import { RouterModule } from '@angular/router';
 import { News } from '@site-gazeta/models';
 
 interface TopNewsCategory {
@@ -9,7 +10,7 @@ interface TopNewsCategory {
 
 @Component({
   selector: 'lib-news-highligths',
-  imports: [],
+  imports: [RouterModule],
   templateUrl: './news-highligths.component.html',
   styleUrl: './news-highligths.component.scss',
 })

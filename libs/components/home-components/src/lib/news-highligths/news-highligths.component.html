@@ -12,7 +12,7 @@
           @for (newsItem of category.news; track newsItem.id; let index = $index) {
             <li class="category__item">
               <span class="item__number">{{ index + 1 }}</span>
-              <a [href]="'/noticia/' + newsItem.slug" class="item__link">
+              <a [routerLink]="['/news', newsItem.slug]" class="item__link">
                 <p class="item__text">{{ newsItem.title }}</p>
               </a>
             </li>

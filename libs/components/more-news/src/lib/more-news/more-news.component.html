@@ -1,0 +1,31 @@
+@if (moreNews().length > 0) {
+    <div class="remaining-news-grid">
+      @for (newsItem of moreNews().slice(0, showNews()? showNews() : moreNews().length); track newsItem.id) {
+        <article class="news-item" [routerLink]="['/news', newsItem.slug]" >
+          <div class="news-image" [style.background-color]="category()?.color" >
+            @if (newsItem.mediaNews && newsItem.mediaNews.length > 0) {
+              <img 
+                [src]="newsItem.mediaNews[0].imgSize?.small || newsItem.mediaNews[0].imgSize?.original" 
+                [alt]="newsItem.title"
+                loading="lazy"
+              />
+            } @else {
+              <div class="placeholder-image">
+                <span>Sem imagem</span>
+              </div>
+            }
+          </div>
+          <div class="news-content" >
+            <h3 class="news-title" [style.color]="category()?.color">{{ newsItem.title }}</h3>
+            @if (newsItem.subtitle) {
+              <p class="news-subtitle" [style.color]="category()?.color">{{ newsItem.subtitle }}</p>
+            }
+          </div>
+        </article>
+        
+      }
+      @if (showNews() < moreNews().length) {
+        <button class="show-more-news" (click)="showMoreNews()">Ver mais</button>
+      }
+    </div>
+  }

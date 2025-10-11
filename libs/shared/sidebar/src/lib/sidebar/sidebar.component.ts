@@ -1,7 +1,7 @@
 import { RouterModule } from '@angular/router';
 import { Component, input, signal, effect, OnDestroy, model, output, inject, Renderer2, DOCUMENT, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { MenuItem } from '@site-gazeta/models';
+import { Menu } from '@site-gazeta/models';
 
 @Component({
   selector: 'lib-sidebar',
@@ -18,7 +18,8 @@ export class SidebarComponent implements OnDestroy {
   backdrop = input(true);
   type = input<'overlay' | 'static'>('overlay');
   opened = model<boolean>(false);
-  menuItems = input<MenuItem[]>([]);
+  menuItems = input< Menu[]>([]);
+
   
   isOpened_ = signal<boolean>(false);
   expandedMenus = signal<Set<string>>(new Set());
@@ -65,7 +66,7 @@ export class SidebarComponent implements OnDestroy {
     return this.expandedMenus().has(menuName);
   }
 
-  hasChildren(menu: MenuItem): boolean {
+  hasChildren(menu: Menu): boolean {
     return menu.children ? menu.children.length > 0 : false;
   }
 

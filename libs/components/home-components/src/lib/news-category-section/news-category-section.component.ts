@@ -1,11 +1,12 @@
 import { Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { News } from '@site-gazeta/models';
 
 
 @Component({
   selector: 'lib-news-category-section',
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './news-category-section.component.html',
   styleUrl: './news-category-section.component.scss',
 })

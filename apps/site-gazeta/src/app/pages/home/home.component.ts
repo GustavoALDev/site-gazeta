@@ -1,11 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { MenuComponent } from '@site-gazeta/menu';
 import { CarouselComponent } from '@site-gazeta/carousel';
 import { CarouselSwipeComponent } from '@site-gazeta/carousel';
 import { NewsCategoryGridComponent, NewsCategorySectionComponent, NewsHighligthsComponent, NewsClusterComponent  } from '@site-gazeta/home-components';
-import { Category, News, NewsVideo } from '@site-gazeta/models';
+import { Category, News, NewsVideo, Video, Menu } from '@site-gazeta/models';
 import { VideoPlayerComponent } from '@site-gazeta/video-player';
 import { mockNewsItems, mockCategories } from '@site-gazeta/mock';
+import { ApiService } from '../../service/api.service';
+import { MoreNewsComponent } from '@site-gazeta/more-news';
 
 @Component({
   selector: 'app-home',
@@ -17,31 +19,45 @@ import { mockNewsItems, mockCategories } from '@site-gazeta/mock';
     NewsCategorySectionComponent,
     NewsHighligthsComponent,
     NewsClusterComponent,
-    VideoPlayerComponent
+    VideoPlayerComponent,
+    MoreNewsComponent
   ],
   templateUrl: './home.component.html',
-  styleUrl: './home.component.scss',
+  styleUrls: ['./home.component.scss'],
 })
-export class HomeComponent {
-  protected mockNewsItems: News[] = mockNewsItems;
-  protected mockCategories: Category[] = mockCategories;
+export class HomeComponent implements OnInit{
+  private apiService = inject(ApiService);
+  protected mockNewsItems = signal<News[]>([]);
+  protected mockCategories = signal<Category[]>([]);
+  protected mockVideos = signal<Video[]>([]);
   
 
-  protected mockVideos: NewsVideo[] = [ 
-    {
-      id: 1,
-      title: 'Usina de Tucuruí 01',
-      url: 'videos/video1.mp4',
-      thumbnail: 'videos/video1.mp4',
-      duration: '01:51',
-    },
-    {
-      id: 2,
-      title: 'Lula é orientado a manter discurso de soberania | CNN 360º',
-      url: 'videos/video2.mp4',
-      thumbnail: 'videos/video2.mp4',
-      duration: '01:51',
-    },
-    
-  ];
+  
+  ngOnInit(): void {
+    this.getNews();
+    this.getVideos();
+    this.getCategories();
+
+  }
+
+  getNews() {
+    this.apiService.getNews().subscribe((news) => {
+      this.mockNewsItems.set(news);
+    });
+  }
+
+  getCategories() {
+    this.apiService.getCategories().subscribe((categories) => {
+      this.mockCategories.set(categories.sort(() => Math.random() - 0.5));
+    });
+    console.log(this.mockCategories());
+  }
+  
+  getVideos() {
+    this.apiService.getVideos().subscribe((videos) => {
+      this.mockVideos.set(videos);
+    });
+  }
+
+  
 }

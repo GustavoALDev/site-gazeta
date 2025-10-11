@@ -1,0 +1,29 @@
+<div class="related-news-container">
+  <h3 class="section-title">Notícias Relacionadas</h3>
+  
+  <div class="cards-grid">
+    @for (news of relatedNews(); track news.id; let i = $index) {
+      @if (i < 3) {
+        <div class="news-card" (click)="onNewsClick(news)" [routerLink]="['/news', news.slug]">
+          <div class="card-image">
+            @if (news.mediaNews && news.mediaNews.length > 0) {
+              <img 
+                [src]="news.mediaNews[0].imgSize?.medium" 
+                [alt]="news.title"
+                loading="lazy"
+              />
+            } @else {
+              <div class="placeholder-image">
+                <span>Sem imagem</span>
+              </div>
+            }
+          </div>
+          
+          <div class="card-overlay">
+            <h4 class="news-title">{{ news.title }}</h4>
+          </div>
+        </div>
+      }
+    }
+  </div>
+</div>

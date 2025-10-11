@@ -1,43 +1,38 @@
-import { Component, inject, OnDestroy, OnInit, signal, HostListener } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, signal, HostListener, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DarkModeService } from '@site-gazeta/dark-mode';
 import { Subject, takeUntil } from 'rxjs';
 import { SidebarComponent } from '@site-gazeta/sidebar';
-import { MenuItem } from '@site-gazeta/models';
+import { Menu } from '@site-gazeta/models';
+import { RouterModule } from '@angular/router';
+import { ApiService } from 'apps/site-gazeta/src/app/service/api.service';
+
 
 @Component({
   selector: 'lib-menu',
-  imports: [CommonModule, FormsModule,SidebarComponent],
+  imports: [CommonModule, FormsModule, SidebarComponent, RouterModule],
   templateUrl: './menu.component.html',
   styleUrl: './menu.component.scss',
 })
 export class MenuComponent implements OnInit, OnDestroy {
-  isDarkMode$ = signal<boolean>(false);
+  apiService = inject(ApiService);
   darkModeService = inject(DarkModeService);
+  isDarkMode$ = signal<boolean>(false);
   destroy$ = new Subject<void>();
   showSideMenu = signal<boolean>(false);
   // Estados para controle da pesquisa
   showSearchBar = signal<boolean>(false);
   searchTerm = signal<string>('');
-  menuItems = signal<MenuItem[]>([]);
+  menuItems = signal<Menu[]>([]);
   ngOnInit(): void {
-    this.darkModeService.isDarkMode$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((isDarkMode) => {
-        this.isDarkMode$.set(isDarkMode);
-      });
-      this.menuItems.set([
-        { name: 'Home', router: '/home' },
-        { name: 'Novidades', router: '/novidades' },
-        { name: 'Saúde', router: '/saude' },
-        { name: 'Política', router: '/politica' },
-        { name: 'Esporte', router: '/esporte' },
-        { name: 'Brasil', router: '/brasil' },
-        { name: 'Mundo', router: '/mundo' },
-      ]);
+    this.getMenu();
   }
-
+  getMenu() {
+    this.apiService.getMenu().subscribe((menu) => {
+      this.menuItems.set(menu);
+    });
+  }
   onSearchClick(): void {
     this.showSearchBar.set(!this.showSearchBar());
     if (this.showSearchBar()) {

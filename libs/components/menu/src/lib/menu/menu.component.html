@@ -2,27 +2,23 @@
   <div class="menu-container" [class.search-active]="showSearchBar()">
     <!-- Menu normal -->
     <ul class="menu-items" [class.hidden]="showSearchBar()">
-      <li class="menu-item">
-        <a href="#" class="menu-link">Home</a>
-      </li>
-      <li class="menu-item">
-        <a href="#" class="menu-link">Novidades</a>
-      </li>
-      <li class="menu-item">
-        <a href="#" class="menu-link">Saúde</a>
-      </li>
-      <li class="menu-item">
-        <a href="#" class="menu-link">Política</a>
-      </li>
-      <li class="menu-item">
-        <a href="#" class="menu-link">Esporte</a>
-      </li>
-      <li class="menu-item">
-        <a href="#" class="menu-link">Brasil</a>
-      </li>
-      <li class="menu-item">
-        <a href="#" class="menu-link">Mundo</a>
-      </li>
+      @for (item of menuItems(); track item.id) {
+        @if(item.type === 'internal'){
+        <li class="menu-item">
+          <a [routerLink]="item.routerLink" class="menu-link">{{item.name}}</a>
+        </li>
+      }
+      @else if(item.type === 'external'){
+        <li class="menu-item">
+          <a [href]="item.externalLink" class="menu-link">{{item.name}}</a>
+        </li>
+      }
+      @else if(item.type === 'category'){
+        <li class="menu-item">
+          <a [routerLink]="['/category', item.slug]" class="menu-link">{{item.name}}</a>
+        </li>
+      }
+      }
     </ul>
     
     <!-- Barra de pesquisa -->

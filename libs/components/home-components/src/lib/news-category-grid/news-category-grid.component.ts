@@ -2,8 +2,7 @@ import { Component, input, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { News, NewsMedia, Category } from '@site-gazeta/models';
 import { mockCategories } from '@site-gazeta/mock';
-
-
+import { RouterModule } from '@angular/router';
 
 
 interface CategoryNews {
@@ -14,7 +13,7 @@ interface CategoryNews {
 
 @Component({
   selector: 'lib-news-category-grid',
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './news-category-grid.component.html',
   styleUrl: './news-category-grid.component.scss',
 })

@@ -12,7 +12,7 @@
 
         <div class="news-cluster__cards">
           @for (newsItem of section.news; track newsItem.id) {
-            <article class="news-card">
+            <article class="news-card" [routerLink]="getNewsSlug(newsItem)">
               <div class="news-card__image-container">
                 <img 
                   [src]="getNewsImage(newsItem)" 

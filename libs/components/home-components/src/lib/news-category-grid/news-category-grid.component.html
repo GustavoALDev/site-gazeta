@@ -1,6 +1,6 @@
 <div class="news-category-grid">
   @for (categoryData of categorizedNews(); track categoryData.category.id) {
-    <div class="category-section" [attr.data-category]="categoryData.category.slug">
+    <div class="category-section" [attr.data-category]="categoryData.category.slug" >
       <!-- Header da Categoria -->
       <div class="category-header" [style.border-bottom-color]="categoryData.category.color">
         <h2 class="category-title" [style.color]="categoryData.category.color">
@@ -12,7 +12,7 @@
       <div class="category-grid">
         <!-- Card Principal (Featured) -->
         @if (categoryData.featured) {
-          <article class="news-card featured-card" [style.--category-color]="categoryData.category.color">
+          <article class="news-card featured-card" [style.--category-color]="categoryData.category.color" [routerLink]="['/news', categoryData.featured.slug]">
             <div class="card-image">
               <img 
                 [src]="categoryData.featured.mediaNews[0].imgSize?.medium" 
@@ -39,8 +39,8 @@
         @if (categoryData.secondary.length > 0) {
           <div class="secondary-cards">
             @for (news of categoryData.secondary; track news.id) {
-              <article class="news-card secondary-card" [style.--category-color]="categoryData.category.color">
-                <div class="card-image">
+              <article class="news-card secondary-card" [style.--category-color]="categoryData.category.color" [routerLink]="['/news', categoryData.featured?.slug]">
+                <div class="card-image" >
                   <img 
                     [src]="news.mediaNews[0].imgSize?.medium" 
                     [alt]="news.title"

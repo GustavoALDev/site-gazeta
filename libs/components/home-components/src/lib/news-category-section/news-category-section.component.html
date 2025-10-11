@@ -5,7 +5,7 @@
   </div>
   <div class="news-cards-row">
     @for (news of newsList().slice(0, 3); track news.id) {
-      <div class="news-card">
+      <div class="news-card" [routerLink]="['/news', news.slug]">
         <img [src]="news.mediaNews[0].imgSize?.medium" [alt]="news.title" (error)="onImageError($event)" />
         <div class="news-title">{{ news.title }}</div>
       </div>
