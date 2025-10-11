@@ -88,36 +88,36 @@
     align-items: center;
     justify-content: center;
     text-decoration: none;
-    transition: transform 0.3s ease;
+    transition: all 0.3s ease;
+    color: white;
 
     &:hover {
       transform: translateY(-3px);
+      opacity: 0.8;
     }
 
-    .icon-placeholder {
-      width: 100%;
-      height: 100%;
-      background-color: #666;
-      border-radius: 4px;
+    svg {
+      width: 24px;
+      height: 24px;
     }
 
-    &.facebook .icon-placeholder {
+    &.facebook {
       background-color: #3b5998;
     }
 
-    &.instagram .icon-placeholder {
-      background-color: #5f4339;
+    &.instagram {
+      background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);
     }
 
-    &.youtube .icon-placeholder {
+    &.youtube {
       background-color: #ff0000;
     }
 
-    &.flipboard .icon-placeholder {
+    &.flipboard {
       background-color: #e12828;
     }
 
-    &.pinterest .icon-placeholder {
+    &.pinterest {
       background-color: #bd081c;
     }
   }
