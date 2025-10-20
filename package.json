@@ -93,6 +93,6 @@
   },
   "prisma": {
     "schema": "apps/backend-gazeta/prisma/schema.prisma",
-    "seed": "ts-node apps/backend-gazeta/prisma/seed.ts"
+    "seed": "node --require dotenv/config apps/backend-gazeta/prisma/seed.js"
   }
 }
