@@ -108,6 +108,18 @@ model Media {
   @@map("media")
 }
 
+model Video {
+  id        Int      @id @default(autoincrement())
+  title     String   @db.VarChar(255)
+  url       String   @db.VarChar(500)
+  thumbnail String?  @db.VarChar(500) // Opcional
+  duration  String?  @db.VarChar(20)  // Formato MM:SS ou HH:MM:SS
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("videos")
+}
+
 model Advertisement {
   id          Int             @id @default(autoincrement())
   title       String          @db.VarChar(255)
