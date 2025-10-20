@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { writeFile, mkdir, unlink } from 'fs/promises';
 import * as path from 'path';
-import * as sharp from 'sharp';
+import sharp from 'sharp';
 
 @Injectable()
 export class VideoProcessingService {

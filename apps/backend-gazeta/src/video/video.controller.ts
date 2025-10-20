@@ -85,8 +85,7 @@ export class VideoController {
           type: 'string',
           format: 'binary',
           description: 'Arquivo de thumbnail (JPG, PNG, WEBP) - OPCIONAL',
-          example: 'thumbnail.jpg',
-          required: false
+          example: 'thumbnail.jpg'
         },
         title: {
           type: 'string',
@@ -96,8 +95,7 @@ export class VideoController {
         duration: {
           type: 'string',
           description: 'Duração do vídeo no formato MM:SS ou HH:MM:SS (opcional)',
-          example: '01:51',
-          required: false
+          example: '01:51'
         }
       },
       required: ['video', 'title']
@@ -130,7 +128,7 @@ export class VideoController {
     }
   })
   async uploadVideo(
-    @UploadedFiles() files: { video?: Express.Multer.File[], thumbnail?: Express.Multer.File[] },
+    @UploadedFiles() files: { video?: any[]; thumbnail?: any[] },
     @Body('title') title: string,
     @Body('duration') duration?: string
   ): Promise<VideoResponseDto> {
