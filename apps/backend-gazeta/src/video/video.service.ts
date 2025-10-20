@@ -5,6 +5,7 @@ import { UpdateVideoDto } from './dto/update-video.dto';
 import { VideoResponseDto } from './dto/video-response.dto';
 import { UploadVideoDto } from './dto/upload-video.dto';
 import { VideoProcessingService } from './services/video-processing.service';
+import { VideoMetadataService } from './services/video-metadata.service';
 
 @Injectable()
 export class VideoService {
@@ -12,7 +13,8 @@ export class VideoService {
 
   constructor(
     private prisma: PrismaService,
-    private videoProcessingService: VideoProcessingService
+    private videoProcessingService: VideoProcessingService,
+    private videoMetadataService: VideoMetadataService
   ) {}
 
   async create(createVideoDto: CreateVideoDto): Promise<VideoResponseDto> {
@@ -54,13 +56,23 @@ export class VideoService {
       thumbnailUrl = this.videoProcessingService.generatePublicUrl(thumbnailPath, baseUrl);
     }
 
+    // Descobrir duração automaticamente se não enviada
+    let effectiveDuration = data.duration;
+    if (!effectiveDuration) {
+      try {
+        effectiveDuration = await this.videoMetadataService.getDurationString(videoPath);
+      } catch (e) {
+        this.logger.warn(`Não foi possível calcular a duração via ffprobe: ${e?.message || e}`);
+      }
+    }
+
     // Salvar no banco de dados
     const video = await this.prisma.video.create({
       data: {
         title: data.title,
         url: videoUrl,
         thumbnail: thumbnailUrl,
-        duration: data.duration,
+        duration: effectiveDuration,
       },
     });
 
