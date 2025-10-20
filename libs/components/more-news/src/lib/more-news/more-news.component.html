@@ -25,7 +25,9 @@
         
       }
       @if (slice() > 0 && showNews() < moreNews().length) {
-        <button class="show-more-news" (click)="showMoreNews()">Ver mais</button>
+        <div class="show-more-news-container">
+          <button class="show-more-news" (click)="showMoreNews()">Ver mais</button>
+        </div>
       }
     </div>
   }
