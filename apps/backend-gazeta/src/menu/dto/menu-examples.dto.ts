@@ -51,6 +51,42 @@ export class MenuExamplesDto {
     type: 'external',
     externalLink: 'https://www.parceiro.com.br'
   };
+
+  @ApiProperty({
+    description: 'Exemplo de criação inferindo tipo category (sem enviar type)',
+    example: {
+      name: 'Tecnologia',
+      slug: 'tecnologia'
+    }
+  })
+  static readonly categoryInferExample = {
+    name: 'Tecnologia',
+    slug: 'tecnologia'
+  };
+
+  @ApiProperty({
+    description: 'Exemplo de criação inferindo tipo internal (sem enviar type)',
+    example: {
+      name: 'Sobre Nós',
+      routerLink: '/sobre'
+    }
+  })
+  static readonly internalInferExample = {
+    name: 'Sobre Nós',
+    routerLink: '/sobre'
+  };
+
+  @ApiProperty({
+    description: 'Exemplo de criação inferindo tipo external (sem enviar type)',
+    example: {
+      name: 'Parceiro',
+      externalLink: 'https://www.parceiro.com.br'
+    }
+  })
+  static readonly externalInferExample = {
+    name: 'Parceiro',
+    externalLink: 'https://www.parceiro.com.br'
+  };
 }
 
 /**
