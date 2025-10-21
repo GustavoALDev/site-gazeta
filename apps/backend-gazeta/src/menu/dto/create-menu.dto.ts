@@ -5,11 +5,12 @@ export class CreateMenuDto {
   @ApiProperty({
     description: 'Ordem do menu',
     example: 1,
-    minimum: 1
+    minimum: 1,
+    required: false
   })
-  @IsNotEmpty({ message: 'Ordem é obrigatória' })
+  @IsOptional()
   @IsNumber({}, { message: 'Ordem deve ser um número' })
-  order: number;
+  order?: number;
 
   @ApiProperty({
     description: 'Nome do menu',
@@ -24,10 +25,11 @@ export class CreateMenuDto {
   name: string;
 
   @ApiProperty({
-    description: 'Tipo do menu que determina qual campo de link é obrigatório',
+    description: 'Tipo do menu (opcional). Se não informado, será inferido pelos campos slug/routerLink/externalLink',
     example: 'internal',
     enum: ['internal', 'external', 'category'],
     enumName: 'MenuType',
+    required: false,
     examples: {
       internal: {
         value: 'internal',
@@ -43,10 +45,10 @@ export class CreateMenuDto {
       }
     }
   })
-  @IsNotEmpty({ message: 'Tipo é obrigatório' })
+  @IsOptional()
   @IsString({ message: 'Tipo deve ser uma string' })
   @IsIn(['internal', 'external', 'category'], { message: 'Tipo deve ser: internal, external ou category' })
-  type: string;
+  type?: string;
 
   @ApiProperty({
     description: 'Slug do menu - OBRIGATÓRIO para tipo "category". Usado para gerar URLs de categorias como /categoria/{slug}',

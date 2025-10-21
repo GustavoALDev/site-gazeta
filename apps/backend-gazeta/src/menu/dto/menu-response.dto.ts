@@ -52,12 +52,6 @@ export class MenuResponseDto {
   externalLink?: string;
 
   @ApiProperty({
-    description: 'Indica se o menu está ativo',
-    example: true
-  })
-  isActive: boolean;
-
-  @ApiProperty({
     description: 'Data de criação',
     example: '2023-12-01T10:00:00Z'
   })
