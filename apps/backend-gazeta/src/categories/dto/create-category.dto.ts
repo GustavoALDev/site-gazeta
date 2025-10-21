@@ -37,6 +37,16 @@ export class CreateCategoryDto {
   slug: string;
 
   @ApiProperty({
+    description: 'Cor identificadora da categoria (hexadecimal ou nome)',
+    example: '#FF5733',
+    required: false
+  })
+  @IsOptional()
+  @IsString({ message: 'Color deve ser uma string' })
+  @MaxLength(20, { message: 'Color deve ter no máximo 20 caracteres' })
+  color?: string;
+
+  @ApiProperty({
     description: 'Status ativo da categoria',
     example: true,
     required: false,

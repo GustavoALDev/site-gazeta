@@ -66,8 +66,8 @@ export class VideoController {
   ]))
   @ApiConsumes('multipart/form-data')
   @ApiOperation({
-    summary: 'Upload de vídeo com thumbnail opcional',
-    description: 'Endpoint para fazer upload de um vídeo com thumbnail opcional. O thumbnail pode ser enviado junto ou adicionado depois.'
+    summary: 'Upload de vídeo (thumbnail opcional; duração auto-calculada)',
+    description: 'Endpoint para upload de vídeo com thumbnail opcional. A duração é opcional: se não enviada, o servidor calcula automaticamente via ffprobe.'
   })
   @ApiBody({
     description: 'Dados do upload de vídeo',
@@ -94,7 +94,7 @@ export class VideoController {
         },
         duration: {
           type: 'string',
-          description: 'Duração do vídeo no formato MM:SS ou HH:MM:SS (opcional)',
+          description: 'OPCIONAL. Se omitida, será calculada automaticamente (MM:SS ou HH:MM:SS).',
           example: '01:51'
         }
       },
