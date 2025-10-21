@@ -27,6 +27,13 @@ export class CategoryResponseDto {
   slug: string;
 
   @ApiProperty({
+    description: 'Cor identificadora da categoria',
+    example: '#FF5733',
+    nullable: true
+  })
+  color: string | null;
+
+  @ApiProperty({
     description: 'Status da categoria',
     example: true
   })

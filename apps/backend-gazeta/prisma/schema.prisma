@@ -28,6 +28,7 @@ model Category {
   name                String                @unique
   description         String?               @db.Text
   slug                String                @unique
+  color               String?               @db.VarChar(20)
   isActive            Boolean               @default(true) @map("is_active")
   createdAt           DateTime              @default(now()) @map("created_at")
   updatedAt           DateTime              @updatedAt @map("updated_at")
@@ -106,6 +107,18 @@ model Media {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("media")
+}
+
+model Video {
+  id        Int      @id @default(autoincrement())
+  title     String   @db.VarChar(255)
+  url       String   @db.VarChar(500)
+  thumbnail String?  @db.VarChar(500) // Opcional
+  duration  String?  @db.VarChar(20)  // Formato MM:SS ou HH:MM:SS
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("videos")
 }
 
 model Advertisement {

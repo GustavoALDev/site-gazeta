@@ -12,6 +12,7 @@ import { AdvertisementModule } from '../advertisement/advertisement.module';
 import { HomeConfigModule } from '../home-config/home-config.module';
 import { MenuModule } from '../menu/menu.module';
 import { YoutubePlaylistModule } from '../youtube-playlist/youtube-playlist.module';
+import { VideoModule } from '../video/video.module';
 
 @Module({
   imports: [
@@ -28,7 +29,8 @@ import { YoutubePlaylistModule } from '../youtube-playlist/youtube-playlist.modu
     AdvertisementModule,
     HomeConfigModule,
     MenuModule,
-    YoutubePlaylistModule
+    YoutubePlaylistModule,
+    VideoModule
   ],
   controllers: [AppController],
   providers: [AppService],
