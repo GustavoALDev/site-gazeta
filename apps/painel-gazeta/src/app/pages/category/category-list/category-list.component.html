@@ -41,6 +41,7 @@
       @for (category of filteredCategories(); track category.id) {
        
         <div class="category-item">
+          <div class="category-color-indicator" [style.background-color]="category.color"></div>
           <div class="category-info">
             <h4>{{ category.name }}</h4>
             <p>{{ category.description }}</p>

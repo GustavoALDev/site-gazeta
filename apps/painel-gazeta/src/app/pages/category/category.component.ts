@@ -1,6 +1,6 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit, computed } from '@angular/core';
 
-import { Category } from '@site-gazeta/models';
+import { Category, HexColor } from '@site-gazeta/models';
 import { CategoryFormComponent } from './category-form/category-form.component';
 import { CategoryListComponent } from './category-list/category-list.component';
 import { ApiService } from '../../core/services/api.service';
@@ -16,6 +16,13 @@ export class CategoryComponent implements OnInit {
   categories = signal<Category[]>([]);
   editingCategory = signal<Category | null>(null);
   apiService = inject(ApiService);
+  
+  // Computed property to get all used colors
+  usedColors = computed(() => {
+    return this.categories()
+      .map(category => category.color as HexColor)
+      .filter((color, index, array) => array.indexOf(color) === index); // Remove duplicates
+  });
   onCategorySubmit(categoryData: Category) {
     if (this.categories().find((c) => c.id === categoryData.id)) {
       this.categories.update((categories) =>

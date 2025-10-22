@@ -1,0 +1,101 @@
+<div class="color-picker-container">
+  <div class="color-picker-trigger" (click)="togglePicker()" [class.disabled]="disabled()">
+    <div class="color-preview" [style.background-color]="selectedColor()"></div>
+    <span class="color-value">{{ selectedColor() }}</span>
+    <svg class="dropdown-icon" [class.open]="isOpen()" viewBox="0 0 24 24" fill="none">
+      <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+  
+  @if (isOpen()) {
+    <div class="color-picker-dropdown">
+      <div class="color-picker-header">
+        <h4>Selecionar Cor</h4>
+        <button type="button" class="close-btn" (click)="closePicker()">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+      
+      <div class="color-sections">
+        <!-- Predefined Colors -->
+        <div class="color-section">
+          <h5>Cores Predefinidas</h5>
+          <div class="color-grid">
+            @for (color of availableColors(); track color) {
+              <button
+                type="button"
+                class="color-option"
+                [style.background-color]="color"
+                [class.selected]="selectedColor() === color"
+                [class.used]="isColorUsed()(color)"
+                (click)="onColorSelect(color)"
+                [title]="color"
+              >
+                @if (selectedColor() === color) {
+                  <svg class="check-icon" viewBox="0 0 24 24" fill="none">
+                    <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                }
+                @if (isColorUsed()(color)) {
+                  <svg class="used-icon" viewBox="0 0 24 24" fill="none">
+                    <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                }
+              </button>
+            }
+          </div>
+        </div>
+        
+        <!-- Custom Color Input -->
+        <div class="color-section">
+          <h5>Cor Personalizada</h5>
+          <div class="custom-color-input">
+            <input
+              type="color"
+              [value]="customColor()"
+              (input)="onCustomColorChange($event)"
+              class="color-input"
+            />
+            <input
+              type="text"
+              [value]="customColor()"
+              (input)="onCustomColorChange($event)"
+              placeholder="#000000"
+              class="hex-input"
+              maxlength="7"
+            />
+            <button
+              type="button"
+              class="random-btn"
+              (click)="onRandomColor()"
+              title="Gerar cor aleatória"
+            >
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M1 4V10H7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M23 20V14H17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10M23 14L18.36 18.36A9 9 0 0 1 3.51 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Used Colors Info -->
+        @if (usedColors().length > 0) {
+          <div class="color-section">
+            <h5>Cores em Uso</h5>
+            <div class="used-colors-info">
+              <p>As seguintes cores já estão sendo utilizadas:</p>
+              <div class="used-colors-list">
+                @for (color of usedColors(); track color) {
+                  <div class="used-color-item" [style.background-color]="color" [title]="color"></div>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

@@ -156,11 +156,22 @@ $font-size-small: 0.75rem;
             justify-content: space-between;
             align-items: center;
             transition: all $transition-default;
+            position: relative;
 
             &:hover {
                 border-color: $secondary-color;
                 box-shadow: 0 5px 15px rgba($secondary-color, 0.1);
                 transform: translateY(-1px);
+            }
+
+            .category-color-indicator {
+                position: absolute;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                width: 4px;
+                border-radius: 8px 0 0 8px;
+                background: #3b82f6; // Default color, will be overridden by inline style
             }
 
             .category-info {

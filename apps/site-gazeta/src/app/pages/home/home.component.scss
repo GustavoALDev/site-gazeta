@@ -1,5 +1,3 @@
-
-
 :host {
     display: flex;
     justify-content: center;
@@ -37,7 +35,14 @@ main {
         width: fit-content;
     }
 }
-
+.divider{
+    height: 2px;
+    background-color: #13131336;
+    border-radius: 10px;
+    width: 100%;
+    margin: 20px 0;
+    box-shadow: 1px 1px 1px 1px #66666648;
+}
 @media (max-width: 1128px) {
     main{
         .carousel-desktop {

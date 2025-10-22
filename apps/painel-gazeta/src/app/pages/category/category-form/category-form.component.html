@@ -34,6 +34,20 @@
   </div>
 
   <div class="form-group">
+    <label for="color">Cor da Categoria</label>
+    <app-color-picker
+      [selectedColor]="selectedColor()"
+      [usedColors]="usedColors()"
+      (colorChange)="onColorChange($event)"
+    />
+    @if (!isColorAvailable()) {
+      <div class="error-message">
+        Esta cor já está sendo utilizada por outra categoria
+      </div>
+    }
+  </div>
+
+  <div class="form-group">
     <div class="toggle-group">
       <label class="toggle-label" for="isActive">Status da Categoria</label>
       <div class="toggle-container">
@@ -54,7 +68,7 @@
   </div>
 
   <div class="form-actions">
-    <button type="submit" class="btn-primary" [disabled]="form.invalid">
+    <button type="submit" class="btn-primary" [disabled]="form.invalid || !isColorAvailable()">
       {{ isEditing() ? 'Atualizar' : 'Criar' }} Categoria
     </button>
     @if (isEditing()) {
