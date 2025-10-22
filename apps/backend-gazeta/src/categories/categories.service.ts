@@ -31,8 +31,11 @@ export class CategoriesService {
 
     const category = await this.prisma.category.create({
       data: {
-        ...createCategoryDto,
-        isActive: createCategoryDto.isActive ?? true // Default para true se não fornecido
+        name: createCategoryDto.name,
+        description: createCategoryDto.description ?? null,
+        slug: createCategoryDto.slug,
+        color: createCategoryDto.color ?? null,
+        isActive: createCategoryDto.isActive ?? true
       }
     });
 
@@ -117,7 +120,13 @@ export class CategoriesService {
 
     const category = await this.prisma.category.update({
       where: { id },
-      data: updateCategoryDto
+      data: {
+        name: updateCategoryDto.name ?? undefined,
+        description: updateCategoryDto.description ?? undefined,
+        slug: updateCategoryDto.slug ?? undefined,
+        color: updateCategoryDto.color ?? undefined,
+        isActive: updateCategoryDto.isActive ?? undefined
+      }
     });
 
     return category;

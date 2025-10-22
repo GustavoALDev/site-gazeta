@@ -49,6 +49,8 @@ export class MenuController {
 - **external**: Requer apenas o campo 'externalLink'
 
 **Observações:**
+- **type** é opcional: quando omitido, será inferido automaticamente com base em 'slug'/'routerLink'/'externalLink' (apenas um deles deve ser enviado)
+- **order** é opcional: quando omitido, será atribuído automaticamente (última ordem + 1)
 - Apenas o campo correspondente ao tipo será salvo
 - Campos de outros tipos serão automaticamente removidos
 - A ordem deve ser única no sistema` 
@@ -83,7 +85,7 @@ export class MenuController {
   })
   @ApiBody({
     type: CreateMenuDto,
-    description: 'Dados do menu a ser criado. Escolha apenas um dos exemplos baseado no tipo desejado.',
+    description: 'Dados do menu a ser criado. Você pode enviar o type explicitamente ou omitir e deixar o sistema inferir com base em slug/routerLink/externalLink (apenas um deles).',
     examples: {
       category: {
         summary: 'Menu do tipo Category',
@@ -99,6 +101,21 @@ export class MenuController {
         summary: 'Menu do tipo External',
         description: 'Exemplo de menu para link externo',
         value: MenuExamplesDto.externalExample
+      },
+      inferCategory: {
+        summary: 'Criar inferindo category (sem enviar type)',
+        description: 'Exemplo criando menu enviando apenas slug',
+        value: MenuExamplesDto.categoryInferExample
+      },
+      inferInternal: {
+        summary: 'Criar inferindo internal (sem enviar type)',
+        description: 'Exemplo criando menu enviando apenas routerLink',
+        value: MenuExamplesDto.internalInferExample
+      },
+      inferExternal: {
+        summary: 'Criar inferindo external (sem enviar type)',
+        description: 'Exemplo criando menu enviando apenas externalLink',
+        value: MenuExamplesDto.externalInferExample
       }
     }
   })
@@ -182,6 +199,7 @@ export class MenuController {
 **Comportamento:**
 - Campos desnecessários para o tipo são automaticamente removidos
 - Campos existentes são preservados se não especificados na atualização
+- **type** é opcional: quando omitido, será inferido se exatamente um dos campos 'slug'/'routerLink'/'externalLink' for enviado
 - A ordem deve continuar única no sistema` 
   })
   @ApiParam({ name: 'id', description: 'ID do menu', type: 'number' })
@@ -211,6 +229,28 @@ export class MenuController {
         statusCode: 409,
         message: 'Menus do tipo external devem usar apenas o campo externalLink',
         error: 'Conflict'
+      }
+    }
+  })
+  @ApiBody({
+    type: UpdateMenuDto,
+    description: 'Campos para atualizar o menu. O campo type é opcional; quando omitido, será inferido se exatamente um de slug/routerLink/externalLink for enviado.',
+    examples: {
+      inferCategory: {
+        summary: 'Inferir category enviando apenas slug',
+        value: { slug: 'tecnologia' }
+      },
+      inferInternal: {
+        summary: 'Inferir internal enviando apenas routerLink',
+        value: { routerLink: '/sobre' }
+      },
+      inferExternal: {
+        summary: 'Inferir external enviando apenas externalLink',
+        value: { externalLink: 'https://exemplo.com' }
+      },
+      explicitType: {
+        summary: 'Alterar tipo explicitamente',
+        value: { type: 'category', slug: 'politica' }
       }
     }
   })

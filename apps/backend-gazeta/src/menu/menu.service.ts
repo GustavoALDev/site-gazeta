@@ -9,44 +9,84 @@ export class MenuService {
   constructor(private prisma: PrismaService) {}
 
   async create(createMenuDto: CreateMenuDto): Promise<MenuResponseDto> {
-    // Verificar se já existe menu com essa ordem
-    const existingMenu = await this.prisma.menu.findUnique({
-      where: { order: createMenuDto.order }
-    });
+    // Inferir type se não vier informado
+    const inferredType = this.inferType(createMenuDto);
 
-    if (existingMenu) {
-      throw new ConflictException('Já existe um menu com esta ordem');
+    // Calcular order se não vier informado
+    const finalOrder = await this.calculateNextOrderIfMissing(createMenuDto.order);
+
+    // Verificar conflito de ordem
+    if (finalOrder !== undefined) {
+      const existingMenu = await this.prisma.menu.findUnique({
+        where: { order: finalOrder }
+      });
+      if (existingMenu) {
+        throw new ConflictException('Já existe um menu com esta ordem');
+      }
     }
 
-    // Validar campos baseado no tipo e garantir exclusividade
-    this.validateMenuByType(createMenuDto.type, {
+    // Validar campos baseado no tipo final e garantir exclusividade
+    this.validateMenuByType(inferredType, {
       slug: createMenuDto.slug,
       routerLink: createMenuDto.routerLink,
       externalLink: createMenuDto.externalLink
     });
 
-    // Limpar campos não necessários baseado no tipo
-    const cleanedData = this.cleanMenuDataByType(createMenuDto) as CreateMenuDto;
+    // Limpar campos não necessários e montar payload final
+    const cleanedData = this.cleanMenuDataByType({ ...createMenuDto, type: inferredType }) as CreateMenuDto;
 
     const menu = await this.prisma.menu.create({
-      data: cleanedData
+      data: { ...cleanedData, order: finalOrder as number, type: inferredType },
+      select: {
+        id: true,
+        order: true,
+        name: true,
+        type: true,
+        slug: true,
+        routerLink: true,
+        externalLink: true,
+        createdAt: true,
+        updatedAt: true
+      }
     });
 
-    return menu;
+    return menu as unknown as MenuResponseDto;
   }
 
   async findAll(): Promise<MenuResponseDto[]> {
     const menus = await this.prisma.menu.findMany({
       where: { isActive: true },
-      orderBy: { order: 'asc' }
+      orderBy: { order: 'asc' },
+      select: {
+        id: true,
+        order: true,
+        name: true,
+        type: true,
+        slug: true,
+        routerLink: true,
+        externalLink: true,
+        createdAt: true,
+        updatedAt: true
+      }
     });
 
-    return menus;
+    return menus as unknown as MenuResponseDto[];
   }
 
   async findOne(id: number): Promise<MenuResponseDto> {
     const menu = await this.prisma.menu.findFirst({
-      where: { id, isActive: true }
+      where: { id, isActive: true },
+      select: {
+        id: true,
+        order: true,
+        name: true,
+        type: true,
+        slug: true,
+        routerLink: true,
+        externalLink: true,
+        createdAt: true,
+        updatedAt: true
+      }
     });
 
     if (!menu) {
@@ -80,11 +120,17 @@ export class MenuService {
       }
     }
 
-    // Combinar dados existentes com os novos para validação
-    const finalType = updateMenuDto.type || existingMenu.type;
-    const finalSlug = updateMenuDto.slug !== undefined ? updateMenuDto.slug : existingMenu.slug;
-    const finalRouterLink = updateMenuDto.routerLink !== undefined ? updateMenuDto.routerLink : existingMenu.routerLink;
-    const finalExternalLink = updateMenuDto.externalLink !== undefined ? updateMenuDto.externalLink : existingMenu.externalLink;
+    // Combinar dados existentes com os novos e inferir/definir o tipo final
+    const merged = {
+      ...existingMenu,
+      ...updateMenuDto
+    } as UpdateMenuDto & { type?: string };
+
+    const finalType = this.inferType(merged);
+
+    const finalSlug = merged.slug;
+    const finalRouterLink = merged.routerLink;
+    const finalExternalLink = merged.externalLink;
 
     // Validar campos baseado no tipo final
     this.validateMenuByType(finalType, {
@@ -95,17 +141,27 @@ export class MenuService {
 
     // Limpar campos não necessários baseado no tipo
     const cleanedData = this.cleanMenuDataByType({
-      ...existingMenu,
-      ...updateMenuDto,
+      ...merged,
       type: finalType
     });
 
     const menu = await this.prisma.menu.update({
       where: { id },
-      data: cleanedData
+      data: cleanedData,
+      select: {
+        id: true,
+        order: true,
+        name: true,
+        type: true,
+        slug: true,
+        routerLink: true,
+        externalLink: true,
+        createdAt: true,
+        updatedAt: true
+      }
     });
 
-    return menu;
+    return menu as unknown as MenuResponseDto;
   }
 
   async remove(id: number): Promise<void> {
@@ -225,5 +281,35 @@ export class MenuService {
     }
 
     return cleanedData;
+  }
+
+  /**
+   * Infere o tipo a partir dos campos fornecidos quando type não é informado
+   */
+  private inferType(dto: CreateMenuDto | UpdateMenuDto): string {
+    if (dto.type) return dto.type;
+    const hasSlug = !!dto.slug;
+    const hasRouterLink = !!dto.routerLink;
+    const hasExternalLink = !!dto.externalLink;
+
+    const provided = [hasSlug, hasRouterLink, hasExternalLink].filter(Boolean).length;
+    if (provided !== 1) {
+      throw new ConflictException('Informe exatamente um dos campos: slug, routerLink ou externalLink');
+    }
+    if (hasSlug) return 'category';
+    if (hasRouterLink) return 'internal';
+    return 'external';
+  }
+
+  /**
+   * Retorna a próxima ordem (max+1) se a ordem não for fornecida
+   */
+  private async calculateNextOrderIfMissing(order?: number): Promise<number | undefined> {
+    if (order !== undefined) return order;
+    const last = await this.prisma.menu.findFirst({
+      where: { isActive: true },
+      orderBy: { order: 'desc' }
+    });
+    return (last?.order ?? 0) + 1;
   }
 } 
