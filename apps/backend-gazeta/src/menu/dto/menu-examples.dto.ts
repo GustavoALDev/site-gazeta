@@ -53,6 +53,20 @@ export class MenuExamplesDto {
   };
 
   @ApiProperty({
+    description: 'Exemplo de menu do tipo submenu (agrupador sem link)',
+    example: {
+      order: 4,
+      name: 'Mais',
+      type: 'submenu'
+    }
+  })
+  static readonly submenuExample = {
+    order: 4,
+    name: 'Mais',
+    type: 'submenu'
+  };
+
+  @ApiProperty({
     description: 'Exemplo de criação inferindo tipo category (sem enviar type)',
     example: {
       name: 'Tecnologia',
@@ -86,6 +100,16 @@ export class MenuExamplesDto {
   static readonly externalInferExample = {
     name: 'Parceiro',
     externalLink: 'https://www.parceiro.com.br'
+  };
+
+  @ApiProperty({
+    description: 'Exemplo de criação inferindo tipo submenu (sem enviar type e sem links)',
+    example: {
+      name: 'Mais'
+    }
+  })
+  static readonly submenuInferExample = {
+    name: 'Mais'
   };
 }
 
@@ -145,7 +169,7 @@ export class MenuErrorExamplesDto {
   })
   static readonly invalidType = {
     statusCode: 409,
-    message: 'Tipo de menu inválido. Use: category, internal ou external',
+    message: 'Tipo de menu inválido. Use: category, internal, external ou submenu',
     error: 'Conflict'
   };
 }

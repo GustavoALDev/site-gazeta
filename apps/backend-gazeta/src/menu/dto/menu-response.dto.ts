@@ -22,7 +22,7 @@ export class MenuResponseDto {
   @ApiProperty({
     description: 'Tipo do menu que determina qual campo de link será preenchido',
     example: 'internal',
-    enum: ['internal', 'external', 'category'],
+    enum: ['internal', 'external', 'category', 'submenu'],
     enumName: 'MenuType'
   })
   type: string;
