@@ -249,8 +249,14 @@ export class MenuService {
         }
         break;
 
+      case 'submenu':
+        if (data.slug || data.routerLink || data.externalLink) {
+          throw new ConflictException('Menus do tipo submenu não devem possuir slug, routerLink ou externalLink');
+        }
+        break;
+
       default:
-        throw new ConflictException('Tipo de menu inválido. Use: category, internal ou external');
+        throw new ConflictException('Tipo de menu inválido. Use: category, internal, external ou submenu');
     }
   }
 
@@ -278,6 +284,13 @@ export class MenuService {
         delete cleanedData.slug;
         delete cleanedData.routerLink;
         break;
+
+      case 'submenu':
+        // Para submenu, nenhum link deve ser mantido
+        delete cleanedData.slug;
+        delete cleanedData.routerLink;
+        delete cleanedData.externalLink;
+        break;
     }
 
     return cleanedData;
@@ -293,8 +306,9 @@ export class MenuService {
     const hasExternalLink = !!dto.externalLink;
 
     const provided = [hasSlug, hasRouterLink, hasExternalLink].filter(Boolean).length;
-    if (provided !== 1) {
-      throw new ConflictException('Informe exatamente um dos campos: slug, routerLink ou externalLink');
+    if (provided === 0) return 'submenu';
+    if (provided > 1) {
+      throw new ConflictException('Informe exatamente um dos campos: slug, routerLink ou externalLink (ou nenhum para submenu)');
     }
     if (hasSlug) return 'category';
     if (hasRouterLink) return 'internal';

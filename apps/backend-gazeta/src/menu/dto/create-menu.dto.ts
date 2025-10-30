@@ -25,9 +25,9 @@ export class CreateMenuDto {
   name: string;
 
   @ApiProperty({
-    description: 'Tipo do menu (opcional). Se não informado, será inferido pelos campos slug/routerLink/externalLink',
+    description: 'Tipo do menu (opcional). Se não informado, será inferido pelos campos slug/routerLink/externalLink. Para "submenu", não envie slug/routerLink/externalLink.',
     example: 'internal',
-    enum: ['internal', 'external', 'category'],
+    enum: ['internal', 'external', 'category', 'submenu'],
     enumName: 'MenuType',
     required: false,
     examples: {
@@ -42,12 +42,16 @@ export class CreateMenuDto {
       category: {
         value: 'category',
         description: 'Para categorias de notícias. Requer campo slug.'
+      },
+      submenu: {
+        value: 'submenu',
+        description: 'Para itens agrupadores sem link. Não enviar slug/routerLink/externalLink.'
       }
     }
   })
   @IsOptional()
   @IsString({ message: 'Tipo deve ser uma string' })
-  @IsIn(['internal', 'external', 'category'], { message: 'Tipo deve ser: internal, external ou category' })
+  @IsIn(['internal', 'external', 'category', 'submenu'], { message: 'Tipo deve ser: internal, external, category ou submenu' })
   type?: string;
 
   @ApiProperty({

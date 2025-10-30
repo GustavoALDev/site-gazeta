@@ -47,9 +47,10 @@ export class MenuController {
 - **category**: Requer apenas o campo 'slug'
 - **internal**: Requer apenas o campo 'routerLink' 
 - **external**: Requer apenas o campo 'externalLink'
+ - **submenu**: Não deve possuir 'slug', 'routerLink' ou 'externalLink'
 
 **Observações:**
-- **type** é opcional: quando omitido, será inferido automaticamente com base em 'slug'/'routerLink'/'externalLink' (apenas um deles deve ser enviado)
+- **type** é opcional: quando omitido, será inferido automaticamente com base em 'slug'/'routerLink'/'externalLink' (apenas um deles deve ser enviado); se nenhum for enviado, inferimos 'submenu'
 - **order** é opcional: quando omitido, será atribuído automaticamente (última ordem + 1)
 - Apenas o campo correspondente ao tipo será salvo
 - Campos de outros tipos serão automaticamente removidos
@@ -85,7 +86,7 @@ export class MenuController {
   })
   @ApiBody({
     type: CreateMenuDto,
-    description: 'Dados do menu a ser criado. Você pode enviar o type explicitamente ou omitir e deixar o sistema inferir com base em slug/routerLink/externalLink (apenas um deles).',
+    description: 'Dados do menu a ser criado. Você pode enviar o type explicitamente ou omitir e deixar o sistema inferir com base em slug/routerLink/externalLink (apenas um deles) ou nenhum para submenu.',
     examples: {
       category: {
         summary: 'Menu do tipo Category',
@@ -102,6 +103,11 @@ export class MenuController {
         description: 'Exemplo de menu para link externo',
         value: MenuExamplesDto.externalExample
       },
+      submenu: {
+        summary: 'Menu do tipo Submenu',
+        description: 'Exemplo de item agrupador sem link',
+        value: MenuExamplesDto.submenuExample
+      },
       inferCategory: {
         summary: 'Criar inferindo category (sem enviar type)',
         description: 'Exemplo criando menu enviando apenas slug',
@@ -116,6 +122,11 @@ export class MenuController {
         summary: 'Criar inferindo external (sem enviar type)',
         description: 'Exemplo criando menu enviando apenas externalLink',
         value: MenuExamplesDto.externalInferExample
+      },
+      inferSubmenu: {
+        summary: 'Criar inferindo submenu (sem enviar type)',
+        description: 'Exemplo criando menu sem enviar slug/routerLink/externalLink',
+        value: MenuExamplesDto.submenuInferExample
       }
     }
   })
@@ -195,11 +206,12 @@ export class MenuController {
 - **category**: Requer apenas o campo 'slug'
 - **internal**: Requer apenas o campo 'routerLink'
 - **external**: Requer apenas o campo 'externalLink'
+ - **submenu**: Não deve possuir 'slug', 'routerLink' ou 'externalLink'
 
 **Comportamento:**
 - Campos desnecessários para o tipo são automaticamente removidos
 - Campos existentes são preservados se não especificados na atualização
-- **type** é opcional: quando omitido, será inferido se exatamente um dos campos 'slug'/'routerLink'/'externalLink' for enviado
+- **type** é opcional: quando omitido, será inferido se exatamente um dos campos 'slug'/'routerLink'/'externalLink' for enviado; se nenhum for enviado, inferimos 'submenu'
 - A ordem deve continuar única no sistema` 
   })
   @ApiParam({ name: 'id', description: 'ID do menu', type: 'number' })
