@@ -220,7 +220,7 @@ export class VideoController {
   @Patch(':id')
   @ApiOperation({
     summary: 'Atualizar vídeo',
-    description: 'Endpoint para atualizar um vídeo existente'
+    description: 'Endpoint para atualizar um vídeo existente via JSON. Para atualizar enviando arquivos (vídeo/thumbnail), use o endpoint PATCH /videos/:id/upload com multipart/form-data.'
   })
   @ApiParam({
     name: 'id',
@@ -243,6 +243,80 @@ export class VideoController {
   ): Promise<VideoResponseDto> {
     try {
       return await this.videoService.update(id, updateVideoDto);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new HttpException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Erro no servidor, tente novamente mais tarde',
+        error: 'Internal Server Error'
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Patch(':id/upload')
+  @UseInterceptors(FileFieldsInterceptor([
+    { name: 'video', maxCount: 1 },
+    { name: 'thumbnail', maxCount: 1 }
+  ]))
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({
+    summary: 'Atualizar vídeo via upload (form-data)',
+    description: 'Endpoint para atualizar um vídeo enviando arquivos via multipart/form-data. O vídeo e o thumbnail são opcionais; se não enviados, permanecem os atuais. A duração é opcional e, se o vídeo for trocado e a duração não for enviada, o servidor tenta recalcular automaticamente.'
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID do vídeo',
+    type: 'number',
+    example: 1
+  })
+  @ApiBody({
+    description: 'Dados para atualização via upload',
+    type: 'multipart/form-data',
+    schema: {
+      type: 'object',
+      properties: {
+        video: {
+          type: 'string',
+          format: 'binary',
+          description: 'Arquivo de vídeo (OPCIONAL)'
+        },
+        thumbnail: {
+          type: 'string',
+          format: 'binary',
+          description: 'Arquivo de thumbnail (OPCIONAL)'
+        },
+        title: {
+          type: 'string',
+          description: 'Novo título (OPCIONAL)'
+        },
+        duration: {
+          type: 'string',
+          description: 'Duração (OPCIONAL). Se o vídeo for trocado e este campo omitido, será recalculada automaticamente.'
+        }
+      }
+    }
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Vídeo atualizado com sucesso',
+    type: VideoResponseDto
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Vídeo não encontrado'
+  })
+  async updateWithUpload(
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFiles() files: { video?: any[]; thumbnail?: any[] },
+    @Body('title') title?: string,
+    @Body('duration') duration?: string
+  ): Promise<VideoResponseDto> {
+    try {
+      const videoFile = files.video && files.video.length > 0 ? files.video[0] : undefined;
+      const thumbnailFile = files.thumbnail && files.thumbnail.length > 0 ? files.thumbnail[0] : undefined;
+      return await this.videoService.updateWithUpload(id, videoFile, thumbnailFile, { title, duration });
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;

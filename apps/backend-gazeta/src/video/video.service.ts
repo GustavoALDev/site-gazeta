@@ -6,6 +6,7 @@ import { VideoResponseDto } from './dto/video-response.dto';
 import { UploadVideoDto } from './dto/upload-video.dto';
 import { VideoProcessingService } from './services/video-processing.service';
 import { VideoMetadataService } from './services/video-metadata.service';
+type UploadedFile = { originalname: string; buffer: Buffer; mimetype: string };
 
 @Injectable()
 export class VideoService {
@@ -31,8 +32,8 @@ export class VideoService {
   }
 
   async createWithUpload(
-    videoFile: any,
-    thumbnailFile: any | undefined,
+    videoFile: UploadedFile,
+    thumbnailFile: UploadedFile | undefined,
     data: UploadVideoDto
   ): Promise<VideoResponseDto> {
     const timestamp = Date.now();
@@ -115,6 +116,100 @@ export class VideoService {
     });
 
     return this.formatResponse(updatedVideo);
+  }
+
+  async updateWithUpload(
+    id: number,
+    videoFile?: UploadedFile,
+    thumbnailFile?: UploadedFile,
+    data?: { title?: string; duration?: string }
+  ): Promise<VideoResponseDto> {
+    const existingVideo = await this.findVideoById(id);
+
+    const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+    let newVideoUrl = existingVideo.url;
+    let newThumbnailUrl = existingVideo.thumbnail;
+    let effectiveDuration = data?.duration ?? existingVideo.duration;
+
+    let oldVideoPathToDelete: string | undefined;
+    let oldThumbPathToDelete: string | undefined;
+    let newVideoRelPath: string | undefined;
+    let newThumbRelPath: string | undefined;
+
+    // Atualizar vídeo se enviado
+    let newVideoFilename: string | undefined;
+    if (videoFile) {
+      const timestamp = Date.now();
+      const randomId = Math.random().toString(36).substring(2, 15);
+      newVideoFilename = `video_${timestamp}_${randomId}_${videoFile.originalname}`;
+
+      const newVideoPath = await this.videoProcessingService.saveVideo(videoFile, newVideoFilename);
+      newVideoRelPath = newVideoPath.replace(/\\/g, '/');
+      newVideoUrl = this.videoProcessingService.generatePublicUrl(newVideoPath, baseUrl);
+
+      // Recalcular duração se não enviada
+      if (!data?.duration) {
+        try {
+          effectiveDuration = await this.videoMetadataService.getDurationString(newVideoPath);
+        } catch (e) {
+          this.logger.warn(`Não foi possível calcular a duração via ffprobe: ${e?.message || e}`);
+        }
+      }
+
+      // Marcar vídeo antigo para deleção
+      if (existingVideo.url) {
+        const oldRel = existingVideo.url.replace(baseUrl, '').replace(/^\//, '');
+        // Só deletar se o caminho antigo for diferente do novo
+        oldVideoPathToDelete = newVideoRelPath && oldRel === newVideoRelPath ? undefined : oldRel;
+      }
+    }
+
+    // Atualizar thumbnail se enviado
+    if (thumbnailFile) {
+      // Se não trocou o vídeo, derivar o nome base a partir do URL existente
+      const filenameForThumbnail = newVideoFilename || this.extractFilenameFromUrl(existingVideo.url, baseUrl) || `video_${Date.now()}.mp4`;
+      const thumbnailPath = await this.videoProcessingService.saveThumbnail(thumbnailFile, filenameForThumbnail);
+      newThumbRelPath = thumbnailPath.replace(/\\/g, '/');
+      newThumbnailUrl = this.videoProcessingService.generatePublicUrl(thumbnailPath, baseUrl);
+
+      // Marcar thumbnail antiga para deleção
+      if (existingVideo.thumbnail) {
+        const oldRel = existingVideo.thumbnail.replace(baseUrl, '').replace(/^\//, '');
+        // Se o caminho novo for igual ao antigo, não deletar (foi overwrite no mesmo arquivo)
+        oldThumbPathToDelete = newThumbRelPath && oldRel === newThumbRelPath ? undefined : oldRel;
+      }
+    }
+
+    const updatedVideo = await this.prisma.video.update({
+      where: { id },
+      data: {
+        title: data?.title ?? existingVideo.title,
+        url: newVideoUrl,
+        thumbnail: newThumbnailUrl,
+        duration: effectiveDuration,
+      },
+    });
+
+    // Deletar arquivos antigos substituídos
+    try {
+      if (oldVideoPathToDelete || oldThumbPathToDelete) {
+        await this.videoProcessingService.deleteVideoFiles(oldVideoPathToDelete, oldThumbPathToDelete);
+      }
+    } catch (error) {
+      this.logger.error(`Erro ao deletar arquivos substituídos do vídeo ${id}:`, error);
+    }
+
+    return this.formatResponse(updatedVideo);
+  }
+
+  private extractFilenameFromUrl(url: string, baseUrl: string): string | undefined {
+    try {
+      const withoutBase = url.replace(baseUrl, '');
+      const parts = withoutBase.split('/');
+      return parts[parts.length - 1] || undefined;
+    } catch {
+      return undefined;
+    }
   }
 
   async remove(id: number): Promise<{ message: string }> {
