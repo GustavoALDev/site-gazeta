@@ -1,0 +1,99 @@
+<div class="draggable-list">
+
+  <!-- Header Customizado -->
+  @if (headerTemplate()) {
+    <div class="draggable-list-header">
+      <ng-container [ngTemplateOutlet]="headerTemplate()!" />
+    </div>
+  }
+
+  <!-- Lista Principal -->
+  @if (items().length > 0) {
+    <div 
+      class="draggable-items-container"
+      cdkDropList
+      [id]="listId()"
+      [cdkDropListData]="sortedItems()"
+      [cdkDropListConnectedTo]="connectedDropLists()"
+      (cdkDropListDropped)="dropMain($event)"
+    >
+      @for (item of sortedItems(); track config().getItemId(item)) {
+        <div class="draggable-item" cdkDrag [cdkDragData]="item">
+          
+          <!-- Conteúdo Principal do Item (Customizado via Template) -->
+          <div class="draggable-item-content">
+            @if (itemTemplate()) {
+              <ng-container 
+                [ngTemplateOutlet]="itemTemplate()!" 
+                [ngTemplateOutletContext]="getItemContext(item)"
+              />
+            } @else {
+              <p>{{ item }}</p>
+            }
+          </div>
+
+          <!-- Drag Placeholder -->
+          <div class="draggable-item-placeholder" *cdkDragPlaceholder></div>
+
+          <!-- Drop Zone para Children (se expandável) -->
+          @if (isExpandable(item) && isItemExpanded(item)) {
+            <div 
+              class="children-dropzone"
+              cdkDropList
+              [id]="getSubDropListId(item)"
+              [cdkDropListData]="getChildren(item)"
+              [cdkDropListConnectedTo]="[listId()]"
+              (cdkDropListDropped)="dropInParent($event, item)"
+            >
+              @if (hasChildren(item)) {
+                <div class="children-list">
+                  @for (child of getChildren(item); track config().getItemId(child)) {
+                    <div class="children-item">
+                      @if (childTemplate()) {
+                        <ng-container 
+                          [ngTemplateOutlet]="childTemplate()!" 
+                          [ngTemplateOutletContext]="getChildContext(child)"
+                        />
+                      } @else {
+                        <span>{{ child }}</span>
+                        <button type="button" (click)="removeFromParent(child)">Remove</button>
+                      }
+                    </div>
+                  }
+                </div>
+              } @else {
+                <!-- Empty Children State -->
+                @if (childrenEmptyTemplate()) {
+                  <ng-container [ngTemplateOutlet]="childrenEmptyTemplate()!" />
+                } @else {
+                  <div class="children-empty-state">
+                    <span class="material-icons">open_with</span>
+                    <p>Arraste itens aqui</p>
+                  </div>
+                }
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+  } @else {
+    <!-- Empty State -->
+    @if (emptyTemplate()) {
+      <ng-container [ngTemplateOutlet]="emptyTemplate()!" />
+    } @else {
+      <div class="empty-state">
+        <span class="material-icons">inbox</span>
+        <p>Lista vazia</p>
+      </div>
+    }
+  }
+
+  <!-- Footer Customizado -->
+  @if (footerTemplate()) {
+    <div class="draggable-list-footer">
+      <ng-container [ngTemplateOutlet]="footerTemplate()!" />
+    </div>
+  }
+
+</div>

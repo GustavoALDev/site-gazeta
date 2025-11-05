@@ -12,12 +12,14 @@
       <div class="category-grid">
         <!-- Card Principal (Featured) -->
         @if (categoryData.featured) {
-          <article class="news-card featured-card" [style.--category-color]="categoryData.category.color" [routerLink]="['/news', categoryData.featured.slug]">
+          <article class="news-card featured-card" 
+          [style.--category-color]="categoryData.category.color" [routerLink]="['/news', categoryData.featured.slug]">
             <div class="card-image">
               <img 
-                [src]="categoryData.featured.mediaNews[0].imgSize?.medium" 
+                [ngSrc]="categoryData.featured.mediaNews[0].imgSize!.small" 
                 [alt]="categoryData.featured.title"
-                loading="lazy"
+                priority
+                fill
                 (error)="onImageError($event)"
               >
               <div class="image-overlay"></div>
@@ -42,8 +44,9 @@
               <article class="news-card secondary-card" [style.--category-color]="categoryData.category.color" [routerLink]="['/news', categoryData.featured?.slug]">
                 <div class="card-image" >
                   <img 
-                    [src]="news.mediaNews[0].imgSize?.medium" 
+                    [ngSrc]="news.mediaNews[0].imgSize!.small" 
                     [alt]="news.title"
+                    fill
                     loading="lazy"
                     (error)="onImageError($event)"
                   >

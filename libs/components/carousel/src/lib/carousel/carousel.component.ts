@@ -1,32 +1,38 @@
 import { RouterModule } from '@angular/router';
-import { Component, signal, computed, input, ElementRef, ViewChild, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, signal, computed, input, ElementRef, ViewChild, OnInit, OnDestroy, inject } from '@angular/core';
+import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { News } from '@site-gazeta/models';
 import { mockCategories } from '@site-gazeta/mock';
 import { Category } from '@site-gazeta/models';
+import { ApiService } from 'apps/painel-gazeta/src/app/core/services/api.service';
+
+// Tipo auxiliar para itens com dados processados
+interface NewsItemWithData extends News {
+  imageUrl: string;
+  tags: string[];
+}
 
 
 @Component({
   selector: 'lib-carousel',
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, NgOptimizedImage],
   templateUrl: './carousel.component.html',
   styleUrl: './carousel.component.scss',
 })
 export class CarouselComponent implements OnInit, OnDestroy {
   @ViewChild('carouselWrapper', { static: false }) carouselWrapper!: ElementRef<HTMLElement>;
-  // Input para receber notícias externamente
   news = input<News[]>([]);
+  apiService = inject(ApiService);
 
-  // Estado do carousel usando signals
   private currentIndex = signal(0);
-  private itemsPerView = signal(3); // 3 itens visíveis no desktop
+  private itemsPerView = signal(3); 
   protected isDragging = signal(false);
   private startX = signal(0);
   private currentX = signal(0);
-  private categories = signal<Category[]>(mockCategories);
-  // Dados mock das notícias (fallback) - usando modelo News completo
+  private categories = signal<Category[]>([]);
+
   
-  // Computed que usa input ou fallback para mock
+
   newsItems = computed(() => {
     const inputItems = this.news()
     .sort((a, b) => new Date(b.published).getTime() - new Date(a.published).getTime())
@@ -34,14 +40,16 @@ export class CarouselComponent implements OnInit, OnDestroy {
     return inputItems
   });
 
-  // Computed properties
+
   totalItems = computed(() => this.newsItems().length);
   
-  // Para carrossel infinito, sempre podemos navegar
   canGoPrevious = computed(() => true);
   canGoNext = computed(() => true);
-
-  // Métodos de navegação com loop infinito
+  getCategories() {
+    this.apiService.getActiveCategories().subscribe((categories) => {
+      this.categories.set(categories);
+    });
+  }
   goToPrevious(): void {
     this.currentIndex.update(index => {
       const newIndex = index - 1;
@@ -56,13 +64,32 @@ export class CarouselComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Computed para itens visíveis com loop infinito
-  visibleItems = computed(() => {
+  newsItemsWithData = computed(() => {
     const items = this.newsItems();
+    const categoryMap = this.categories();
+    
+    return items.map(item => {
+      const imageUrl = item.mediaNews?.[0]?.imgSize?.original || '';
+      const tags = item.categoryId.map((id: number) => 
+        categoryMap.find((category) => category.id === id)?.name || 'GERAL'
+      );
+      
+      return {
+        ...item,
+        imageUrl,
+        tags
+      } as NewsItemWithData;
+    });
+  });
+
+  visibleItems = computed(() => {
+    const items = this.newsItemsWithData();
     const totalItems = items.length;
+    if (totalItems === 0) return [];
+    
     const start = this.currentIndex();
     const itemsToShow = this.itemsPerView();
-    const visibleItems: News[] = [];
+    const visibleItems: NewsItemWithData[] = [];
 
     for (let i = 0; i < itemsToShow; i++) {
       const index = (start + i) % totalItems;
@@ -72,56 +99,28 @@ export class CarouselComponent implements OnInit, OnDestroy {
     return visibleItems;
   });
 
-  // Computed para verificar se um item está na posição central
-  isCenterItem = computed(() => {
-    return (visibleIndex: number) => {
-      return visibleIndex === 1; // Sempre a segunda posição (índice 1) é o centro
-    };
-  });
+  centerItemIndex = computed(() => 1);
 
-  // Helpers para extrair dados do modelo News
-  getImageUrl(item: News): string {
-    return item.mediaNews?.[0]?.imgSize?.original || '';
-  }
+  activeSlideIndex = computed(() => this.currentIndex());
 
-  getTags(item: News): string[] {
-   
-    const categoryMap = this.categories();
-    
-    return item.categoryId.map((id: number) => categoryMap.find((category) => category.id === id)?.name || 'GERAL');
-  }
+  readonly commentsCount = 0;
 
-  getFormattedDate(item: News): string {
-    return item.published || '';
-  }
-
-  getCommentsCount(): number {
-    // Por enquanto retorna 0, pode ser implementado futuramente
-    return 0;
-  }
-
-  // Lifecycle methods
   ngOnInit() {
     this.setupTouchEvents();
+    this.getCategories();
   }
 
   ngOnDestroy() {
     this.removeTouchEvents();
   }
 
-  // Navegação direta para um índice específico
   goToSlide(index: number): void {
     if (index >= 0 && index < this.totalItems()) {
       this.currentIndex.set(index);
     }
   }
 
-  // Helper para indicadores
-  isActiveSlide(index: number): boolean {
-    return index === this.currentIndex();
-  }
 
-  // Touch/Swipe functionality
   private setupTouchEvents() {
     if (typeof window !== 'undefined') {
       // Touch events
@@ -147,7 +146,6 @@ export class CarouselComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Touch Events
   private onTouchStart(event: TouchEvent) {
     if (!this.carouselWrapper || !this.carouselWrapper.nativeElement.contains(event.target as Node)) return;
     

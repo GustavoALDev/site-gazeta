@@ -1,6 +1,7 @@
 import { Component, input, computed } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { News } from '@site-gazeta/models';
+import { Category, News } from '@site-gazeta/models';
 
 interface TopNewsCategory {
   name: string;
@@ -10,7 +11,7 @@ interface TopNewsCategory {
 
 @Component({
   selector: 'lib-news-highligths',
-  imports: [RouterModule],
+  imports: [RouterModule, CommonModule],
   templateUrl: './news-highligths.component.html',
   styleUrl: './news-highligths.component.scss',
 })
@@ -19,32 +20,19 @@ export class NewsHighligthsComponent {
   news = input<News[]>([]);
 
   // Signals para as categorias
-  categories = computed<TopNewsCategory[]>(() => {
-    const news = this.news();
-    
-    // IDs das categorias conforme seu sistema
-    const jornalismoId = 1; // Ajuste conforme necessário
-    const esporteId = 2;    // Ajuste conforme necessário
-    const entretenimentoId = 3; // Ajuste conforme necessário
+  categories = input<Category[]>([]);
 
-    return [
-      {
-        name: 'Jornalismo',
-        color: 'jornalismo',
-        news: this.filterAndLimitNews(news, jornalismoId)
-      },
-      {
-        name: 'Esporte',
-        color: 'esporte',
-        news: this.filterAndLimitNews(news, esporteId)
-      },
-      {
-        name: 'Entretenimento',
-        color: 'entretenimento',
-        news: this.filterAndLimitNews(news, entretenimentoId)
+  findNewsByCategory = computed(() => {
+    return this.categories().map(category => {
+      return {
+        id: category.id,
+        name: category.name,
+        color: category.color,
+        news: this.filterAndLimitNews(this.news(), category.id as number)
       }
-    ];
-  });
+    })
+    
+  })
 
   private filterAndLimitNews(news: News[], categoryId: number): News[] {
     return news

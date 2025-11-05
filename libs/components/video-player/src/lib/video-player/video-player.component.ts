@@ -1,6 +1,7 @@
 import { Component, input, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NewsVideo } from '@site-gazeta/models';
+import { Video } from '@site-gazeta/models';
 
 @Component({
   selector: 'lib-video-player',
@@ -10,7 +11,7 @@ import { NewsVideo } from '@site-gazeta/models';
 })
 export class VideoPlayerComponent {
   // Input de vídeos
-  videos = input.required<NewsVideo[]>();
+  videos = input.required<Video[]>();
   
   // Título da seção
   title = input<string>('Vídeos em alta hoje');
@@ -25,6 +26,10 @@ export class VideoPlayerComponent {
     return videos[index] || null;
   });
 
+  log(log:any){
+    console.log(log)
+  };
+  
   // Método para trocar de vídeo
   selectVideo(index: number): void {
     this.currentVideoIndex.set(index);
