@@ -1,10 +1,123 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { CardModule } from 'primeng/card';
+import { DatePickerModule } from 'primeng/datepicker';
+import { SelectModule } from 'primeng/select';
+import { ButtonModule } from 'primeng/button';
+import { TableModule } from 'primeng/table';
+import { TimelineModule } from 'primeng/timeline';
+import { SkeletonModule } from 'primeng/skeleton';
+import { ChartModule } from 'primeng/chart';
+import { MetricsMockService } from './metrics-mock.service';
+import { DateRange, Granularity, KpiMetric, LogEvent, TopNewsItem } from './models';
+import { forkJoin } from 'rxjs';
+import type { ChartData, ChartOptions } from 'chart.js';
 
 
 @Component({
   selector: 'app-metrics',
-  imports: [],
+  imports: [
+    CommonModule,
+    FormsModule,
+    CardModule,
+    DatePickerModule,
+    SelectModule,
+    ButtonModule,
+    TableModule,
+    TimelineModule,
+    SkeletonModule,
+    ChartModule,
+  ],
   templateUrl: './metrics.component.html',
   styleUrl: './metrics.component.scss',
 })
-export class MetricsComponent {}
+export class MetricsComponent implements OnInit {
+  loading = false;
+
+  period: Date[] = [];
+  granularityOptions = [
+    { label: 'Diário', value: 'day' as Granularity },
+    { label: 'Horário', value: 'hour' as Granularity },
+  ];
+  selectedGranularity: Granularity = 'day';
+
+  kpis: KpiMetric[] = [];
+  accessData: ChartData | undefined;
+  accessOptions: ChartOptions | undefined;
+  pagesData: ChartData | undefined;
+  pagesOptions: ChartOptions | undefined;
+  topNews: TopNewsItem[] = [];
+  logs: LogEvent[] = [];
+
+  private metrics = inject(MetricsMockService);
+
+  ngOnInit(): void {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(end.getDate() - 6);
+    this.period = [start, end];
+    this.selectedGranularity = 'day';
+    this.setupChartOptions();
+    this.applyFilters();
+  }
+
+  applyFilters(): void {
+    if (!this.period || this.period.length < 2) {
+      return;
+    }
+    const range: DateRange = { start: this.normalizeDate(this.period[0]), end: this.normalizeDate(this.period[1], true) };
+    const gran = this.selectedGranularity;
+    this.loading = true;
+
+    forkJoin({
+      kpis: this.metrics.getKpis(range),
+      access: this.metrics.getAccessSeries(range, gran),
+      pages: this.metrics.getPagesSeries(range, gran),
+      top: this.metrics.getTopNews(range),
+      logs: this.metrics.getLogs(range),
+    }).subscribe(({ kpis, access, pages, top, logs }) => {
+      this.kpis = kpis;
+      this.accessData = access;
+      this.pagesData = pages;
+      this.topNews = top;
+      this.logs = logs;
+      this.loading = false;
+    });
+  }
+
+  private setupChartOptions(): void {
+    this.accessOptions = this.baseChartOptions();
+    this.pagesOptions = this.baseChartOptions();
+  }
+
+  private baseChartOptions(): ChartOptions {
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: true },
+        tooltip: { enabled: true },
+      },
+      scales: {
+        x: { ticks: { color: '#6b7280' }, grid: { display: false } },
+        y: { ticks: { color: '#6b7280' }, grid: { color: '#e5e7eb' } },
+      },
+    };
+  }
+
+  private normalizeDate(d: Date, endOfDay = false): Date {
+    const copy = new Date(d);
+    if (endOfDay) {
+      copy.setHours(23, 59, 59, 999);
+    } else {
+      copy.setHours(0, 0, 0, 0);
+    }
+    return copy;
+  }
+
+  getKpiIcon(index: number): string {
+    const icons = ['pi-users', 'pi-file', 'pi-eye', 'pi-chart-bar'];
+    return icons[index] || 'pi-info-circle';
+  }
+}

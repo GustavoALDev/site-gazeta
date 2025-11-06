@@ -1,1 +1,122 @@
-<p>metrics works!</p>
+<div class="grid gap-3">
+    <!-- Filtros -->
+    <div class="col-12">
+        <div class="filters-container">
+            <p-datepicker [(ngModel)]="period" selectionMode="range" [showIcon]="true"
+                dateFormat="dd/mm/yy"></p-datepicker>
+
+            <p-select [(ngModel)]="selectedGranularity" [options]="granularityOptions" optionLabel="label"
+                optionValue="value" placeholder="Granularidade"></p-select>
+
+            <button pButton type="button" icon="pi pi-refresh" (click)="applyFilters()" 
+                class="apply-button" label="Aplicar">Aplicar</button>
+        </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="col-12">
+        <div class="grid">
+            <div class="col-12 md:col-6 lg:col-3" *ngFor="let k of kpis; index as i">
+                <div class="kpi-card" [ngClass]="'kpi-card--' + i">
+                    <ng-container *ngIf="!loading; else kpiSkeleton">
+                        <div class="kpi">
+                            <div class="kpi-header">
+                                <div class="kpi-icon" [ngClass]="'kpi-icon--' + i">
+                                    <i class="pi" [ngClass]="getKpiIcon(i)"></i>
+                                </div>
+                                <div class="kpi-delta"
+                                    [ngClass]="{ up: (k.deltaPercent || 0) >= 0, down: (k.deltaPercent || 0) < 0 }">
+                                    <i class="pi"
+                                        [ngClass]="{ 'pi-arrow-up': (k.deltaPercent || 0) >= 0, 'pi-arrow-down': (k.deltaPercent || 0) < 0 }"></i>
+                                    <span>{{ k.deltaPercent }}%</span>
+                                </div>
+                            </div>
+                            <div class="kpi-content">
+                                <div class="kpi-label">{{ k.label }}</div>
+                                <div class="kpi-value">{{ k.value | number }}</div>
+                            </div>
+                        </div>
+                    </ng-container>
+                    <ng-template #kpiSkeleton>
+                        <p-skeleton width="100%" height="2rem" class="mb-2"></p-skeleton>
+                        <p-skeleton width="60%" height="1.5rem"></p-skeleton>
+                    </ng-template>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráficos e Top Notícias -->
+    <div class="col-12">
+        <div class="metrics-flex">
+            <div class="metrics-flex__item">
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <div class="chart-title">
+                            <i class="pi pi-chart-line"></i>
+                            <span>Acessos</span>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <ng-container *ngIf="!loading; else chartSkeleton">
+                            <p-chart type="line" [data]="accessData" [options]="accessOptions"></p-chart>
+                        </ng-container>
+                        <ng-template #chartSkeleton>
+                            <p-skeleton width="100%" height="280px"></p-skeleton>
+                        </ng-template>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metrics-flex__item">
+                <div class="table-card">
+                    <div class="table-card-header">
+                        <div class="table-title">
+                            <i class="pi pi-star-fill"></i>
+                            <span>Top Notícias</span>
+                        </div>
+                    </div>
+                    <ng-container *ngIf="!loading; else tableSkeleton">
+                        <p-table *ngIf="topNews?.length; else emptyTopNews" [value]="topNews" [paginator]="true"
+                            [rows]="5" sortField="views" [sortOrder]="-1" responsiveLayout="scroll"
+                            styleClass="top-news-table">
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th>Título</th>
+                                    <th class="text-center">Views</th>
+                                    <th class="text-center">Último Acesso</th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-row let-i="rowIndex">
+                                <tr>
+                                    <td>
+                                        <div class="news-title">
+                                            <span class="news-rank">{{ i + 1 }}</span>
+                                            {{ row.title }}
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge-views">{{ row.views | number }}</span>
+                                    </td>
+                                    <td class="text-center text-sm">{{ row.lastAccess | date:'dd/MM/yy HH:mm' }}</td>
+                                </tr>
+                            </ng-template>
+                        </p-table>
+                    </ng-container>
+                    <ng-template #emptyTopNews>
+                        <div class="empty-state">
+                            <i class="pi pi-inbox"></i>
+                            <p>Sem dados para o período selecionado</p>
+                        </div>
+                    </ng-template>
+                    <ng-template #tableSkeleton>
+                        <p-skeleton width="100%" height="200px"></p-skeleton>
+                    </ng-template>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+</div>
