@@ -1,113 +1,82 @@
-import {
-  Component,
-  computed,
-  effect,
-  inject,
-  input,
-  OnInit,
-  output,
-  signal,
-} from '@angular/core';
+import { Component, inject, signal, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../../core/services/api.service';
-import { firstValueFrom } from 'rxjs';
-import { RouterModule } from '@angular/router';
-import { YoutubeVideo } from '@site-gazeta/models';
-import { YouTubePlayer } from '@angular/youtube-player';
+import { Video } from '@site-gazeta/models';
 
 @Component({
   selector: 'app-video-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, YouTubePlayer],
+  imports: [CommonModule],
   templateUrl: './video-list.component.html',
   styleUrl: './video-list.component.scss',
 })
-export class VideoListComponent implements OnInit {
+export class VideoListComponent {
   private apiService = inject(ApiService);
-  videos = signal<YoutubeVideo[]>([]);
-  videoEmitter = output<YoutubeVideo>();
-  updateList = input();
-  filterDate = signal<string>('');
-  filterOrder = signal<'desc' | 'asc'>('desc');
-  filterSearch = signal<string>('');
 
-  filteredVideos = computed(() => {
-    let filtered = this.videos();
+  // Inputs & Outputs
+  videos = input.required<Video[]>();
+  onEdit = output<Video>();
+  onDelete = output<number>();
 
-    if (this.filterDate()) {
-      filtered = filtered.filter(
-        (v) => v.publishedAt?.slice(0, 10) === this.filterDate()
-      );
-    }
+  // Signals
+  videoToDelete = signal<Video | null>(null);
+  showDeleteConfirm = signal(false);
+  playingVideoId = signal<number | null>(null);
 
-    if (this.filterSearch()) {
-      const search = this.filterSearch().toLowerCase();
-      filtered = filtered.filter(
-        (v) =>
-          v.title.toLowerCase().includes(search) ||
-          v.description?.toLowerCase().includes(search)
-      );
-    }
-
-    return filtered.sort((a, b) => {
-      const dateA = new Date(a.publishedAt).getTime();
-      const dateB = new Date(b.publishedAt).getTime();
-      return this.filterOrder() === 'desc' ? dateB - dateA : dateA - dateB;
-    });
-  });
-  constructor() {
-    effect(() => {
-      this.updateList();
-      this.getVideos();
-      console.log('Update list called');
-    });
-  }
-  ngOnInit(): void {
-    this.getVideos();
+  editVideo(video: Video): void {
+    this.onEdit.emit(video);
   }
 
-  getVideos() {
-    this.apiService.getVideos().subscribe({
-      next: (videos) => {
-        this.videos.set(videos);
+  confirmDelete(video: Video): void {
+    this.videoToDelete.set(video);
+    this.showDeleteConfirm.set(true);
+  }
+
+  cancelDelete(): void {
+    this.videoToDelete.set(null);
+    this.showDeleteConfirm.set(false);
+  }
+
+  deleteVideo(): void {
+    const video = this.videoToDelete();
+    if (!video?.id) return;
+
+    this.apiService.deleteVideo(video.id).subscribe({
+      next: () => {
+        this.onDelete.emit(video.id);
+        this.cancelDelete();
       },
-      error: (error) => {
-        throw error;
-      },
-    });
-  }
-
-  editVideo(video: YoutubeVideo) {
-    this.videoEmitter.emit(video);
-  }
-
-  deleteVideo(videoId: number, isActive: boolean) {
-    if (!isActive) {
-      const conf = confirm('Tem certeza que deseja apagar o vídeo?');
-      if (conf) {
-        firstValueFrom(this.apiService.deleteVideo(videoId))
-          .then((success) => {
-            alert(success.message);
-            this.getVideos();
-          })
-          .catch((error) => {
-            throw error;
-          });
+      error: (err) => {
+        console.error('Erro ao deletar vídeo:', err);
+        this.cancelDelete();
       }
+    });
+  }
+
+  togglePlayVideo(videoId: number): void {
+    if (this.playingVideoId() === videoId) {
+      this.playingVideoId.set(null);
     } else {
-      alert(
-        'Vídeo Ativo, não é possível apagar. desative o vídeo antes de apagar.'
-      );
+      this.playingVideoId.set(videoId);
     }
   }
 
-  setFilterDate(date: string) {
-    this.filterDate.set(date);
+  isPlaying(videoId: number): boolean {
+    return this.playingVideoId() === videoId;
   }
-  setFilterOrder(order: 'desc' | 'asc') {
-    this.filterOrder.set(order);
-  }
-  setFilterSearch(search: string) {
-    this.filterSearch.set(search);
+
+  formatDuration(duration: string): string {
+    // Se já estiver formatado (HH:MM:SS ou MM:SS), retorna como está
+    if (duration.includes(':')) {
+      return duration;
+    }
+    
+    // Se for em segundos, converte para MM:SS
+    const totalSeconds = parseInt(duration);
+    if (isNaN(totalSeconds)) return duration;
+    
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   }
 }

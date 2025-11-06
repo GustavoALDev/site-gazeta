@@ -44,9 +44,10 @@ export class CategoryFormComponent {
     const used = this.usedColors();
     const editingCategory = this.editingCategory();
     
-    // If editing, allow the current category's color
-    if (editingCategory && editingCategory.color === currentColor) {
-      return true;
+    // If editing, exclude the current category's color from used colors
+    if (editingCategory) {
+      const usedWithoutCurrent = used.filter(color => color !== editingCategory.color);
+      return !usedWithoutCurrent.includes(currentColor);
     }
     
     // Otherwise, check if color is not used
@@ -109,6 +110,7 @@ export class CategoryFormComponent {
         next: (res) => {
           console.log(res);
           this.categorySubmit.emit(res as Category);
+          this.form.reset();
         },
         error: (err) => {
           console.error(err);

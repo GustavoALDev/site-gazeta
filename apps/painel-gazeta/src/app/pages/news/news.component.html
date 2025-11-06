@@ -157,7 +157,12 @@
                   <div class="tab-content" [class.active]="activeTab === 'content'">
                     <div class="form-group">
                       <label for="content">Conteúdo da Notícia *</label>
-                      <lib-text-editor formControlName="content" ></lib-text-editor>
+                      <lib-text-editor 
+                        (ready)="onReady($event)"
+                        formControlName="content"
+                        [apiUrl]="apiUrl"
+                        [postId]="newsId || 0">
+                      </lib-text-editor>
                       @if (form.get('content')?.invalid && form.get('content')?.touched) {
                         <div class="error-message">
                           Conteúdo é obrigatório

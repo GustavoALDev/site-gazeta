@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { News, NewsMedia } from '@site-gazeta/models';
 import { SanitizeUrlPipe } from '../../pipes/sanitize-url.pipe';
-import { ApiService } from '../../service/api.service';
+import { ApiService } from '../../core/service/api.service';
 import { RouterModule } from '@angular/router';
 import { RelatedNewsComponent } from '@site-gazeta/related-news';
 import { MoreNewsComponent } from '@site-gazeta/more-news';
@@ -60,11 +60,9 @@ export class NewsContentComponent implements OnInit {
               this.news.set(news);
               this.getRelatedNews();
               this.goToTop();
+              console.log(news);
               this.isLoading.set(false);
-            } else {
-              this.isLoading.set(false);
-              this.router.navigate(['/']);
-            }
+            } 
           });            
       } 
       

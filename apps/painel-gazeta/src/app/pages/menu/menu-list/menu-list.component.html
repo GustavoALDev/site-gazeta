@@ -1,73 +1,172 @@
-<div class="menu-list-section">
-  <h2>Itens do Menu</h2>
-  <div class="menu-list"
-       (dragover)="onDragOver($event)"
-       (dragenter)="onDragEnter($event)"
-       (dragleave)="onDragLeave($event)"
-       (drop)="onDrop($event)">
-    @for (item of items(); track item.order; let i = $index) {
-      <!-- Indicador de drop antes do item -->
-      @if (shouldShowDropIndicator(i, 'before')) {
-        <div class="drop-indicator"></div>
-      }
+<div class="menu-list">
 
-      <div
-        [class]="getItemClass(i)"
-        [style.transform]="getItemTransform(i)"
-        draggable="true"
-        (dragstart)="onDragStart($event, item, i)"
-        (dragend)="onDragEnd($event)"
-        [attr.data-index]="i"
-      >
-        <div class="drag-handle">
-          <i class="fas fa-grip-vertical"></i>
-        </div>
-        <div class="item-content">
-          <div class="item-info">
-            <span class="item-name">{{ item.name }}</span>
-            <span class="item-type" [class]="'type-' + item.type">{{ types[item.type!] }}</span>
-            <span class="item-order">#{{ item.order }}</span>
-          </div>
-          @if (item.routerLink || item.externalLink || item.slug) {
-            <div class="item-details">
-              @if (item.type === 'internal') {
-                <small>Rota: {{ item.routerLink }}</small>
-              }
-              @if (item.type === 'external') {
-                <small>Link: {{ item.externalLink }}</small>
-              }
-              @if (item.slug) {
-                <small>Slug: {{ item.slug }}</small>
-              }
-            </div>
+  <lib-drag-and-drop 
+    [items]="menus()" 
+    [config]="config"
+    listId="main-menu-list"
+  >
+    
+    <!-- Header -->
+    <ng-template #headerTemplate>
+      <div class="list-header">
+        <h3>
+          <span class="material-icons">list</span>
+          Menus Cadastrados
+        </h3>
+        <div class="list-info">
+          <span class="badge">{{ menus().length }} {{ menus().length === 1 ? 'item' : 'itens' }}</span>
+          @if (isReordering()) {
+            <span class="reordering-badge">
+              <span class="material-icons spinning">sync</span>
+              Salvando ordem...
+            </span>
           }
         </div>
-        <button
-          type="button"
-          class="update-btn "
-          (click)="deleteItem(item.id!, i)"
-          title="Excluir item"
-        >
-          <i class="material-icons">edit</i>
-        </button>
-        <button
-          type="button"
-          class="delete-btn"
-          (click)="deleteItem(item.id!, i)"
-          title="Excluir item"
-        >
-          <i class="material-icons">delete</i>
-        </button>
       </div>
+    </ng-template>
 
-      <!-- Indicador de drop após o último item -->
-      @if (shouldShowDropIndicator(i, 'after')) {
-        <div class="drop-indicator"></div>
-      }
-    } @empty {
-      <div class="empty-state">
-        <p>Nenhum item no menu. Adicione o primeiro item!</p>
+    <!-- Item Template -->
+    <ng-template #itemTemplate let-item let-isExpanded="isExpanded" let-toggle="toggle">
+      <div class="menu-item-main">
+        <!-- Drag Handle -->
+        <div class="drag-handle" cdkDragHandle>
+          <span class="material-icons">drag_indicator</span>
+        </div>
+
+        <!-- Menu Info -->
+        <div class="menu-info">
+          <div class="menu-header">
+            <div class="menu-title">
+              @if (item.type === 'submenu') {
+                <button 
+                  type="button" 
+                  class="expand-btn" 
+                  (click)="toggle()"
+                  title="{{ isExpanded ? 'Recolher' : 'Expandir' }}"
+                >
+                  <span class="material-icons">
+                    {{ isExpanded ? 'expand_more' : 'chevron_right' }}
+                  </span>
+                </button>
+              }
+              <span class="material-icons menu-icon">{{ getMenuTypeIcon(item.type) }}</span>
+              <h4>{{ item.name }}</h4>
+            </div>
+            <span class="menu-type-badge">{{ getMenuTypeLabel(item.type) }}</span>
+          </div>
+          
+          <div class="menu-details">
+            <div class="menu-detail">
+              <span class="material-icons">arrow_forward</span>
+              <span>{{ getMenuDestination(item) }}</span>
+            </div>
+            <div class="menu-detail">
+              <span class="material-icons">sort</span>
+              <span>Ordem: {{ item.order }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="menu-actions">
+          <button 
+            type="button" 
+            class="action-btn edit-btn" 
+            (click)="editMenu(item)"
+            title="Editar menu"
+          >
+            <span class="material-icons">edit</span>
+          </button>
+          <button 
+            type="button" 
+            class="action-btn delete-btn" 
+            (click)="confirmDelete(item)"
+            title="Deletar menu"
+          >
+            <span class="material-icons">delete</span>
+          </button>
+        </div>
       </div>
-    }
-  </div>
+    </ng-template>
+
+    <!-- Child Template -->
+    <ng-template #childTemplate let-child>
+      <span class="material-icons child-icon">{{ getMenuTypeIcon(child.type) }}</span>
+      <div class="child-info">
+        <span class="child-name">{{ child.name }}</span>
+        <span class="child-type">{{ getMenuTypeLabel(child.type) }}</span>
+      </div>
+      <button 
+        type="button" 
+        class="remove-child-btn" 
+        (click)="removeFromSubmenu(child.id!)"
+        title="Remover do submenu"
+      >
+        <span class="material-icons">close</span>
+      </button>
+    </ng-template>
+
+    <!-- Empty State -->
+    <ng-template #emptyTemplate>
+      <div class="empty-state">
+        <span class="material-icons">menu_open</span>
+        <h4>Nenhum menu cadastrado</h4>
+        <p>Crie seu primeiro item de menu usando o formulário acima</p>
+      </div>
+    </ng-template>
+
+    <!-- Children Empty State -->
+    <ng-template #childrenEmptyTemplate>
+      <div class="submenu-empty">
+        <span class="material-icons">open_with</span>
+        <p>Arraste itens aqui para adicionar ao submenu</p>
+      </div>
+    </ng-template>
+
+    <!-- Footer (Dica) -->
+    <ng-template #footerTemplate>
+      @if (menus().length > 0) {
+        <div class="drag-tip">
+          <span class="material-icons">info</span>
+          <p>Arraste os itens para reordenar. Arraste para dentro de submenus para criar dropdown.</p>
+        </div>
+      }
+    </ng-template>
+
+  </lib-drag-and-drop>
+
 </div>
+
+<!-- Modal de Confirmação de Exclusão -->
+@if (showDeleteConfirm()) {
+  <div class="modal-overlay" (click)="cancelDelete()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <span class="material-icons warning">warning</span>
+        <h3>Confirmar Exclusão</h3>
+      </div>
+      
+      <div class="modal-body">
+        <p>Tem certeza que deseja excluir o menu <strong>"{{ menuToDelete()?.name }}"</strong>?</p>
+        @if (menuToDelete()?.type === 'submenu' && menuToDelete()?.children?.length) {
+          <div class="warning-box">
+            <span class="material-icons">info</span>
+            <p>Este menu possui {{ menuToDelete()?.children?.length }} subitem(ns). Eles também serão excluídos.</p>
+          </div>
+        }
+        <p class="warning-text">Esta ação não pode ser desfeita.</p>
+      </div>
+      
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" (click)="cancelDelete()">
+          <span class="material-icons">close</span>
+          Cancelar
+        </button>
+        <button type="button" class="btn-delete" (click)="deleteMenu()">
+          <span class="material-icons">delete_forever</span>
+          Excluir
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -335,4 +335,25 @@ export class NewsMidiaComponent implements OnInit {
 
     return !hasFeaturedImage;
   }
+
+  // Método para resetar completamente o componente
+  resetMedia() {
+    // Limpa todas as mídias
+    this.previewMidias.set([]);
+    // Reseta o índice selecionado
+    this.selectedMediaIndex.set(null);
+    // Limpa o formulário de edição
+    this.editingMedia.set({});
+    // Reseta o input de foto
+    if (this.photoInput?.nativeElement) {
+      this.photoInput.nativeElement.value = '';
+    }
+    // Reseta o estado de edição
+    this.isEdit.set(false);
+    // Emite evento vazio para atualizar o formulário principal
+    this.formValue.emit({
+      newsVideo: [],
+      newsMedia: [],
+    });
+  }
 }

@@ -45,8 +45,25 @@ export class MenuService {
         slug: true,
         routerLink: true,
         externalLink: true,
+        parentId: true,
         createdAt: true,
-        updatedAt: true
+        updatedAt: true,
+        children: {
+          where: { isActive: true },
+          orderBy: { order: 'asc' },
+          select: {
+            id: true,
+            order: true,
+            name: true,
+            type: true,
+            slug: true,
+            routerLink: true,
+            externalLink: true,
+            parentId: true,
+            createdAt: true,
+            updatedAt: true
+          }
+        }
       }
     });
 
@@ -54,8 +71,12 @@ export class MenuService {
   }
 
   async findAll(): Promise<MenuResponseDto[]> {
+    // Buscar apenas menus de nível superior (sem pai)
     const menus = await this.prisma.menu.findMany({
-      where: { isActive: true },
+      where: { 
+        isActive: true,
+        parentId: null  // Apenas menus raiz
+      },
       orderBy: { order: 'asc' },
       select: {
         id: true,
@@ -65,8 +86,25 @@ export class MenuService {
         slug: true,
         routerLink: true,
         externalLink: true,
+        parentId: true,
         createdAt: true,
-        updatedAt: true
+        updatedAt: true,
+        children: {
+          where: { isActive: true },
+          orderBy: { order: 'asc' },
+          select: {
+            id: true,
+            order: true,
+            name: true,
+            type: true,
+            slug: true,
+            routerLink: true,
+            externalLink: true,
+            parentId: true,
+            createdAt: true,
+            updatedAt: true
+          }
+        }
       }
     });
 
@@ -84,8 +122,25 @@ export class MenuService {
         slug: true,
         routerLink: true,
         externalLink: true,
+        parentId: true,
         createdAt: true,
-        updatedAt: true
+        updatedAt: true,
+        children: {
+          where: { isActive: true },
+          orderBy: { order: 'asc' },
+          select: {
+            id: true,
+            order: true,
+            name: true,
+            type: true,
+            slug: true,
+            routerLink: true,
+            externalLink: true,
+            parentId: true,
+            createdAt: true,
+            updatedAt: true
+          }
+        }
       }
     });
 
@@ -93,7 +148,7 @@ export class MenuService {
       throw new NotFoundException('Menu não encontrado');
     }
 
-    return menu;
+    return menu as unknown as MenuResponseDto;
   }
 
   async update(id: number, updateMenuDto: UpdateMenuDto): Promise<MenuResponseDto> {
@@ -156,8 +211,25 @@ export class MenuService {
         slug: true,
         routerLink: true,
         externalLink: true,
+        parentId: true,
         createdAt: true,
-        updatedAt: true
+        updatedAt: true,
+        children: {
+          where: { isActive: true },
+          orderBy: { order: 'asc' },
+          select: {
+            id: true,
+            order: true,
+            name: true,
+            type: true,
+            slug: true,
+            routerLink: true,
+            externalLink: true,
+            parentId: true,
+            createdAt: true,
+            updatedAt: true
+          }
+        }
       }
     });
 

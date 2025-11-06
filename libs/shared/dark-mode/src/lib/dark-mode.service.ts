@@ -5,44 +5,43 @@ import { BehaviorSubject } from 'rxjs';
   providedIn: 'root'
 })
 export class DarkModeService {
-  private isDarkModeSubject = new BehaviorSubject<boolean>(this.getInitialDarkMode());
+  // Temporariamente forçado para modo claro
+  private isDarkModeSubject = new BehaviorSubject<boolean>(false);
   public isDarkMode$ = this.isDarkModeSubject.asObservable();
 
   constructor() {
-    this.applyDarkMode(this.isDarkModeSubject.value);
+    // Sempre garante modo claro
+    this.applyDarkMode(false);
   }
 
   toggleDarkMode(): void {
-    const newValue = !this.isDarkModeSubject.value;
-    this.isDarkModeSubject.next(newValue);
-    this.applyDarkMode(newValue);
-    this.saveDarkModePreference(newValue);
+    // Desabilitado temporariamente - sempre mantém modo claro
+    // const newValue = !this.isDarkModeSubject.value;
+    // this.isDarkModeSubject.next(newValue);
+    // this.applyDarkMode(newValue);
+    // this.saveDarkModePreference(newValue);
+    
+    // Força sempre modo claro
+    this.isDarkModeSubject.next(false);
+    this.applyDarkMode(false);
   }
 
   private getInitialDarkMode(): boolean {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('darkMode');
-      if (saved !== null) {
-        return JSON.parse(saved);
-      }
-      return window.matchMedia('(prefers-color-scheme: dark)').matches;
-    }
+    // Sempre retorna false (modo claro)
     return false;
   }
 
   private applyDarkMode(isDark: boolean): void {
     if (typeof document !== 'undefined') {
-      if (isDark) {
-        document.body.classList.add('dark-mode');
-      } else {
-        document.body.classList.remove('dark-mode');
-      }
+      // Sempre remove a classe dark-mode para garantir modo claro
+      document.body.classList.remove('dark-mode');
     }
   }
 
   private saveDarkModePreference(isDark: boolean): void {
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem('darkMode', JSON.stringify(isDark));
-    }
+    // Desabilitado temporariamente
+    // if (typeof localStorage !== 'undefined') {
+    //   localStorage.setItem('darkMode', JSON.stringify(isDark));
+    // }
   }
 }
