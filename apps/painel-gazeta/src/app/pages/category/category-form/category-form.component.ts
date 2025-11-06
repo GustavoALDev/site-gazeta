@@ -1,13 +1,14 @@
 import { tap } from 'rxjs';
-import { Component,  inject, input, output, signal } from '@angular/core';
+import { Component,  inject, input, output, signal, computed } from '@angular/core';
 
 import { NonNullableFormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Category } from '@site-gazeta/models';
+import { Category, HexColor, isValidHexColor } from '@site-gazeta/models';
 import { ApiService } from '../../../core/services/api.service';
+import { ColorPickerComponent } from '@site-gazeta/color-picker';
 
 @Component({
   selector: 'app-category-form',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, ColorPickerComponent],
   templateUrl: './category-form.component.html',
   styleUrl: './category-form.component.scss',
 })
@@ -22,15 +23,34 @@ export class CategoryFormComponent {
     }
     return category;
   }});
+  usedColors = input<HexColor[]>([]);
   isEditing = signal(false);
   categorySubmit = output<Category>();
   cancelEdit = output<void>();
+  
+  // Color picker state
+  selectedColor = signal<HexColor>('#3b82f6');
 
   form = this.fb.group({
     name: ['', Validators.required],
     description: ['',],
     slug: [''],
     isActive: [true]
+  });
+  
+  // Computed property to check if current color is available
+  isColorAvailable = computed(() => {
+    const currentColor = this.selectedColor();
+    const used = this.usedColors();
+    const editingCategory = this.editingCategory();
+    
+    // If editing, allow the current category's color
+    if (editingCategory && editingCategory.color === currentColor) {
+      return true;
+    }
+    
+    // Otherwise, check if color is not used
+    return !used.includes(currentColor);
   });
   
  
@@ -42,22 +62,29 @@ export class CategoryFormComponent {
         isActive: category.isActive,
         slug: category.slug
       });
+      this.selectedColor.set(category.color as HexColor);
       this.isEditing.set(true);
     }else{
       this.form.reset({ isActive: true });
+      this.selectedColor.set('#3b82f6');
       this.isEditing.set(false);
     }
+  }
+  
+  onColorChange(color: HexColor) {
+    this.selectedColor.set(color);
   }
  
 
   onSubmit() {
-    if (this.form.valid) {
+    if (this.form.valid && this.isColorAvailable()) {
       const formValue = this.form.value;
       const categoryData: Category = {
         name: formValue.name as string,
         description: formValue.description as string,
         slug: this.generateSlug(formValue.name as string),
-        isActive:formValue.isActive
+        isActive: formValue.isActive,
+        color: this.selectedColor()
       };
 
       if (this.isEditing()) {
@@ -96,6 +123,7 @@ export class CategoryFormComponent {
 
   onCancel() {
     this.form.reset({ isActive: true });
+    this.selectedColor.set('#3b82f6');
     this.cancelEdit.emit();
   }
 

@@ -1,10 +1,10 @@
 import { Component, input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { News } from '@site-gazeta/models';
 import { RouterModule } from '@angular/router';
 @Component({
   selector: 'lib-related-news',
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, NgOptimizedImage],
   templateUrl: './related-news.component.html',
   styleUrl: './related-news.component.scss',
 })

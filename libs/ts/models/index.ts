@@ -7,4 +7,6 @@ import { Ads } from './ads.model';
 import { Menu } from './menu.model';
 import { YoutubeVideo } from './youtubeVideos.model';
 import { Video } from './videos.model';
-export { Category, News, NewsMedia, NewsVideo, User, Ads, Menu, YoutubeVideo, Video };
+import { HexColor, isValidHexColor, generateRandomHexColor } from './category.model';
+export { Category, News, NewsMedia, NewsVideo, User, Ads, Menu, YoutubeVideo, Video, HexColor, isValidHexColor, generateRandomHexColor };
+

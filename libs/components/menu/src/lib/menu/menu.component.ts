@@ -6,7 +6,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { SidebarComponent } from '@site-gazeta/sidebar';
 import { Menu } from '@site-gazeta/models';
 import { RouterModule } from '@angular/router';
-import { ApiService } from 'apps/site-gazeta/src/app/service/api.service';
+import { ApiService } from 'apps/site-gazeta/src/app/core/service/api.service';
 
 
 @Component({
@@ -30,6 +30,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   }
   getMenu() {
     this.apiService.getMenu().subscribe((menu) => {
+      console.log(menu);
       this.menuItems.set(menu);
     });
   }

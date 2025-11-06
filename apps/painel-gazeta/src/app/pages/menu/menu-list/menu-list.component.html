@@ -25,7 +25,7 @@
         <div class="item-content">
           <div class="item-info">
             <span class="item-name">{{ item.name }}</span>
-            <span class="item-type" [class]="'type-' + item.type">{{ types[item.type] }}</span>
+            <span class="item-type" [class]="'type-' + item.type">{{ types[item.type!] }}</span>
             <span class="item-order">#{{ item.order }}</span>
           </div>
           @if (item.routerLink || item.externalLink || item.slug) {

@@ -19,7 +19,7 @@ export class SidebarComponent implements OnDestroy {
   type = input<'overlay' | 'static'>('overlay');
   opened = model<boolean>(false);
   menuItems = input< Menu[]>([]);
-
+  painelItems = input();
   
   isOpened_ = signal<boolean>(false);
   expandedMenus = signal<Set<string>>(new Set());

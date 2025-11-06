@@ -4,18 +4,18 @@
   </div>
 
   <div class="top-gazeta__grid">
-    @for (category of categories(); track category.name) {
-      <div class="top-gazeta__category" [attr.data-category]="category.color">
-        <h3 class="category__title">{{ category.name }}</h3>
-        
+    @for (newsItem of findNewsByCategory().slice(0, 3); track newsItem.id) {
+      <div class="top-gazeta__category" [attr.data-category]="newsItem.color">
+        <h3 class="category__title">{{ newsItem.name }}</h3>
         <ul class="category__list">
-          @for (newsItem of category.news; track newsItem.id; let index = $index) {
+          @for (newsItem of newsItem.news; track newsItem.id; let index = $index) {
             <li class="category__item">
               <span class="item__number">{{ index + 1 }}</span>
               <a [routerLink]="['/news', newsItem.slug]" class="item__link">
                 <p class="item__text">{{ newsItem.title }}</p>
               </a>
             </li>
+           
           } @empty {
             <li class="category__empty">Nenhuma notícia disponível</li>
           }

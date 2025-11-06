@@ -1,7 +1,7 @@
 <section class="news-cluster-container">
   <div class="news-cluster-grid">
     
-    @for (section of categorySections(); track section.categoryName) {
+    @for (section of categorySections(); track section.categoryName + $index) {
       <div class="news-cluster">
         <div class="news-cluster__header">
           <h2 class="news-cluster__title" [style.color]="section.themeColor">
@@ -12,28 +12,30 @@
 
         <div class="news-cluster__cards">
           @for (newsItem of section.news; track newsItem.id) {
-            <article class="news-card" [routerLink]="getNewsSlug(newsItem)">
+            <article class="news-card" [routerLink]="newsItem.slug">
               <div class="news-card__image-container">
                 <img 
-                  [src]="getNewsImage(newsItem)" 
-                  [alt]="getNewsTitle(newsItem)"
+                  [ngSrc]="newsItem.imageUrl" 
+                  [alt]="newsItem.title"
                   class="news-card__image"
+                  fill
+                  loading="lazy"
                 >
               </div>
               
               <div class="news-card__content">
-                @if (getNewsOverline(newsItem)) {
+                @if (newsItem.subtitle) {
                   <p class="news-card__overline">
-                    {{ getNewsOverline(newsItem) }}
+                    {{ newsItem.subtitle }}
                   </p>
                 }
                 
                 <h3 class="news-card__title" [style.color]="section.themeColor">
-                  {{ getNewsTitle(newsItem) }}
+                  {{ newsItem.title }}
                 </h3>
                 
                 <p class="news-card__metadata">
-                  {{ getNewsMetadata(newsItem) }}
+                  {{ newsItem.author }}
                 </p>
               </div>
             </article>

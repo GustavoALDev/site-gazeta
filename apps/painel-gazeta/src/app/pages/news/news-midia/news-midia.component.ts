@@ -300,6 +300,8 @@ export class NewsMidiaComponent implements OnInit {
         videoMidias.push({
           url: midia.url as string,
           thumbnail: midia.thumbnail as string,
+          title: midia.title as string,
+          duration: '00:00',
         });
       }
     });

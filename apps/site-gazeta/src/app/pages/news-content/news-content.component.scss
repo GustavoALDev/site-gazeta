@@ -1,16 +1,16 @@
 :host{
-  padding:30px;
+  padding: 15px 0;
   position: relative;
   display: flex;
-  
+  justify-content: center;
 }
 
-// Botão Voltar
 .back-button {
   display: inline-flex;
   align-items: center;
   padding: 0.5rem 1rem;
   margin-bottom: 1.5rem;
+  margin-left: 1.5rem;
   background: #fff;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
@@ -79,15 +79,14 @@
 }
 
 .news-content {
-  max-width: 100%;
-  margin: 0 auto;
-
+  width: 100%;
+  max-width: 1366px;
 }
 
 // Mídia em Destaque
 .news-hero {
   width: 100%;
-  max-width: 900px;
+  max-width: 1366px;
   margin: 0 auto 2rem;
   padding: 0 1.5rem;
   
@@ -143,7 +142,7 @@
 
 // Container principal
 .news-container {
-  max-width: 900px;
+  max-width: 1366px;
   margin: 0 auto;
   padding: 0 1.5rem 3rem;
 }
@@ -440,6 +439,7 @@
 
 // Responsividade
 @media (max-width: 768px) {
+  
   .news-container {
     padding: 0 1rem 2rem;
   }

@@ -6,7 +6,10 @@
         </div>
         <div class="category-form-container-wrapper">
             <div class="category-form-container">
-                <app-category-form [editingCategory]="editingCategory()!" (categorySubmit)="onCategorySubmit($event)"
+                <app-category-form 
+                    [editingCategory]="editingCategory()!" 
+                    [usedColors]="usedColors()"
+                    (categorySubmit)="onCategorySubmit($event)"
                     (cancelEdit)="onCancelEdit()" />
             </div>
             <div class="category-list-container">

@@ -8,8 +8,9 @@
           <div class="card-image">
             @if (news.mediaNews && news.mediaNews.length > 0) {
               <img 
-                [src]="news.mediaNews[0].imgSize?.medium" 
+                [ngSrc]="news.mediaNews[0].imgSize!.small" 
                 [alt]="news.title"
+                fill
                 loading="lazy"
               />
             } @else {

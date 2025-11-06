@@ -10,13 +10,18 @@
     <!-- Player principal -->
     <div class="main-player">
       @if (currentVideo(); as video) {
+       
         <div class="video-wrapper">
           <video 
-            #videoPlayer
-            class="video-element"
-            [src]="video.url"
-            (click)="videoPlayer.paused ? videoPlayer.play() : videoPlayer.pause()"
+          #videoPlayer
+          class="video-element"
+          [src]="video.url"
           ></video>
+          @if(videoPlayer.paused){
+            <div class="thumbnail-wrapper">
+              <img [src]="video.thumbnail" [alt]="video.title" class="video-thumbnail" />
+            </div>
+          }
           
           <!-- Overlay com botão play -->
           <div 
@@ -29,7 +34,8 @@
             [attr.aria-label]="videoPlayer.paused ? 'Play video' : 'Pause video'"
           >
             @if (videoPlayer.paused) {
-              <div class="play-button">
+              <div class="play-button" >
+                
                 <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
                   <circle cx="40" cy="40" r="40" fill="url(#playGradient)" opacity="0.9"/>
                   <path d="M32 25L55 40L32 55V25Z" fill="white"/>
@@ -124,14 +130,15 @@
               </button>
             </div>
           </div>
-
+          
           <div class="video-info">
             <h3 class="video-title">{{ video.title }}</h3>
           </div>
         </div>
+        
       }
     </div>
-
+    
     <!-- Lista de vídeos lateral -->
     <div class="video-list">
       @for (video of videos(); track video.id; let i = $index) {
@@ -145,7 +152,12 @@
           role="button"
         >
           <div class="thumbnail-wrapper">
-            <video [src]="video.thumbnail" class="thumbnail"></video>
+            @if(video.thumbnail){
+              <img [src]="video.thumbnail" alt="" class="thumbnail">
+            }@else{
+              <video [src]="video.url" class="class="thumbnail></video>
+            }
+            
             <div class="thumbnail-overlay">
               <div class="play-icon">
                 <svg width="40" height="40" viewBox="0 0 40 40" fill="none">

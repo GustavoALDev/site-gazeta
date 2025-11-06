@@ -1,19 +1,12 @@
-import { Component, input, computed, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, computed, input } from '@angular/core';
+import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { News, NewsMedia, Category } from '@site-gazeta/models';
 import { mockCategories } from '@site-gazeta/mock';
 import { RouterModule } from '@angular/router';
 
-
-interface CategoryNews {
-  category: Category;
-  featured: News | null;
-  secondary: News[];
-}
-
 @Component({
   selector: 'lib-news-category-grid',
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, NgOptimizedImage],
   templateUrl: './news-category-grid.component.html',
   styleUrl: './news-category-grid.component.scss',
 })
@@ -22,12 +15,12 @@ export class NewsCategoryGridComponent {
   news = input.required<News[]>();
 
   // Configuração das categorias com suas cores
-  private categoryConfigs = signal<Category[]>(mockCategories);
+  categories = input.required<Category[]>();
 
 
   categorizedNews = computed(() => {
     const newsData = this.news();
-    const configs = this.categoryConfigs();
+    const configs = this.categories();
     
     return configs
       .sort(() => Math.random() - 0.5)
@@ -39,16 +32,15 @@ export class NewsCategoryGridComponent {
       );
 
       // Separa notícia em destaque (isEmphasis) e secundárias
-      const featured = categoryNews.find(news => news.isEmphasis) || null;
+      const featured = categoryNews[0]
       const secondary = categoryNews
-        .filter(news => !news.isEmphasis)
-        .slice(0, 2); // Limita a 2 notícias secundárias
+        .slice(1,3); // Limita a 2 notícias secundárias
 
       return {
         category,
         featured,
         secondary
-      } as CategoryNews;
+      };
     }).filter(item => item.featured || item.secondary.length > 0); // Remove categorias sem notícias
   });
 
