@@ -1,53 +1,107 @@
-<div class="video-list-container">
-  <div class="video-list-filters">
-    <div class="filter-group">
-      <label for="filter-date">Data de publicação</label>
-      <input id="filter-date" type="date" class="filter-input"
-        [value]="filterDate()" (input)="setFilterDate($any($event.target).value)" />
-    </div>
-    <div class="filter-group">
-      <label for="filter-order">Ordem</label>
-      <select id="filter-order" class="filter-input"
-        [value]="filterOrder()" (change)="setFilterOrder($any($event.target).value)">
-        <option value="desc">Mais recente</option>
-        <option value="asc">Mais antigo</option>
-      </select>
-    </div>
-    <div class="filter-group search-group">
-      <label for="filter-search">Pesquisar</label>
-      <input id="filter-search" type="text" class="filter-input search-input"
-        placeholder="Pesquisar vídeo..." [value]="filterSearch()"
-        (input)="setFilterSearch($any($event.target).value)" />
-    </div>
+<div class="video-list">
+  
+  <!-- Header -->
+  <div class="list-header">
+    <h3>
+      <span class="material-icons">video_library</span>
+      Vídeos Cadastrados
+    </h3>
+    <span class="badge">{{ videos().length }} {{ videos().length === 1 ? 'vídeo' : 'vídeos' }}</span>
   </div>
 
-  <div class="video-list">
-    @for(video of filteredVideos(); track video.id) {
-      <div class="video-card">
-        <div class="video-card-img">
-          <youtube-player [videoId]="video.videoId" width="100%" height="100%" ></youtube-player>
-
-        </div>
-        <div class="video-card-content">
-          <h3 class="video-title">{{video.title}}</h3>
-          <p class="video-description">{{video.description}}</p>
-          <div class="video-meta">
-            <span class="video-date">{{video.publishedAt | date:'dd/MM/yyyy - HH:mm'}}</span>
-            <span class="video-date">Ordem de exibição: {{video.displayOrder}}º</span>
-            <span class="video-status" [class.active]="video.isActive">
-              {{video.isActive ? 'Ativo' : 'Inativo'}}
-            </span>
-            <span class="video-emphasis" [class.emphasis]="video.isEmphasis">
-              {{video.isEmphasis ? 'Em destaque' : 'Sem destaque'}}
-            </span>
+  <!-- Grid de Vídeos -->
+  @if (videos().length > 0) {
+    <div class="video-grid">
+      @for (video of videos(); track video.id) {
+        <div class="video-card" [class.playing]="isPlaying(video.id)">
+          
+          <!-- Thumbnail/Video Preview -->
+          <div class="video-thumbnail" (click)="togglePlayVideo(video.id)">
+            @if (!isPlaying(video.id)) {
+              @if (video.thumbnail) {
+                <img [src]="video.thumbnail" [alt]="video.title" />
+              }                
+              <div class="play-overlay">
+                <span class="material-icons">play_circle_filled</span>
+              </div>
+              @if (video.duration) {
+                <div class="duration-badge">{{ formatDuration(video.duration) }}</div>
+              }
+            } @else {
+              <video [src]="video.url" controls autoplay></video>
+            }
           </div>
+
+          <!-- Video Info -->
+          <div class="video-info">
+            <h4>{{ video.title }}</h4>
+            @if (video.duration) {
+              <div class="video-meta">
+                <span class="material-icons">schedule</span>
+                <span>{{ formatDuration(video.duration) }}</span>
+              </div>
+            }
+          </div>
+
+          <!-- Actions -->
           <div class="video-actions">
-            <a [href]="video.youtubeUrl" target="_blank" class="btn-primary">Ver no YouTube</a>
-            <button class="btn-secondary" (click)="editVideo(video)">Editar</button>
-            <button class="btn-danger" (click)="deleteVideo(video.id!, video.isActive)">Excluir</button>
+            <button 
+              type="button" 
+              class="action-btn edit-btn" 
+              (click)="editVideo(video)"
+              title="Editar vídeo"
+            >
+              <span class="material-icons">edit</span>
+              Editar
+            </button>
+            <button 
+              type="button" 
+              class="action-btn delete-btn" 
+              (click)="confirmDelete(video)"
+              title="Deletar vídeo"
+            >
+              <span class="material-icons">delete</span>
+              Deletar
+            </button>
           </div>
         </div>
-      </div>
-    }
-  </div>
+      }
+    </div>
+  } @else {
+    <!-- Empty State -->
+    <div class="empty-state">
+      <span class="material-icons">video_library</span>
+      <h4>Nenhum vídeo cadastrado</h4>
+      <p>Faça o upload do seu primeiro vídeo usando o formulário acima</p>
+    </div>
+  }
+
 </div>
+
+<!-- Modal de Confirmação de Exclusão -->
+@if (showDeleteConfirm()) {
+  <div class="modal-overlay" (click)="cancelDelete()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <span class="material-icons warning">warning</span>
+        <h3>Confirmar Exclusão</h3>
+      </div>
+      
+      <div class="modal-body">
+        <p>Tem certeza que deseja excluir o vídeo <strong>"{{ videoToDelete()?.title }}"</strong>?</p>
+        <p class="warning-text">Esta ação não pode ser desfeita e o arquivo será permanentemente removido.</p>
+      </div>
+      
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" (click)="cancelDelete()">
+          <span class="material-icons">close</span>
+          Cancelar
+        </button>
+        <button type="button" class="btn-delete" (click)="deleteVideo()">
+          <span class="material-icons">delete_forever</span>
+          Excluir
+        </button>
+      </div>
+    </div>
+  </div>
+}

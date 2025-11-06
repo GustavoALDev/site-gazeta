@@ -1,0 +1,88 @@
+import { inject, Injectable } from '@angular/core';
+import { mockCategories, mockNewsItems, mockVideos, mockMenu } from '@site-gazeta/mock';
+import { Category, News, Video, Menu, Ads } from '@site-gazeta/models';
+import { BehaviorSubject, map, Observable } from 'rxjs';
+import { environment } from '../env/env';
+import { HttpClient } from '@angular/common/http';
+@Injectable({
+  providedIn: 'root'
+})
+export class ApiService {
+  private mockNews = new BehaviorSubject<News[]>(mockNewsItems);
+  private mockCategories = new BehaviorSubject<Category[]>(mockCategories);
+  private mockVideos = new BehaviorSubject<Video[]>(mockVideos);
+  private mockMenu = new BehaviorSubject<Menu[]>(mockMenu);
+  private apiUrl = environment.apiUrl;
+  private http = inject(HttpClient);
+  constructor() { }
+  
+  getMenu(){
+    return this.http.get<Menu[]>(`${this.apiUrl}/menu`);
+  }
+
+  getMenuById(id: number){
+    return this.http.get(`${this.apiUrl}/menu/${id}`);
+  }
+
+  getVideos(){
+    return this.http.get<Video[]>(`${this.apiUrl}/videos`);
+  }
+
+  getVideosById(id: number) {
+    return this.http.get<Video>(`${this.apiUrl}/videos/${id}`);
+  }
+
+  getNews(){
+    return this.http.get<News[]>(`${this.apiUrl}/news`);
+  }
+
+  getNewsById(id: number){
+    return this.http.get(`${this.apiUrl}/news/${id}`);
+  }
+  
+  getCategories(){
+    return this.http.get<Category[]>(`${this.apiUrl}/categories/all`);
+  }
+
+  getActiveCategories(){
+    return this.http.get<Category[]>(`${this.apiUrl}/categories`);
+  }
+
+  getCategory(id: number){
+    return this.http.get(`${this.apiUrl}/categories/${id}`);
+  }
+
+  getAds(){
+    return this.http.get<Ads[]>(`${this.apiUrl}/advertisements`);
+  }
+
+  getAdsById(id: number){
+    return this.http.get(`${this.apiUrl}/advertisements/${id}`);
+  }
+
+  getAdsByPositionAndPlacement(position: string, placement: string){
+    return this.http.get(`${this.apiUrl}/advertisements/active/${placement}/${position}`);
+  }
+
+  getNewsBySlug(slug: string): Observable<News | undefined> {
+    return this.http.get<News>(`${this.apiUrl}/news/slug/${slug}`);
+  }
+
+  getCategoryBySlug(slug: string): Observable<Category | undefined> {
+    return this.http.get<Category>(`${this.apiUrl}/categories/slug/${slug}`)
+  }
+
+
+  getNewsByCategory(categoryId: number): Observable<News[]> {
+    return this.http.get<News[]>(`${this.apiUrl}/news`).pipe(
+      map((news) => news.filter((news) => news.categoryId.includes(categoryId)))
+    )
+  }
+  getRelatedNews(categoryId: number[], newsId: number): Observable<News[]> {
+    return this.http.get<News[]>(`${this.apiUrl}/news`).pipe(
+      map((news) => news.filter((news) =>{
+        return news.categoryId.some(id => categoryId.includes(id)) && news.id !== newsId
+      })) 
+    )
+    }
+}

@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, signal, ViewChild } from '@angular/core';
 
 import { TextEditorComponent } from '@site-gazeta/text-editor';
 import {
@@ -13,6 +13,7 @@ import { FormValidatorComponent, FormValidatorService } from '@site-gazeta/form-
 import { concatMap,  first,  firstValueFrom,  from, Subject,   takeUntil, toArray } from 'rxjs';
 import { ApiService } from '../../core/services/api.service';
 import { ActivatedRoute, RouterModule } from '@angular/router';
+import { environment } from '../../core/env/env';
 
 @Component({
   selector: 'app-news',
@@ -29,10 +30,12 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
   styleUrl: './news.component.scss',
 })
 export class NewsComponent implements OnInit, OnDestroy {
+  @ViewChild(NewsMidiaComponent) newsMidiaComponent!: NewsMidiaComponent;
   fb = inject(NonNullableFormBuilder);
   formValidator = inject(FormValidatorService);
   apiService = inject(ApiService);
   activeRouter = inject(ActivatedRoute)
+  apiUrl = environment.apiUrl;
   activeTab: 'info' | 'content' | 'media' = 'info';
   sidebarOpen = signal<boolean>(true);
   destroy$ = new Subject<void>();
@@ -220,6 +223,7 @@ export class NewsComponent implements OnInit, OnDestroy {
             console.log(res);
             alert('Notícia criada com sucesso!');
             this.onReset();
+            this.newsMidiaComponent?.resetMedia();
           },
           error: (err) => {
             alert('Erro ao salvar midia de notícia!');
@@ -315,8 +319,13 @@ export class NewsComponent implements OnInit, OnDestroy {
     });
   }
 
+  onReady(editor: any) {
+    console.log(editor);
+  }
+
   onReset() {
     this.form.reset();
+    this.form.controls['content'].reset('');
     this.selectedCategories.set([]);
     setTimeout(() => {
       this.form.patchValue({

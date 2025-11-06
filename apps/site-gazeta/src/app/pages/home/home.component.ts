@@ -6,7 +6,7 @@ import { NewsCategoryGridComponent, NewsCategorySectionComponent, NewsHighligths
 import { Category, News, NewsVideo, Video, Menu } from '@site-gazeta/models';
 import { VideoPlayerComponent } from '@site-gazeta/video-player';
 import { mockNewsItems, mockCategories } from '@site-gazeta/mock';
-import { ApiService } from '../../service/api.service';
+import { ApiService } from '../../core/service/api.service';
 import { MoreNewsComponent } from '@site-gazeta/more-news';
 
 @Component({
@@ -37,7 +37,7 @@ export class HomeComponent implements OnInit{
     this.getNews();
     this.getVideos();
     this.getCategories();
-
+    
   }
 
   getNews() {
@@ -47,7 +47,7 @@ export class HomeComponent implements OnInit{
   }
 
   getCategories() {
-    this.apiService.getCategories().subscribe((categories) => {
+    this.apiService.getActiveCategories().subscribe((categories) => {
       this.mockCategories.set(categories.sort(() => Math.random() - 0.5));
     });
     console.log(this.mockCategories());
@@ -59,5 +59,5 @@ export class HomeComponent implements OnInit{
     });
   }
 
-  
+    
 }

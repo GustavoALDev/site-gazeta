@@ -1,11 +1,12 @@
 import { Component, inject, signal, OnInit, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ApiService } from '../../service/api.service';
+import { ApiService } from '../../core/service/api.service';
 import { Category, News } from '@site-gazeta/models';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { MoreNewsComponent } from '@site-gazeta/more-news';
 import { SideNewsComponent } from '@site-gazeta/side-news';
+
 @Component({
   selector: 'app-news-category',
   imports: [CommonModule, RouterLink, MoreNewsComponent, SideNewsComponent],
@@ -49,6 +50,7 @@ export class NewsCategoryComponent implements OnInit {
 
   getCategories(slug: string) {
     firstValueFrom(this.apiService.getCategoryBySlug(slug)).then((category) => {
+      console.log(category)
       if(category){
         this.category.set(category);
         this.getNewsForCategory(category);
@@ -62,8 +64,7 @@ export class NewsCategoryComponent implements OnInit {
 
   getNewsForCategory(category: Category) {
     if (category) {
-      this.apiService
-        .getNewsByCategory(category.id as number)
+      this.apiService.getNewsByCategory(category.id as number)
         .subscribe((news) => {
           this.news.set(news as News[]);
           setTimeout(() => {

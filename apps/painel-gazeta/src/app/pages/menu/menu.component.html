@@ -1,140 +1,61 @@
 <div class="menu-container">
-  <div class="menu-content">
-    <!-- Lista de Menu (agora em componente separado) -->
-    <app-menu-list 
-      [items]="menuItems()"
-      (itemsReordered)="onMenuItemsReordered($event)"
-      (itemDeleted)="onMenuItemDeleted($event)">
-    </app-menu-list>
-
-    <!-- Formulário de Adição -->
-    <div class="menu-form-section">
-      <h2>Adicionar Item ao Menu</h2>
-      
+  <div class="menu-card">
     
+    <!-- Header -->
+    <div class="menu-header">
+      <h2>Gerenciamento de Menu</h2>
+      <p>Crie e organize os itens do menu de navegação do site</p>
+    </div>
 
-      <form [formGroup]="menuForm" (ngSubmit)="onSubmit()" class="menu-form">
-        <!-- Tipo (sempre primeiro) -->
-        <div class="form-group">
-          <label for="type">Tipo do Item *</label>
-          <select id="type" formControlName="type" class="form-control">
-            <option value="">Selecione o tipo</option>
-            @for (type of menuTypes; track type.value) {
-              <option [value]="type.value">{{ type.label }}</option>
-            }
-          </select>
-          @if (getFieldError('type')) {
-            <span class="error-message">{{ getFieldError('Tipo') }}</span>
-          }
+    <!-- Content Wrapper -->
+    <div class="menu-content-wrapper">
+      
+      <!-- Form Section -->
+      <div class="menu-form-section" [class.collapsed]="!showForm()">
+        <div class="section-header">
+          <h3>
+            <span class="material-icons">{{ menuToEdit() ? 'edit' : 'add_circle' }}</span>
+            {{ menuToEdit() ? 'Editar Menu' : 'Novo Menu' }}
+          </h3>
+          <button 
+            type="button" 
+            class="toggle-btn" 
+            (click)="toggleForm()"
+            [title]="showForm() ? 'Ocultar formulário' : 'Mostrar formulário'"
+          >
+            <span class="material-icons">{{ showForm() ? 'expand_less' : 'expand_more' }}</span>
+          </button>
         </div>
-
-        <!-- Campos Condicionais baseados no tipo -->
-        @switch (currentFormType()) {
-          
-          @case ('category') {
-            <!-- Categoria: apenas selecionar categoria -->
-            <div class="form-group">
-              <label for="categoryId">Categoria *</label>
-              <select id="categoryId" formControlName="categoryName" class="form-control">
-                <option value="">Selecione uma categoria</option>
-                @for (category of categories(); track category.id) {
-                  <option 
-                    [value]="category.name"
-                    [disabled]="!category.isActive"
-                  >
-                    {{ category.name }}
-                  </option>
-                }
-              </select>
-              <small class="field-help">O nome da categoria será usado como nome do menu</small>
-              @if (getFieldError('categoryName')) {
-                <span class="error-message">{{ getFieldError('categoryName') }}</span>
-              }
-            </div>
-          }
-
-          @case ('internal') {
-            <!-- Página: nome personalizado + seleção de página -->
-            <div class="form-group">
-              <label for="name">Nome do Menu *</label>
-              <input
-                type="text"
-                id="name"
-                formControlName="name"
-                class="form-control"
-                placeholder="Ex: Início, Nossa História"
-              >
-              @if (getFieldError('name')) {
-                <span class="error-message">{{ getFieldError('Nome do Menu') }}</span>
-              }
-            </div>
-            
-            <div class="form-group">
-              <label for="pageId">Página de Destino *</label>
-              <select id="pageId" formControlName="pageId" class="form-control">
-                <option value="">Selecione uma página</option>
-                @for (page of availablePages; track page.value) {
-                  <option [value]="page.value">
-                    {{ page.label }} ({{ page.routerLink }})
-                  </option>
-                }
-              </select>
-              @if (getFieldError('pageId')) {
-                <span class="error-message">{{ getFieldError('Pagina de destino') }}</span>
-              }
-            </div>
-          }
-
-          @case ('external') {
-            <!-- Link Externo: nome + URL -->
-            <div class="form-group">
-              <label for="name">Nome do Menu *</label>
-              <input
-                type="text"
-                id="name"
-                formControlName="name"
-                class="form-control"
-                placeholder="Ex: Facebook, Site Parceiro"
-              >
-              @if (getFieldError('name')) {
-                <span class="error-message">{{ getFieldError('Nome do Menu') }}</span>
-              }
-            </div>
-            
-            <div class="form-group">
-              <label for="externalLink">URL de Destino *</label>
-              <input
-                type="url"
-                id="externalLink"
-                formControlName="externalLink"
-                class="form-control"
-                placeholder="https://exemplo.com"
-              >
-              @if (getFieldError('externalLink')) {
-                <span class="error-message">{{ getFieldError('externalLink') }}</span>
-              }
-            </div>
-          }
+        
+        @if (showForm()) {
+          <div class="form-content">
+            <app-menu-form
+              [menuToEdit]="menuToEdit()"
+              [existingMenus]="menus()"
+              (onSave)="handleSave($event)"
+              (onCancel)="handleCancel()"
+            />
+          </div>
         }
+      </div>
 
-        <!-- Botões -->
-        <div class="form-actions">
-          <button
-            type="button"
-            class="btn btn-secondary"
-            (click)="clearForm()"
-          >
-            Limpar
-          </button>
-          <button
-            type="submit"
-            class="btn btn-primary"
-            [disabled]="!isFormValid()"
-          >
-            Adicionar Item
-          </button>
-        </div>
-      </form>
+      <!-- List Section -->
+      <div class="menu-list-section">
+        @if (isLoading()) {
+          <div class="loading-state">
+            <span class="material-icons spinning">refresh</span>
+            <p>Carregando menus...</p>
+          </div>
+        } @else {
+          <app-menu-list
+            [menus]="menus()"
+            (onEdit)="handleEdit($event)"
+            (onDelete)="handleDelete($event)"
+            (onReorder)="handleReorder($event)"
+          />
+        }
+      </div>
+
     </div>
   </div>
 </div>

@@ -1,135 +1,59 @@
 <div class="videos-container">
   <div class="videos-card">
+    
+    <!-- Header -->
     <div class="videos-header">
-      <h2>Gerenciar Vídeos</h2>
-      <p>Cadastre e gerencie seus vídeos do YouTube</p>
+      <h2>Gerenciamento de Vídeos</h2>
+      <p>Faça upload e gerencie os vídeos do seu site</p>
     </div>
 
-    <div class="tab-header">
-      <div class="tab-menu">
-        <button
-          type="button"
-          class="tab-button"
-          [class.active]="activeTab() === 'form'"
-          (click)="setActiveTab('form')">
-          {{isEdit() ? 'Editar Vídeo' : 'Cadastrar Vídeo'}}
-        </button>
-        <button
-          type="button"
-          class="tab-button"
-          [class.active]="activeTab() === 'list'"
-          (click)="setActiveTab('list')">
-          Lista de Vídeos
-        </button>
+    <!-- Content Wrapper -->
+    <div class="videos-content-wrapper">
+      
+      <!-- Upload Form Section -->
+      <div class="upload-form-section" [class.collapsed]="!showUploadForm()">
+        <div class="section-header">
+          <h3>
+            <span class="material-icons">{{ videoToEdit() ? 'edit' : 'cloud_upload' }}</span>
+            {{ videoToEdit() ? 'Editar Vídeo' : 'Upload de Vídeo' }}
+          </h3>
+          <button 
+            type="button" 
+            class="toggle-btn" 
+            (click)="toggleUploadForm()"
+            [title]="showUploadForm() ? 'Ocultar formulário' : 'Mostrar formulário'"
+          >
+            <span class="material-icons">{{ showUploadForm() ? 'expand_less' : 'expand_more' }}</span>
+          </button>
+        </div>
+        
+        @if (showUploadForm()) {
+          <div class="form-content">
+            <app-video-upload
+              [videoToEdit]="videoToEdit()"
+              (onSave)="handleSave($event)"
+              (onCancel)="handleCancel()"
+            />
+          </div>
+        }
       </div>
-    </div>
 
-    <div class="tab-content" [class.active]="activeTab() === 'form'">
-      <form [formGroup]="form" (ngSubmit)="onSubmit()">
-        <div class="form-group">
-          <label for="youtubeUrl">URL do YouTube *</label>
-          <input
-            type="text"
-            id="youtubeUrl"
-            formControlName="youtubeUrl"
-            placeholder="Cole aqui a URL do vídeo do YouTube"
-            [class.error]="form.get('youtubeUrl')?.invalid && form.get('youtubeUrl')?.touched">
-          <error-message [errorMessage]="displayError()!['youtubeUrl']"></error-message>
-        </div>
-
-        <div class="form-group">
-          <label for="title">Título *</label>
-          <input
-            type="text"
-            id="title"
-            formControlName="title"
-            placeholder="Digite o título do vídeo"
-            [class.error]="form.get('title')?.invalid && form.get('title')?.touched">
-          <error-message [errorMessage]="displayError()!['title']"></error-message>
-        </div>
-
-        <div class="form-group">
-          <label for="description">Descrição *</label>
-          <textarea
-            id="description"
-            formControlName="description"
-            rows="4"
-            placeholder="Digite a descrição do vídeo"
-            [class.error]="form.get('description')?.invalid && form.get('description')?.touched">
-          </textarea>
-          <error-message [errorMessage]="displayError()!['description']"></error-message>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="displayOrder">Ordem de Exibição *</label>
-            <input
-              type="number"
-              id="displayOrder"
-              formControlName="displayOrder"
-              min="1"
-              [class.error]="form.get('displayOrder')?.invalid && form.get('displayOrder')?.touched">
-            <error-message [errorMessage]="displayError()!['displayOrder']"></error-message>
+      <!-- Videos List Section -->
+      <div class="videos-list-section">
+        @if (isLoading()) {
+          <div class="loading-state">
+            <span class="material-icons spinning">refresh</span>
+            <p>Carregando vídeos...</p>
           </div>
+        } @else {
+          <app-video-list
+            [videos]="videos()"
+            (onEdit)="handleEdit($event)"
+            (onDelete)="handleDelete($event)"
+          />
+        }
+      </div>
 
-          <div class="form-group">
-            <label for="publishedAt">Data de Publicação *</label>
-            <input
-              type="datetime-local"
-              id="publishedAt"
-              formControlName="publishedAt"
-              [class.error]="form.get('publishedAt')?.invalid && form.get('publishedAt')?.touched">
-            <error-message [errorMessage]="displayError()!['publishedAt']"></error-message>
-          </div>
-        </div>
-
-        <div class="toggle-section">
-          <div class="toggle-group">
-            <label class="toggle-label">
-              <span>Status do Vídeo</span>
-              <div class="toggle-container">
-                <input
-                  type="checkbox"
-                  formControlName="isActive"
-                  class="toggle-input">
-                <span class="toggle-switch">
-                  <span class="toggle-slider"></span>
-                </span>
-                <span class="toggle-text">{{ form.get('isActive')?.value ? 'Ativo' : 'Inativo' }}</span>
-              </div>
-            </label>
-          </div>
-
-          <div class="toggle-group">
-            <label class="toggle-label">
-              <span>Destaque</span>
-              <div class="toggle-container">
-                <input
-                  type="checkbox"
-                  formControlName="isEmphasis"
-                  class="toggle-input">
-                <span class="toggle-switch">
-                  <span class="toggle-slider"></span>
-                </span>
-                <span class="toggle-text">{{ form.get('isEmphasis')?.value ? 'Em destaque' : 'Sem destaque' }}</span>
-              </div>
-            </label>
-          </div>
-        </div>
-
-        <div class="form-actions">
-          <button type="submit" class="btn-primary" [disabled]="form.invalid">
-            {{isEdit() ? 'Atualizar Vídeo' : 'Salvar Vídeo'}}
-          </button>
-          <button type="button" class="btn-secondary" (click)="onReset()">
-            {{isEdit() ? 'Cancelar' : 'Limpar Formulário'}}
-          </button>
-        </div>
-      </form>
-    </div>
-
-    <div class="tab-content" [class.active]="activeTab() === 'list'">
-      <app-video-list (videoEmitter)="editVideo($event)" [updateList]="updateList()"></app-video-list>
     </div>
   </div>
 </div>

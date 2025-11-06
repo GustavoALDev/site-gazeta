@@ -109,7 +109,7 @@
             <div class="submenu" 
                  [class.expanded]="isMenuExpanded(menu.name)">
               @for (child of menu.children; track child.name) {
-                <a [routerLink]="child.router" 
+                <a [routerLink]="child.routerLink" 
                    routerLinkActive="active"
                    [routerLinkActiveOptions]="{exact: true}"
                    class="submenu-item">

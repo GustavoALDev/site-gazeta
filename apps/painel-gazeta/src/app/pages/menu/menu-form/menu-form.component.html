@@ -1,0 +1,172 @@
+<form [formGroup]="menuForm" (ngSubmit)="submitForm()" class="menu-form">
+  
+  <!-- Tipo de Menu -->
+  <div class="form-group">
+    <label for="type">Tipo de Menu</label>
+    <select id="type" formControlName="type" class="form-control">
+      <option value="internal">Página Interna</option>
+      <option value="externalLink">Link Externo</option>
+      <option value="category">Categoria</option>
+      <option value="submenu">Submenu (Dropdown)</option>
+    </select>
+  </div>
+
+  <!-- Nome do Menu (sempre visível exceto para category) -->
+  @if (selectedType() !== 'category') {
+    <div class="form-group">
+      <label for="name">Nome do Menu</label>
+      <input 
+        type="text" 
+        id="name" 
+        formControlName="name"
+        placeholder="Digite o nome do menu"
+        [class.error]="nameControl?.invalid && nameControl?.touched"
+      />
+      @if (nameControl?.invalid && nameControl?.touched) {
+        <small class="error-message">
+          @if (nameControl?.errors?.['required']) {
+            Nome é obrigatório
+          }
+          @if (nameControl?.errors?.['minlength']) {
+            Nome deve ter no mínimo 2 caracteres
+          }
+        </small>
+      }
+    </div>
+  }
+
+  <!-- Campos específicos para Internal -->
+  @if (selectedType() === 'internal') {
+    <div class="form-group">
+      <label for="routerLink">Rota Interna</label>
+      <select 
+        id="routerLink" 
+        formControlName="routerLink"
+        [class.error]="routerLinkControl?.invalid && routerLinkControl?.touched"
+      >
+        <option value="">Selecione uma rota</option>
+        @for (route of internalRoutes; track route.path) {
+          <option [value]="route.path">{{ route.label }} ({{ route.path }})</option>
+        }
+      </select>
+      @if (routerLinkControl?.invalid && routerLinkControl?.touched) {
+        <small class="error-message">Selecione uma rota interna</small>
+      }
+    </div>
+  }
+
+  <!-- Campos específicos para External Link -->
+  @if (selectedType() === 'externalLink') {
+    <div class="form-group">
+      <label for="externalLink">URL do Link Externo</label>
+      <input 
+        type="url" 
+        id="externalLink" 
+        formControlName="externalLink"
+        placeholder="https://exemplo.com"
+        [class.error]="externalLinkControl?.invalid && externalLinkControl?.touched"
+      />
+      @if (externalLinkControl?.invalid && externalLinkControl?.touched) {
+        <small class="error-message">
+          @if (externalLinkControl?.errors?.['required']) {
+            URL é obrigatória
+          }
+          @if (externalLinkControl?.errors?.['pattern']) {
+            URL inválida (deve começar com http:// ou https://)
+          }
+        </small>
+      }
+    </div>
+  }
+
+  <!-- Campos específicos para Category -->
+  @if (selectedType() === 'category') {
+    <div class="form-group">
+      <label>Categoria</label>
+      <div class="category-selector">
+        <div class="selected-category" (click)="toggleCategoryDropdown()">
+          @if (getSelectedCategory(); as category) {
+            <div class="category-tag">
+              <span class="category-color" [style.background-color]="category.color"></span>
+              <span class="category-name">{{ category.name }}</span>
+              <span class="category-slug">{{ category.slug }}</span>
+            </div>
+          } @else {
+            <button type="button" class="add-category-btn" [class.active]="showCategoryDropdown()">
+              <span class="material-icons">add</span>
+              Selecionar Categoria
+            </button>
+          }
+        </div>
+
+        @if (showCategoryDropdown()) {
+          <div class="category-dropdown">
+            @if (categories().length > 0) {
+              @for (category of categories(); track category.id) {
+                <div class="category-option" (click)="selectCategory(category)">
+                  <div class="category-option-header">
+                    <span class="category-color" [style.background-color]="category.color"></span>
+                    <span class="category-name">{{ category.name }}</span>
+                  </div>
+                  <span class="category-description">{{ category.description }}</span>
+                </div>
+              }
+            } @else {
+              <div class="no-categories">Nenhuma categoria disponível</div>
+            }
+          </div>
+        }
+      </div>
+      @if (categoryIdControl?.invalid && categoryIdControl?.touched) {
+        <small class="error-message">Selecione uma categoria</small>
+      }
+    </div>
+  }
+
+  <!-- Informação sobre Submenu -->
+  @if (selectedType() === 'submenu') {
+    <div class="info-box">
+      <span class="material-icons">info</span>
+      <p>Este menu será um dropdown. Após salvá-lo, você poderá adicionar itens dentro dele na lista de menus.</p>
+    </div>
+  }
+
+  <!-- Ordem -->
+  <div class="form-group">
+    <label for="order">Ordem de Exibição</label>
+    <input 
+      type="number" 
+      id="order" 
+      formControlName="order"
+      min="1"
+      placeholder="1"
+    />
+    <small class="order-info">
+      <span class="material-icons">info</span>
+      @if (menuToEdit()) {
+        Posição atual: {{ menuToEdit()?.order }}
+      } @else {
+        Próxima posição disponível: {{ menuForm.get('order')?.value }}
+      }
+      (menor número aparece primeiro)
+    </small>
+  </div>
+
+  <!-- Botões de Ação -->
+  <div class="form-actions">
+    <button type="submit" class="btn-primary" [disabled]="isLoading()">
+      @if (isLoading()) {
+        <span class="material-icons spinning">refresh</span>
+        Salvando...
+      } @else {
+        <span class="material-icons">save</span>
+        {{ menuToEdit() ? 'Atualizar' : 'Criar' }} Menu
+      }
+    </button>
+    <button type="button" class="btn-secondary" (click)="cancel()" [disabled]="isLoading()">
+      <span class="material-icons">close</span>
+      Cancelar
+    </button>
+  </div>
+
+</form>

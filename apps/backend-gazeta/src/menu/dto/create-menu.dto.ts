@@ -129,4 +129,13 @@ export class CreateMenuDto {
   @IsUrl({}, { message: 'Link externo deve ser uma URL válida' })
   @MaxLength(500, { message: 'Link externo deve ter no máximo 500 caracteres' })
   externalLink?: string;
+
+  @ApiProperty({
+    description: 'ID do menu pai - usado para criar submenus. Se informado, este menu será filho do menu especificado',
+    example: 5,
+    required: false
+  })
+  @IsOptional()
+  @IsNumber({}, { message: 'Parent ID deve ser um número' })
+  parentId?: number;
 } 

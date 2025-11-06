@@ -52,6 +52,22 @@ export class MenuResponseDto {
   externalLink?: string;
 
   @ApiProperty({
+    description: 'ID do menu pai - preenchido quando este menu é filho de um submenu',
+    example: 5,
+    required: false,
+    nullable: true
+  })
+  parentId?: number;
+
+  @ApiProperty({
+    description: 'Array de menus filhos - preenchido quando o tipo é "submenu"',
+    type: () => [MenuResponseDto],
+    required: false,
+    nullable: true
+  })
+  children?: MenuResponseDto[];
+
+  @ApiProperty({
     description: 'Data de criação',
     example: '2023-12-01T10:00:00Z'
   })

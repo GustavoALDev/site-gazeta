@@ -1,21 +1,23 @@
 <main>
     <lib-menu ></lib-menu>
+    @if(mockNewsItems().length > 0) {
     <div class="carousel-desktop">
         <lib-carousel [news]="mockNewsItems()"></lib-carousel>
     </div>
     
-    <div class="carousel-mobile">
+    <!-- <div class="carousel-mobile">
         <lib-carousel-swipe [news]="mockNewsItems()"></lib-carousel-swipe>
-    </div>
-    <lib-news-category-grid [news]="mockNewsItems()"></lib-news-category-grid>
+    </div>   -->
+    }
+    <lib-news-category-grid [categories]="mockCategories()" [news]="mockNewsItems()"></lib-news-category-grid>
     <span class="divider"></span>
     <lib-video-player [videos]="mockVideos()" [title]="'Vídeos em alta hoje'" ></lib-video-player>
-    <lib-news-category-section [categoryName]="'Política'" [newsList]="mockNewsItems()"></lib-news-category-section>
+    <lib-news-category-section [category]="mockCategories()[0]" [news]="mockNewsItems()"></lib-news-category-section>
     <span class="divider"></span>
-    <lib-news-highligths [news]="mockNewsItems()"></lib-news-highligths>
+    <lib-news-highligths [categories]="mockCategories().slice(1)" [news]="mockNewsItems()"></lib-news-highligths>
     <span class="divider"></span>
-    <!-- News Cluster com gerenciamento interno de categorias -->
-    <lib-news-cluster [news]="mockNewsItems()"></lib-news-cluster>
+ 
+    <lib-news-cluster [categories]="mockCategories()" [news]="mockNewsItems()"></lib-news-cluster>
     <span class="divider"></span>
     <div class="more-news">
         <h2>Mais notícias</h2>

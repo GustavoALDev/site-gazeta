@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../env/env';
-import { Ads, Category, Menu, News, NewsMedia, NewsVideo, YoutubeVideo } from '@site-gazeta/models';
+import { Ads, Category, Menu, News, NewsMedia, NewsVideo, Video, YoutubeVideo } from '@site-gazeta/models';
 import { firstValueFrom, tap } from 'rxjs';
 
 @Injectable({
@@ -129,16 +129,23 @@ export class ApiService {
   deleteMenu(id: number){
     return this.http.delete(`${this.apiUrl}/menu/${id}`);
   }
-  setVideos(body: YoutubeVideo) {
-    return this.http.post<YoutubeVideo>(`${this.apiUrl}/youtube-playlist`, body);
+
+  moveMenuToSubmenu(menuId: number, parentId: number | null){
+    return this.http.patch<Menu>(`${this.apiUrl}/menu/${menuId}`, { parentId });
   }
-  editVideo(id: number, body: YoutubeVideo) {
-    return this.http.patch<YoutubeVideo>(`${this.apiUrl}/youtube-playlist/${id}`, body);
+  setVideos(body: FormData) {
+    return this.http.post<Video>(`${this.apiUrl}/videos/upload`, body);
+  }
+  editVideo(id: number, body: FormData) {
+    return this.http.patch<Video>(`${this.apiUrl}/videos/${id}`, body).pipe(tap(()=>console.log('upload video')));
   }
   getVideos() {
-    return this.http.get<YoutubeVideo[]>(`${this.apiUrl}/youtube-playlist/all`);
+    return this.http.get<Video[]>(`${this.apiUrl}/videos`);
+  }
+  getVideosById(id: number) {
+    return this.http.get<Video>(`${this.apiUrl}/videos/${id}`);
   }
   deleteVideo(id: number) {
-    return this.http.delete<{message:string}>(`${this.apiUrl}/youtube-playlist/${id}/permanent`);
+    return this.http.delete<{message:string}>(`${this.apiUrl}/videos/${id}`);
   }
 }

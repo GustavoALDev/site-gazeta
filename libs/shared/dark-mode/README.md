@@ -2,11 +2,15 @@
 
 Serviço para gerenciar o estado do dark mode na aplicação.
 
+## ⚠️ Status Temporário
+
+**O dark mode está temporariamente desabilitado e forçado para modo claro até a conclusão da implementação.**
+
 ## Funcionalidades
 
-- ✅ Toggle entre modo claro e escuro
-- ✅ Persistência da preferência no localStorage
-- ✅ Detecção automática da preferência do sistema
+- ⏸️ Toggle entre modo claro e escuro (temporariamente desabilitado)
+- ⏸️ Persistência da preferência no localStorage (temporariamente desabilitado)
+- ⏸️ Detecção automática da preferência do sistema (temporariamente desabilitado)
 - ✅ Observable para reatividade
 - ✅ Suporte a SSR (Server Side Rendering)
 
