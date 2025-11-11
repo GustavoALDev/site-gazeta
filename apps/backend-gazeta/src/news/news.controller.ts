@@ -80,7 +80,7 @@ export class NewsController {
   @Get()
   @ApiOperation({ 
     summary: 'Listar todas as notícias', 
-    description: 'Endpoint para obter todas as notícias com suas mídias e vídeos. Por padrão, retorna apenas notícias ativas.' 
+    description: 'Endpoint para obter todas as notícias com suas mídias e vídeos. Por padrão, retorna apenas notícias ativas. Permite filtrar por categoria(s).' 
   })
   @ApiQuery({ 
     name: 'status', 
@@ -93,6 +93,13 @@ export class NewsController {
     type: 'boolean', 
     required: false, 
     description: 'Incluir itens do lixo na consulta' 
+  })
+  @ApiQuery({ 
+    name: 'categoryId', 
+    type: 'string', 
+    required: false, 
+    description: 'Filtrar por ID(s) de categoria. Aceita um único ID ou múltiplos IDs separados por vírgula (ex: 1,2,3)',
+    example: '1,2,3'
   })
   @ApiResponse({ 
     status: 200, 

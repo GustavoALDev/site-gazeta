@@ -102,6 +102,17 @@ export class NewsService {
       whereCondition.status = NewsStatus.ACTIVE;
     }
 
+    // Filtrar por categoria(s) se fornecido
+    if (query?.categoryId && query.categoryId.length > 0) {
+      whereCondition.newsCategories = {
+        some: {
+          categoryId: {
+            in: query.categoryId
+          }
+        }
+      };
+    }
+
     const news = await this.prisma.news.findMany({
       where: whereCondition,
       include: {
