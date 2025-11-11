@@ -11,6 +11,9 @@
         "args": ["node-env=production"]
       },
       "configurations": {
+        "production": {
+          "args": ["node-env=production"]
+        },
         "development": {
           "args": ["node-env=development"]
         }

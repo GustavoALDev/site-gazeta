@@ -12,7 +12,8 @@ import {
   NotFoundException,
   UseInterceptors,
   UploadedFile,
-  UploadedFiles
+  UploadedFiles,
+  Req
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -27,11 +28,21 @@ import { VideoService } from './video.service';
 import { CreateVideoDto } from './dto/create-video.dto';
 import { UpdateVideoDto } from './dto/update-video.dto';
 import { VideoResponseDto } from './dto/video-response.dto';
+import { Request } from 'express';
 
 @ApiTags('Vídeos')
 @Controller('videos')
 export class VideoController {
   constructor(private readonly videoService: VideoService) {}
+
+  private getBaseUrl(req: Request): string {
+    const forwardedProto = (req.headers['x-forwarded-proto'] as string) || undefined;
+    const forwardedHost = (req.headers['x-forwarded-host'] as string) || undefined;
+    const host = forwardedHost || req.get('host') || '';
+    const protocol = forwardedProto || (req.protocol || 'http');
+    const envBase = process.env.BASE_URL;
+    return envBase || (host ? `${protocol}://${host}` : '');
+  }
 
   @Post()
   @ApiOperation({
@@ -128,6 +139,7 @@ export class VideoController {
     }
   })
   async uploadVideo(
+    @Req() req: Request,
     @UploadedFiles() files: { video?: any[]; thumbnail?: any[] },
     @Body('title') title: string,
     @Body('duration') duration?: string
@@ -144,10 +156,11 @@ export class VideoController {
       const videoFile = files.video[0];
       const thumbnailFile = files.thumbnail && files.thumbnail.length > 0 ? files.thumbnail[0] : undefined;
 
+      const baseUrl = this.getBaseUrl(req);
       return await this.videoService.createWithUpload(videoFile, thumbnailFile, {
         title,
         duration
-      });
+      }, baseUrl);
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
@@ -309,6 +322,7 @@ export class VideoController {
   })
   async updateWithUpload(
     @Param('id', ParseIntPipe) id: number,
+    @Req() req: Request,
     @UploadedFiles() files: { video?: any[]; thumbnail?: any[] },
     @Body('title') title?: string,
     @Body('duration') duration?: string
@@ -316,7 +330,8 @@ export class VideoController {
     try {
       const videoFile = files.video && files.video.length > 0 ? files.video[0] : undefined;
       const thumbnailFile = files.thumbnail && files.thumbnail.length > 0 ? files.thumbnail[0] : undefined;
-      return await this.videoService.updateWithUpload(id, videoFile, thumbnailFile, { title, duration });
+      const baseUrl = this.getBaseUrl(req);
+      return await this.videoService.updateWithUpload(id, videoFile, thumbnailFile, { title, duration }, baseUrl);
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;

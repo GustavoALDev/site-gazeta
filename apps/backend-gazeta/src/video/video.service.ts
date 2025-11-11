@@ -34,7 +34,8 @@ export class VideoService {
   async createWithUpload(
     videoFile: UploadedFile,
     thumbnailFile: UploadedFile | undefined,
-    data: UploadVideoDto
+    data: UploadVideoDto,
+    baseUrlFromRequest?: string
   ): Promise<VideoResponseDto> {
     const timestamp = Date.now();
     const randomId = Math.random().toString(36).substring(2, 15);
@@ -44,8 +45,8 @@ export class VideoService {
     const videoPath = await this.videoProcessingService.saveVideo(videoFile, videoFilename);
     
     // Gerar URL pública do vídeo
-    const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
-    const videoUrl = this.videoProcessingService.generatePublicUrl(videoPath, baseUrl);
+    const resolvedBaseUrl = baseUrlFromRequest || process.env.BASE_URL || '';
+    const videoUrl = this.buildPublicUrl(videoPath, resolvedBaseUrl);
     
     // Processar thumbnail se fornecido
     let thumbnailUrl: string | undefined;
@@ -54,7 +55,7 @@ export class VideoService {
         thumbnailFile,
         videoFilename
       );
-      thumbnailUrl = this.videoProcessingService.generatePublicUrl(thumbnailPath, baseUrl);
+      thumbnailUrl = this.buildPublicUrl(thumbnailPath, resolvedBaseUrl);
     }
 
     // Descobrir duração automaticamente se não enviada
@@ -122,11 +123,12 @@ export class VideoService {
     id: number,
     videoFile?: UploadedFile,
     thumbnailFile?: UploadedFile,
-    data?: { title?: string; duration?: string }
+    data?: { title?: string; duration?: string },
+    baseUrlFromRequest?: string
   ): Promise<VideoResponseDto> {
     const existingVideo = await this.findVideoById(id);
 
-    const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+    const resolvedBaseUrl = baseUrlFromRequest || process.env.BASE_URL || '';
     let newVideoUrl = existingVideo.url;
     let newThumbnailUrl = existingVideo.thumbnail;
     let effectiveDuration = data?.duration ?? existingVideo.duration;
@@ -145,7 +147,7 @@ export class VideoService {
 
       const newVideoPath = await this.videoProcessingService.saveVideo(videoFile, newVideoFilename);
       newVideoRelPath = newVideoPath.replace(/\\/g, '/');
-      newVideoUrl = this.videoProcessingService.generatePublicUrl(newVideoPath, baseUrl);
+      newVideoUrl = this.buildPublicUrl(newVideoPath, resolvedBaseUrl);
 
       // Recalcular duração se não enviada
       if (!data?.duration) {
@@ -158,7 +160,7 @@ export class VideoService {
 
       // Marcar vídeo antigo para deleção
       if (existingVideo.url) {
-        const oldRel = existingVideo.url.replace(baseUrl, '').replace(/^\//, '');
+        const oldRel = this.urlToRelativePath(existingVideo.url);
         // Só deletar se o caminho antigo for diferente do novo
         oldVideoPathToDelete = newVideoRelPath && oldRel === newVideoRelPath ? undefined : oldRel;
       }
@@ -167,14 +169,14 @@ export class VideoService {
     // Atualizar thumbnail se enviado
     if (thumbnailFile) {
       // Se não trocou o vídeo, derivar o nome base a partir do URL existente
-      const filenameForThumbnail = newVideoFilename || this.extractFilenameFromUrl(existingVideo.url, baseUrl) || `video_${Date.now()}.mp4`;
+      const filenameForThumbnail = newVideoFilename || this.extractFilenameFromUrl(existingVideo.url) || `video_${Date.now()}.mp4`;
       const thumbnailPath = await this.videoProcessingService.saveThumbnail(thumbnailFile, filenameForThumbnail);
       newThumbRelPath = thumbnailPath.replace(/\\/g, '/');
-      newThumbnailUrl = this.videoProcessingService.generatePublicUrl(thumbnailPath, baseUrl);
+      newThumbnailUrl = this.buildPublicUrl(thumbnailPath, resolvedBaseUrl);
 
       // Marcar thumbnail antiga para deleção
       if (existingVideo.thumbnail) {
-        const oldRel = existingVideo.thumbnail.replace(baseUrl, '').replace(/^\//, '');
+        const oldRel = this.urlToRelativePath(existingVideo.thumbnail);
         // Se o caminho novo for igual ao antigo, não deletar (foi overwrite no mesmo arquivo)
         oldThumbPathToDelete = newThumbRelPath && oldRel === newThumbRelPath ? undefined : oldRel;
       }
@@ -202,10 +204,10 @@ export class VideoService {
     return this.formatResponse(updatedVideo);
   }
 
-  private extractFilenameFromUrl(url: string, baseUrl: string): string | undefined {
+  private extractFilenameFromUrl(url: string): string | undefined {
     try {
-      const withoutBase = url.replace(baseUrl, '');
-      const parts = withoutBase.split('/');
+      const path = this.urlToPathname(url);
+      const parts = path.split('/');
       return parts[parts.length - 1] || undefined;
     } catch {
       return undefined;
@@ -217,9 +219,9 @@ export class VideoService {
 
     // Deletar arquivos físicos
     try {
-      const videoPath = existingVideo.url.replace(process.env.BASE_URL || 'http://localhost:3000', '').substring(1);
+      const videoPath = this.urlToRelativePath(existingVideo.url);
       const thumbnailPath = existingVideo.thumbnail 
-        ? existingVideo.thumbnail.replace(process.env.BASE_URL || 'http://localhost:3000', '').substring(1)
+        ? this.urlToRelativePath(existingVideo.thumbnail)
         : undefined;
       
       await this.videoProcessingService.deleteVideoFiles(videoPath, thumbnailPath);
@@ -235,6 +237,29 @@ export class VideoService {
     return { message: 'Vídeo removido com sucesso' };
   }
 
+  private buildPublicUrl(filePath: string, baseUrl: string): string {
+    const relativePath = filePath.replace(/\\/g, '/');
+    if (baseUrl) {
+      return this.videoProcessingService.generatePublicUrl(relativePath, baseUrl);
+    }
+    return `/${relativePath}`;
+  }
+
+  private urlToPathname(url: string): string {
+    try {
+      const parsed = new URL(url);
+      return parsed.pathname;
+    } catch {
+      // Já é relativo
+      return url.startsWith('/') ? url : `/${url}`;
+    }
+  }
+
+  private urlToRelativePath(url: string): string {
+    const pathname = this.urlToPathname(url);
+    return pathname.replace(/^\//, '');
+  }
+
   private async findVideoById(id: number) {
     const video = await this.prisma.video.findUnique({
       where: { id },
@@ -247,7 +272,15 @@ export class VideoService {
     return video;
   }
 
-  private formatResponse(video: any): VideoResponseDto {
+  private formatResponse(video: {
+    id: number;
+    title: string;
+    url: string;
+    thumbnail?: string | null;
+    duration?: string | null;
+    createdAt?: Date;
+    updatedAt?: Date;
+  }): VideoResponseDto {
     return {
       id: video.id,
       title: video.title,

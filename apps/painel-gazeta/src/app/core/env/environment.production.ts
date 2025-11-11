@@ -3,5 +3,3 @@ export const environment = {
   apiUrl: 'https://gazetadopara.com/api',
 };
 
-
-

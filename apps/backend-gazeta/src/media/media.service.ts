@@ -29,7 +29,7 @@ export class MediaService {
     return this.formatResponse(media);
   }
 
-  async createWithUpload(file: any, data: UploadMediaDto): Promise<MediaResponseDto> {
+  async createWithUpload(file: any, data: UploadMediaDto, baseUrlFromRequest?: string): Promise<MediaResponseDto> {
     // Gerar nome único para o arquivo
     const timestamp = Date.now();
     const filename = `media_${timestamp}_${file.originalname}`;
@@ -38,8 +38,8 @@ export class MediaService {
     const imageSizes = await this.imageProcessingService.processImage(file, filename);
     
     // Gerar URLs públicas
-    const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
-    const publicUrls = this.imageProcessingService.generatePublicUrls(imageSizes, baseUrl);
+    const resolvedBaseUrl = baseUrlFromRequest || process.env.BASE_URL || '';
+    const publicUrls = this.imageProcessingService.generatePublicUrls(imageSizes, resolvedBaseUrl);
 
     // Salvar no banco de dados usando NewsMedia
     const media = await this.prisma.newsMedia.create({
@@ -55,9 +55,9 @@ export class MediaService {
     return this.formatResponse(media);
   }
 
-  async createWithMultipleUpload(files: any[], data: UploadMediaDto): Promise<MediaResponseDto[]> {
+  async createWithMultipleUpload(files: any[], data: UploadMediaDto, baseUrlFromRequest?: string): Promise<MediaResponseDto[]> {
     const results: MediaResponseDto[] = [];
-    const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+    const resolvedBaseUrl = baseUrlFromRequest || process.env.BASE_URL || '';
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
@@ -72,7 +72,7 @@ export class MediaService {
         const imageSizes = await this.imageProcessingService.processImage(file, filename);
         
         // Gerar URLs públicas
-        const publicUrls = this.imageProcessingService.generatePublicUrls(imageSizes, baseUrl);
+        const publicUrls = this.imageProcessingService.generatePublicUrls(imageSizes, resolvedBaseUrl);
 
         // Salvar no banco de dados
         // Para múltiplas imagens, apenas a primeira pode ter emphasis = true

@@ -36,7 +36,7 @@ import { UploadAdapter } from '../upload-adapter/upload-adapter';
   ]
 })
 export class TextEditorComponent implements ControlValueAccessor, OnInit {
-  @Input() apiUrl: string = 'http://localhost:3000/api'; // URL padrão, pode ser sobrescrita
+  @Input() apiUrl: string = 'https://gazetadopara.com/api'; // URL padrão, pode ser sobrescrita
   @Input() postId: number | string = 0; // ID da postagem, usado para associar uploads
   @Input() resetFormControl: any;
   @Output() ready = new EventEmitter<any>();

@@ -39,7 +39,7 @@ export class AdvertisementImageService {
       await fs.writeFile(filePath, file.buffer);
       
       // Gerar URL pública
-      const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+      const baseUrl = process.env.BASE_URL || 'http://localhost:3002';
       const publicUrl = `${baseUrl}/uploads/advertisements/${filename}`;
       
       return publicUrl;

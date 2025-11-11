@@ -12,7 +12,8 @@ import {
   NotFoundException,
   UseInterceptors,
   UploadedFile,
-  UploadedFiles
+  UploadedFiles,
+  Req
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -27,11 +28,21 @@ import { MediaService } from './media.service';
 import { CreateMediaDto } from './dto/create-media.dto';
 import { UpdateMediaDto } from './dto/update-media.dto';
 import { MediaResponseDto } from './dto/media-response.dto';
+import { Request } from 'express';
 
 @ApiTags('Mídia')
 @Controller('media')
 export class MediaController {
   constructor(private readonly mediaService: MediaService) {}
+
+  private getBaseUrl(req: Request): string {
+    const forwardedProto = (req.headers['x-forwarded-proto'] as string) || undefined;
+    const forwardedHost = (req.headers['x-forwarded-host'] as string) || undefined;
+    const host = forwardedHost || req.get('host') || '';
+    const protocol = forwardedProto || (req.protocol || 'http');
+    const envBase = process.env.BASE_URL;
+    return envBase || (host ? `${protocol}://${host}` : '');
+  }
 
   @Post()
   @ApiOperation({
@@ -136,6 +147,7 @@ export class MediaController {
     }
   })
   async uploadImage(
+    @Req() req: Request,
     @UploadedFile() file: any,
     @Body('postId') postId: string,
     @Body('emphasis') emphasis = 'false',
@@ -151,12 +163,13 @@ export class MediaController {
         throw new HttpException('ID da postagem é obrigatório', HttpStatus.BAD_REQUEST);
       }
 
+      const baseUrl = this.getBaseUrl(req);
       return await this.mediaService.createWithUpload(file, {
         postId: parseInt(postId),
         emphasis: emphasis === 'true',
         author,
         date
-      });
+      }, baseUrl);
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
@@ -285,6 +298,7 @@ export class MediaController {
     }
   })
   async uploadMultipleImages(
+    @Req() req: Request,
     @UploadedFiles() files: any[],
     @Body('postId') postId: string,
     @Body('emphasis') emphasis = 'false',
@@ -304,12 +318,13 @@ export class MediaController {
         throw new HttpException('ID da postagem é obrigatório', HttpStatus.BAD_REQUEST);
       }
 
+      const baseUrl = this.getBaseUrl(req);
       return await this.mediaService.createWithMultipleUpload(files, {
         postId: parseInt(postId),
         emphasis: emphasis === 'true',
         author,
         date
-      });
+      }, baseUrl);
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
