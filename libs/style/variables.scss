@@ -1,0 +1,128 @@
+// Variáveis CSS Customizadas Globais
+:root {
+    // Cores principais
+    --primary: #eb3237;
+    --secondary: #0a80c4;
+    --success: #28a745;
+    --danger: #dc3545;
+    --warning: #ffc107;
+    --light: #f8f9fa;
+    --border: #dee2e6;
+    --text: #343a40;
+    --text-muted: #6c757d;
+    
+    // Cores específicas
+    --accent-red: #eb3237;
+    --accent-blue: #0a80c4;
+    
+    // Dimensões
+    --radius: 0.375rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+    
+    // Animações
+    --transition: 0.15s ease-in-out;
+    --transition-slow: 0.3s ease-in-out;
+  }
+  
+  // Variáveis SCSS para compatibilidade
+  $primary-color: #007bff;
+  $secondary-color: #6c757d;
+  $success-color: #28a745;
+  $danger-color: #dc3545;
+  $warning-color: #ffc107;
+  $info-color: #17a2b8;
+  
+  // Cores de texto
+  $text-dark: #343a40;
+  $text-muted: #6c757d;
+  $text-light: #ffffff;
+  
+  // Cores de fundo
+  $white: #ffffff;
+  $light: #f8f9fa;
+  $gray-100: #f8f9fa;
+  $gray-200: #e9ecef;
+  $gray-300: #dee2e6;
+  $gray-400: #ced4da;
+  $gray-500: #adb5bd;
+  $gray-600: #6c757d;
+  $gray-700: #495057;
+  $gray-800: #343a40;
+  $gray-900: #212529;
+  
+  // Cores de borda
+  $border-color: #dee2e6;
+  $border-light: #f1f3f4;
+  
+  // Breakpoints
+  $mobile: 576px;
+  $tablet: 768px;
+  $desktop: 992px;
+  $large: 1200px;
+  
+  // Mixins Globais
+  @mixin flex($justify: center, $align: center) {
+    display: flex;
+    justify-content: $justify;
+    align-items: $align;
+  }
+  
+  @mixin card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  }
+  
+  @mixin btn($color: var(--primary)) {
+    border: none;
+    border-radius: var(--radius);
+    padding: 0.375rem 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition);
+    background-color: $color;
+    color: white;
+    
+    &:hover:not(:disabled) {
+      filter: brightness(0.9);
+    }
+    
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+  
+  @mixin mobile {
+    @media (max-width: #{$mobile - 1px}) { @content; }
+  }
+  
+  @mixin tablet {
+    @media (min-width: #{$tablet}) and (max-width: #{$desktop - 1px}) { @content; }
+  }
+  
+  @mixin desktop {
+    @media (min-width: #{$desktop}) { @content; }
+  }
+  
+  // Classes utilitárias
+  .text-center { text-align: center; }
+  .text-muted { color: var(--text-muted); }
+  .text-danger { color: var(--danger); }
+  .text-success { color: var(--success); }
+  
+  .mb-0 { margin-bottom: 0; }
+  .mb-2 { margin-bottom: var(--space-md); }
+  .mb-3 { margin-bottom: var(--space-lg); }
+  
+  .d-flex { display: flex; }
+  .d-none { display: none; }
+  
+  @include mobile {
+    .d-md-none { display: none; }
+    .d-md-block { display: block; }
+  } 

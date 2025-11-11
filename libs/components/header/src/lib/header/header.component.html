@@ -3,9 +3,11 @@
         <div class="logo" routerLink="/">
             <img src="img/logo02.webp" alt="logo">
         </div>
+        @if(announcements().length > 0) {
         <div class="announcement">
-            <img src="img/announcement01.gif" alt="announcement">
+            <img [src]="announcements()[0].imageUrl" alt="announcement">
         </div>
+        }
         <div class="dark_mode">
             <button 
                 (click)="toggleDarkMode()" 

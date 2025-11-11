@@ -15,11 +15,20 @@
             <!-- Container da imagem -->
             <div class="news-card__image-container">
               <!-- Imagem -->
-              <img 
-                class="news-card__image" 
-                [src]="getImageUrl(item)" 
-                [alt]="item.title"
-                loading="lazy">
+              @if(i === activeIndex()) {
+                <img 
+                  class="news-card__image" 
+                  [ngSrc]="getImageUrl(item)"
+                  [alt]="item.title"
+                  fill
+                  priority>
+              } @else {
+                <img 
+                  class="news-card__image" 
+                  [src]="getImageUrl(item)" 
+                  [alt]="item.title"
+                  loading="lazy">
+              }
               
               <!-- Overlay -->
               <div class="news-card__overlay"></div>
@@ -28,7 +37,7 @@
               <div class="news-card__content-overlay">
                 <!-- Tags acima do título -->
                 <div class="news-card__tags">
-                  @for (tag of getTags(item); track tag) {
+                  @for (tag of getTags(item); track $index) {
                     <span class="news-card__tag" [class]="'news-card__tag--' + tag.toLowerCase()">
                       {{ tag }}
                     </span>

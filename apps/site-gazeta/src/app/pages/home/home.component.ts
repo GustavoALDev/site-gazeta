@@ -1,63 +1,39 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { MenuComponent } from '@site-gazeta/menu';
-import { CarouselComponent } from '@site-gazeta/carousel';
-import { CarouselSwipeComponent } from '@site-gazeta/carousel';
-import { NewsCategoryGridComponent, NewsCategorySectionComponent, NewsHighligthsComponent, NewsClusterComponent  } from '@site-gazeta/home-components';
-import { Category, News, NewsVideo, Video, Menu } from '@site-gazeta/models';
-import { VideoPlayerComponent } from '@site-gazeta/video-player';
-import { mockNewsItems, mockCategories } from '@site-gazeta/mock';
+import { Menu } from '@site-gazeta/models';
 import { ApiService } from '../../core/service/api.service';
-import { MoreNewsComponent } from '@site-gazeta/more-news';
+import { NewsSearchComponent } from '../news-search/news-search.component';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-home',
   imports: [
+    RouterModule,
     MenuComponent,
-    CarouselComponent,
-    CarouselSwipeComponent,
-    NewsCategoryGridComponent,
-    NewsCategorySectionComponent,
-    NewsHighligthsComponent,
-    NewsClusterComponent,
-    VideoPlayerComponent,
-    MoreNewsComponent
+    NewsSearchComponent
   ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
 })
+
 export class HomeComponent implements OnInit{
   private apiService = inject(ApiService);
-  protected mockNewsItems = signal<News[]>([]);
-  protected mockCategories = signal<Category[]>([]);
-  protected mockVideos = signal<Video[]>([]);
-  
+  menuItems = signal<Menu[]>([]);
+  searchActive = signal<boolean>(false);
+  searchQuery = signal<string>('');
 
-  
   ngOnInit(): void {
-    this.getNews();
-    this.getVideos();
-    this.getCategories();
+    this.getMenu();
     
   }
-
-  getNews() {
-    this.apiService.getNews().subscribe((news) => {
-      this.mockNewsItems.set(news);
+  getMenu(){
+    this.apiService.getMenu().subscribe((menu) => {
+      this.menuItems.set(menu as Menu[]);
     });
   }
 
-  getCategories() {
-    this.apiService.getActiveCategories().subscribe((categories) => {
-      this.mockCategories.set(categories.sort(() => Math.random() - 0.5));
-    });
-    console.log(this.mockCategories());
-  }
   
-  getVideos() {
-    this.apiService.getVideos().subscribe((videos) => {
-      this.mockVideos.set(videos);
-    });
-  }
 
+  
     
 }

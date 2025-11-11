@@ -1,12 +1,14 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { HeaderComponent } from '@site-gazeta/header';
 import { FooterComponent } from '@site-gazeta/footer';
+import { ApiService } from './core/service/api.service';
+import { Ads, Menu } from '@site-gazeta/models';
 @Component({
   imports: [RouterModule,HeaderComponent, FooterComponent],
   selector: 'app-root',
   template: `
-    <lib-header></lib-header>
+    <lib-header [announcements]="announcements()"></lib-header>
     <router-outlet></router-outlet>
     <lib-footer></lib-footer>
   `,
@@ -19,6 +21,20 @@ import { FooterComponent } from '@site-gazeta/footer';
     }
   `]
 })
-export class AppComponent {
+export class AppComponent implements OnInit{
+  apiService = inject(ApiService);
+  announcements = signal<Ads[]>([]);
+  
   title = 'site-gazeta';
+  ngOnInit(): void {
+      this.getAdsbyPositionAndPlacement('home', 'top');
+   
+  }
+  getAdsbyPositionAndPlacement(position: string, placement: string){
+    this.apiService.getAdsByPositionAndPlacement(position, placement).subscribe((ads) => {
+      console.log(ads);
+      this.announcements.set(ads as Ads[]);
+    });
+  }
+  
 }

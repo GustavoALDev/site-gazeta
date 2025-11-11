@@ -42,9 +42,12 @@ export class NewsCategoryComponent implements OnInit {
     this.getSlug();
   }
 
-  async getSlug() {
-     firstValueFrom(this.router.params).then(async (params) => {
-      await this.getCategories(params['slug']);
+  getSlug() {
+     this.router.params.subscribe(async (params) => {
+      const slug = params['slug'];
+      if(slug){
+        this.getCategories(slug);
+      }
     });
   }
 

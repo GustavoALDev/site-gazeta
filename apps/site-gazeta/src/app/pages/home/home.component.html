@@ -1,26 +1,13 @@
 <main>
-    <lib-menu ></lib-menu>
-    @if(mockNewsItems().length > 0) {
-    <div class="carousel-desktop">
-        <lib-carousel [news]="mockNewsItems()"></lib-carousel>
-    </div>
-    
-    <!-- <div class="carousel-mobile">
-        <lib-carousel-swipe [news]="mockNewsItems()"></lib-carousel-swipe>
-    </div>   -->
-    }
-    <lib-news-category-grid [categories]="mockCategories()" [news]="mockNewsItems()"></lib-news-category-grid>
-    <span class="divider"></span>
-    <lib-video-player [videos]="mockVideos()" [title]="'Vídeos em alta hoje'" ></lib-video-player>
-    <lib-news-category-section [category]="mockCategories()[0]" [news]="mockNewsItems()"></lib-news-category-section>
-    <span class="divider"></span>
-    <lib-news-highligths [categories]="mockCategories().slice(1)" [news]="mockNewsItems()"></lib-news-highligths>
-    <span class="divider"></span>
- 
-    <lib-news-cluster [categories]="mockCategories()" [news]="mockNewsItems()"></lib-news-cluster>
-    <span class="divider"></span>
-    <div class="more-news">
-        <h2>Mais notícias</h2>
-        <lib-more-news [moreNews]="mockNewsItems()"  [slice]="3"></lib-more-news>
-    </div>
+    <lib-menu [menuItems]="menuItems()" 
+        (searchActive)="searchActive.set($event)" 
+        (searchBarValue)="searchQuery.set($event)" >
+    </lib-menu>
+   @if(searchActive()) {
+        <div class="search-container">
+            <app-news-search  [query]="searchQuery()"></app-news-search>
+        </div>
+   }@else {
+    <router-outlet></router-outlet>
+   }
 </main>

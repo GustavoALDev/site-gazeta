@@ -47,7 +47,7 @@
                     [ngSrc]="news.mediaNews[0].imgSize!.small" 
                     [alt]="news.title"
                     fill
-                    loading="lazy"
+                    priority
                     (error)="onImageError($event)"
                   >
                   <div class="image-overlay"></div>

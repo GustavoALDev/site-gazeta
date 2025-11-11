@@ -60,8 +60,8 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/advertisements/${id}`);
   }
 
-  getAdsByPositionAndPlacement(position: string, placement: string){
-    return this.http.get(`${this.apiUrl}/advertisements/active/${placement}/${position}`);
+  getAdsByPositionAndPlacement(placement: string,position: string ){
+    return this.http.get<Ads[]>(`${this.apiUrl}/advertisements/active/${placement}/${position}`);
   }
 
   getNewsBySlug(slug: string): Observable<News | undefined> {

@@ -1,8 +1,10 @@
-import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, inject, input, OnDestroy, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DarkModeService } from '@site-gazeta/dark-mode';
 import { Subject, takeUntil } from 'rxjs';
 import { RouterModule } from '@angular/router';
+import { Ads } from '@site-gazeta/models';
+
 @Component({
   selector: 'lib-header',
   imports: [CommonModule, RouterModule],
@@ -13,6 +15,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
   isDarkMode$ = signal<boolean>(false);
   darkModeService = inject(DarkModeService);
   destroy$ = new Subject<void>();
+  announcements = input<Ads[]>([]); 
+  
   ngOnInit(): void {
     this.darkModeService.isDarkMode$
     .pipe(takeUntil(this.destroy$))
