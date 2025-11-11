@@ -384,6 +384,63 @@ export class NewsService {
     return news.views;
   }
 
+  async search(searchTerm: string, limit = 50): Promise<NewsResponseDto[]> {
+    // Normalizar termo de busca (remover espaços extras)
+    const normalizedSearch = searchTerm.trim();
+
+    const news = await this.prisma.news.findMany({
+      where: {
+        AND: [
+          // Apenas notícias ativas
+          { status: NewsStatus.ACTIVE },
+          // Buscar em título, subtítulo ou nome da categoria
+          {
+            OR: [
+              {
+                title: {
+                  contains: normalizedSearch
+                }
+              },
+              {
+                subtitle: {
+                  contains: normalizedSearch
+                }
+              },
+              {
+                newsCategories: {
+                  some: {
+                    category: {
+                      name: {
+                        contains: normalizedSearch
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      include: {
+        newsCategories: {
+          include: {
+            category: true
+          }
+        },
+        mediaNews: true,
+        videoNews: true
+      },
+      orderBy: [
+        { isEmphasis: 'desc' }, // Notícias em destaque primeiro
+        { views: 'desc' },      // Depois por views
+        { createdAt: 'desc' }   // E por data
+      ],
+      take: limit
+    });
+
+    return news.map(this.formatNewsResponse);
+  }
+
   private formatNewsResponse(news: any): NewsResponseDto {
     return {
       id: news.id,

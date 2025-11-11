@@ -29,6 +29,7 @@ import { UpdateNewsDto } from './dto/update-news.dto';
 import { NewsResponseDto } from './dto/news-response.dto';
 import { UpdateNewsStatusDto } from './dto/update-news-status.dto';
 import { NewsQueryDto } from './dto/news-query.dto';
+import { NewsSearchDto } from './dto/news-search.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('Notícias')
@@ -67,6 +68,61 @@ export class NewsController {
     } catch (error) {
       console.error('=== CONTROLLER ERROR:', error.message);
       if (error instanceof ConflictException || error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new HttpException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Erro no servidor, tente novamente mais tarde',
+        error: 'Internal Server Error'
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Get('search')
+  @ApiOperation({ 
+    summary: 'Buscar notícias', 
+    description: 'Endpoint para buscar notícias por título, subtítulo ou nome da categoria. Retorna apenas notícias ativas ordenadas por relevância.' 
+  })
+  @ApiQuery({ 
+    name: 'search', 
+    type: 'string', 
+    required: true, 
+    description: 'Termo de busca (mínimo 2 caracteres)',
+    example: 'tecnologia'
+  })
+  @ApiQuery({ 
+    name: 'limit', 
+    type: 'number', 
+    required: false, 
+    description: 'Número máximo de resultados (padrão: 50)',
+    example: 20
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Lista de notícias encontradas',
+    type: [NewsResponseDto]
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'Termo de busca inválido (menos de 2 caracteres)' 
+  })
+  async search(
+    @Query('search') search: string,
+    @Query('limit') limit?: number
+  ): Promise<NewsResponseDto[]> {
+    try {
+      if (!search || search.trim().length < 2) {
+        throw new HttpException({
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: 'O termo de busca deve ter no mínimo 2 caracteres',
+          error: 'Bad Request'
+        }, HttpStatus.BAD_REQUEST);
+      }
+
+      const limitNumber = limit ? parseInt(limit.toString(), 10) : 50;
+      return await this.newsService.search(search, limitNumber);
+    } catch (error) {
+      if (error instanceof HttpException) {
         throw error;
       }
       throw new HttpException({
