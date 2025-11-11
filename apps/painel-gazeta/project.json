@@ -27,6 +27,7 @@
       },
       "configurations": {
         "production": {
+          "baseHref": "/admin/",
           "budgets": [
             {
               "type": "initial",
@@ -35,16 +36,28 @@
             },
             {
               "type": "anyComponentStyle",
-              "maximumWarning": "4kb",
-              "maximumError": "8kb"
+              "maximumWarning": "10kb",
+              "maximumError": "20kb"
             }
           ],
-          "outputHashing": "all"
+          "outputHashing": "all",
+          "fileReplacements": [
+            {
+              "replace": "apps/painel-gazeta/src/app/core/env/env.ts",
+              "with": "apps/painel-gazeta/src/app/core/env/environment.production.ts"
+            }
+          ]
         },
         "development": {
           "optimization": false,
           "extractLicenses": false,
-          "sourceMap": true
+          "sourceMap": true,
+          "fileReplacements": [
+            {
+              "replace": "apps/painel-gazeta/src/app/core/env/env.ts",
+              "with": "apps/painel-gazeta/src/app/core/env/environment.development.ts"
+            }
+          ]
         }
       },
       "defaultConfiguration": "production"

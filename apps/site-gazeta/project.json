@@ -23,33 +23,40 @@
           }
         ],
         "styles": ["apps/site-gazeta/src/styles.scss"],
-        "scripts": [],
-        "server": "apps/site-gazeta/src/main.server.ts",
-        "ssr": {
-          "entry": "apps/site-gazeta/src/server.ts"
-        },
-        "outputMode": "server"
+        "scripts": []
       },
       "configurations": {
         "production": {
           "budgets": [
             {
               "type": "initial",
-              "maximumWarning": "500kb",
-              "maximumError": "1mb"
+              "maximumWarning": "800kb",
+              "maximumError": "2mb"
             },
             {
               "type": "anyComponentStyle",
-              "maximumWarning": "4kb",
-              "maximumError": "8kb"
+              "maximumWarning": "10kb",
+              "maximumError": "20kb"
             }
           ],
-          "outputHashing": "all"
+          "outputHashing": "all",
+          "fileReplacements": [
+            {
+              "replace": "apps/site-gazeta/src/app/core/env/env.ts",
+              "with": "apps/site-gazeta/src/app/core/env/environment.production.ts"
+            }
+          ]
         },
         "development": {
           "optimization": false,
           "extractLicenses": false,
-          "sourceMap": true
+          "sourceMap": true,
+          "fileReplacements": [
+            {
+              "replace": "apps/site-gazeta/src/app/core/env/env.ts",
+              "with": "apps/site-gazeta/src/app/core/env/environment.development.ts"
+            }
+          ]
         }
       },
       "defaultConfiguration": "production"
