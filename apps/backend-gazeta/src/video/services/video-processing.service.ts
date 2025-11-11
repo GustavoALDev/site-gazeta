@@ -50,18 +50,25 @@ export class VideoProcessingService {
     return `${baseUrl}/${relativePath}`;
   }
 
-  async deleteVideoFiles(videoPath: string, thumbnailPath?: string): Promise<void> {
-    try {
-      await unlink(videoPath);
-      this.logger.log(`Arquivo de vídeo deletado: ${videoPath}`);
-      
-      if (thumbnailPath) {
+  async deleteVideoFiles(videoPath?: string, thumbnailPath?: string): Promise<void> {
+    if (videoPath) {
+      try {
+        await unlink(videoPath);
+        this.logger.log(`Arquivo de vídeo deletado: ${videoPath}`);
+      } catch (error) {
+        this.logger.error(`Erro ao deletar arquivo de vídeo: ${error.message}`);
+        throw error;
+      }
+    }
+
+    if (thumbnailPath) {
+      try {
         await unlink(thumbnailPath);
         this.logger.log(`Arquivo de thumbnail deletado: ${thumbnailPath}`);
+      } catch (error) {
+        this.logger.error(`Erro ao deletar arquivo de thumbnail: ${error.message}`);
+        throw error;
       }
-    } catch (error) {
-      this.logger.error(`Erro ao deletar arquivos: ${error.message}`);
-      throw error;
     }
   }
 
