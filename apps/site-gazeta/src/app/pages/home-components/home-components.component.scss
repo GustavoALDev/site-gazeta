@@ -5,12 +5,6 @@ main {
     flex: 1 1 100%;
     max-width: 1366px;
     padding: 5px;
-    .carousel-desktop {
-        display: block;
-    }
-    .carousel-mobile {
-        display: none;
-    }
     .more-news {
         display: flex;
         flex-direction: column;
@@ -35,14 +29,4 @@ main {
     width: 100%;
     margin: 20px 0;
     box-shadow: 1px 1px #66666648;
-}
-@media (max-width: 1128px) {
-    main{
-        .carousel-desktop {
-            display: none;
-        }
-        .carousel-mobile {
-            display: block;
-        }
-    }
 }
