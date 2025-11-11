@@ -8,6 +8,13 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
   async onModuleInit() {
     try {
+      // Log da configuração do banco (mascarando senha)
+      const dbUrl = process.env.DATABASE_URL || 'não configurada';
+      const maskedUrl = dbUrl.replace(/:[^:@]+@/, ':****@');
+      this.logger.log(`🔍 Tentando conectar ao banco: ${maskedUrl}`);
+      this.logger.log(`📁 NODE_ENV: ${process.env.NODE_ENV || 'development'}`);
+      this.logger.log(`📂 Arquivo .env carregado de: ${process.env.NODE_ENV === 'production' ? 'apps/backend-gazeta/.env.production' : 'apps/backend-gazeta/.env.local'}`);
+      
       await this.$connect();
       this.logger.log('Conexão com o banco de dados estabelecida com sucesso! 🚀');
       

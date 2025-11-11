@@ -21,7 +21,9 @@ async function bootstrap() {
   app.enableCors(devCorsConfig);
 
   // Servir arquivos estáticos
-  app.useStaticAssets(join(process.cwd(), 'uploads'), {
+  const uploadsPath = join(process.cwd(), 'uploads');
+  Logger.log(`📁 Serving static files from: ${uploadsPath}`);
+  app.useStaticAssets(uploadsPath, {
     prefix: '/uploads/',
   });
 
@@ -52,16 +54,23 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-  const port = process.env.PORT || 3000;
+  const port = process.env.PORT || 3002;
+  const baseUrl = process.env.BASE_URL || `http://localhost:${port}`;
   await app.listen(port);
   Logger.log(
-    `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`
+    `🚀 Application is running on: ${baseUrl}/${globalPrefix}`
   );
   Logger.log(
-    `📚 Swagger documentation available at: http://localhost:${port}/api`
+    `📚 Swagger documentation available at: ${baseUrl}/api`
   );
   Logger.log(
     `🔒 CORS enabled for localhost development`
+  );
+  Logger.log(
+    `🌐 BASE_URL: ${baseUrl}`
+  );
+  Logger.log(
+    `📂 Working directory: ${process.cwd()}`
   );
 }
 
