@@ -1,12 +1,18 @@
-import { Component, signal, computed, input, ElementRef, ViewChild, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, signal, computed, input, ElementRef, ViewChild, OnInit, OnDestroy, AfterViewInit, inject } from '@angular/core';
+import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { News } from '@site-gazeta/models';
-import { mockCategories } from '@site-gazeta/mock';
 import { Category } from '@site-gazeta/models';
 import { RouterModule } from '@angular/router';
+import { ApiService } from 'apps/painel-gazeta/src/app/core/services/api.service';
+
+// Interface para itens com dados processados
+interface NewsItemWithData extends News {
+  imageUrl: string;
+  tags: string[];
+}
 
 // Interface para itens com clones mínimos
-interface NewsWithClone extends Omit<News, 'id'> {
+interface NewsWithClone extends Omit<NewsItemWithData, 'id'> {
   id: number | string; // Permite IDs originais e de clones
   isClone?: boolean;
   originalIndex?: number;
@@ -14,7 +20,7 @@ interface NewsWithClone extends Omit<News, 'id'> {
 
 @Component({
   selector: 'lib-carousel-swipe',
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, NgOptimizedImage],
   templateUrl: './carousel-swipe.component.html',
   styleUrl: './carousel-swipe.component.scss',
 })
@@ -23,6 +29,7 @@ export class CarouselSwipeComponent implements OnInit, AfterViewInit, OnDestroy 
 
   // Input para receber notícias externamente
   news = input<News[]>([]);
+  apiService = inject(ApiService);
 
   // Estado do carousel usando signals - com sistema de clones mínimo
   private currentIndex = signal(1); // Índice no array estendido (inicia em 1 - primeiro item real)
@@ -31,17 +38,38 @@ export class CarouselSwipeComponent implements OnInit, AfterViewInit, OnDestroy 
   private currentX = signal(0);
   protected isTransitioning = signal(false);
   private animationFrameId: number | null = null;
-  private categories = signal<Category[]>(mockCategories);
+  private categories = signal<Category[]>([]);
 
-  // Computed que usa input ou fallback para mock
+  // Computed que processa os itens de notícias
   newsItems = computed(() => {
-    const inputItems = this.news();
+    const inputItems = this.news()
+      .sort((a, b) => new Date(b.published).getTime() - new Date(a.published).getTime())
+      .slice(0, 5);
     return inputItems;
+  });
+
+  // Computed que adiciona imageUrl e tags aos itens
+  newsItemsWithData = computed(() => {
+    const items = this.newsItems();
+    const categoryMap = this.categories();
+    
+    return items.map(item => {
+      const imageUrl = item.mediaNews?.[0]?.imgSize?.original || '';
+      const tags = item.categoryId.map((id: number) => 
+        categoryMap.find((category) => category.id === id)?.name || 'GERAL'
+      );
+      
+      return {
+        ...item,
+        imageUrl,
+        tags
+      } as NewsItemWithData;
+    });
   });
 
   // Array estendido com clones mínimos: [último, ...originais, primeiro]
   extendedItems = computed((): NewsWithClone[] => {
-    const items = this.newsItems();
+    const items = this.newsItemsWithData();
     if (items.length === 0) return [];
     
     const extended: NewsWithClone[] = [];
@@ -90,6 +118,9 @@ export class CarouselSwipeComponent implements OnInit, AfterViewInit, OnDestroy 
     return currentItem?.originalIndex ?? 0;
   });
 
+  // Índice atual do carousel (para uso no template)
+  activeIndex = computed(() => this.currentIndex());
+
   // Transform style para o track (usando array estendido)
   trackTransform = computed(() => {
     const currentIndex = this.currentIndex();
@@ -102,6 +133,13 @@ export class CarouselSwipeComponent implements OnInit, AfterViewInit, OnDestroy 
   ngOnInit() {
     // Event listeners para touch events
     this.setupTouchEvents();
+    this.getCategories();
+  }
+
+  getCategories() {
+    this.apiService.getActiveCategories().subscribe((categories) => {
+      this.categories.set(categories);
+    });
   }
 
   ngAfterViewInit() {
@@ -294,14 +332,11 @@ export class CarouselSwipeComponent implements OnInit, AfterViewInit, OnDestroy 
 
   // Helpers para extrair dados do modelo News (aceita NewsWithClone)
   getImageUrl(item: NewsWithClone): string {
-    return item.mediaNews?.[0]?.imgSize?.original || '';
+    return item.imageUrl || '';
   }
 
   getTags(item: NewsWithClone): string[] {
-   
-    const categoryMap = this.categories();
-    
-    return item.categoryId.map((id: number) => categoryMap.find((category) => category.id === id)?.name || 'GERAL');
+    return item.tags || [];
   }
 
   getFormattedDate(item: NewsWithClone): string {

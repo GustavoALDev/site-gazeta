@@ -1,93 +1,84 @@
-import { Component, inject, OnDestroy, OnInit, signal, HostListener, input } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { DarkModeService } from '@site-gazeta/dark-mode';
-import { Subject, takeUntil } from 'rxjs';
-import { SidebarComponent } from '@site-gazeta/sidebar';
+import { Component, effect, HostListener, inject, input, model, OnInit, output, signal, viewChild } from '@angular/core';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { Menu } from '@site-gazeta/models';
-import { RouterModule } from '@angular/router';
-import { ApiService } from 'apps/site-gazeta/src/app/core/service/api.service';
-
+import { SidebarComponent } from '@site-gazeta/sidebar';
 
 @Component({
   selector: 'lib-menu',
-  imports: [CommonModule, FormsModule, SidebarComponent, RouterModule],
+  imports: [FormsModule, RouterModule, SidebarComponent, ReactiveFormsModule],
   templateUrl: './menu.component.html',
   styleUrl: './menu.component.scss',
 })
-export class MenuComponent implements OnInit, OnDestroy {
-  apiService = inject(ApiService);
-  darkModeService = inject(DarkModeService);
-  isDarkMode$ = signal<boolean>(false);
-  destroy$ = new Subject<void>();
+export class MenuComponent implements OnInit {
+  sidebar = viewChild.required(SidebarComponent);
+  menuItems = input.required<Menu[]>();
   showSideMenu = signal<boolean>(false);
-  // Estados para controle da pesquisa
   showSearchBar = signal<boolean>(false);
-  searchTerm = signal<string>('');
-  menuItems = signal<Menu[]>([]);
-  ngOnInit(): void {
-    this.getMenu();
+  searchTerm = new FormControl<string>('');
+  searchActive = output<boolean>();
+  searchBarValue = output<string>();
+  router = inject(Router);
+
+  constructor() {
+    effect(() => {
+      if (this.showSearchBar()) {
+        queueMicrotask(() => {
+          const input = document.querySelector('.search-input') as HTMLInputElement;
+          input?.focus();
+        });
+      }
+    })
   }
-  getMenu() {
-    this.apiService.getMenu().subscribe((menu) => {
-      console.log(menu);
-      this.menuItems.set(menu);
+  ngOnInit(): void {
+    this.searchTerm.valueChanges.subscribe((value) => {
+      this.searchBarValue.emit(value as string);
+    });
+    this.router.events.subscribe((event) => {
+      if(event instanceof NavigationEnd){
+        this.closeSearch()
+      }
     });
   }
-  onSearchClick(): void {
+  toggleSearchBar(): void {
     this.showSearchBar.set(!this.showSearchBar());
-    if (this.showSearchBar()) {
-      // Foca no input de busca após a animação
-      setTimeout(() => {
-        const searchInput = document.querySelector('.search-input') as HTMLInputElement;
-        if (searchInput) {
-          searchInput.focus();
-        }
-      }, 400);
-    } else {
-      // Limpa o termo de busca quando fecha
-      this.searchTerm.set('');
+    this.searchActive.emit(this.showSearchBar());
+    if (!this.showSearchBar()) {
+      this.searchTerm.reset();
+      this.searchBarValue.emit('');
     }
   }
 
-  onSearch(): void {
-    const term = this.searchTerm();
-    if (term.trim()) {
-      console.log('Pesquisando por:', term);
-      // Aqui você pode implementar a lógica de busca
-      // Por exemplo, emitir um evento ou navegar para página de resultados
+  performSearch(): void {
+      if (this.searchTerm.value?.trim()) {
+      console.log('Pesquisando por:', this.searchTerm.value);
     }
   }
 
-  onCloseSearch(): void {
+  closeSearch(): void {
     this.showSearchBar.set(false);
-    this.searchTerm.set('');
+    this.searchTerm.reset();
+    this.searchActive.emit(this.showSearchBar());
   }
 
-  onSearchKeydown(event: KeyboardEvent): void {
+  handleSearchKeydown(event: KeyboardEvent): void {
     if (event.key === 'Enter') {
-      this.onSearch();
+      event.preventDefault();
+      this.performSearch();
     } else if (event.key === 'Escape') {
-      this.onCloseSearch();
+      event.preventDefault();
+      this.closeSearch();
     }
   }
 
   @HostListener('document:keydown.escape')
   onEscapeKey(): void {
     if (this.showSearchBar()) {
-      this.onCloseSearch();
+      this.closeSearch();
     }
   }
 
-  onToggleSideMenu(): void {
-    this.showSideMenu.set(!this.showSideMenu());
-  }
-
-  onCloseSideMenu(): void {
-    this.showSideMenu.set(false);
-  }
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
+  toggleSidebar(): void {
+    this.sidebar().toggleSidebar();
   }
 }

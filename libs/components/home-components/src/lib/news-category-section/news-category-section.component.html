@@ -1,7 +1,8 @@
+@if(newslist() && newslist().length > 0) {
 <div class="category-horizontal-container">
   <div class="category-header">
-    <h2>{{ category().name }}</h2>
-    <div class="category-underline" [style.background]="category().color"></div>
+    <h2>{{ safeCategory().name }}</h2>
+    <div class="category-underline" [style.background]="safeCategory().color"></div>
   </div>
   <div class="news-cards-row">
     @for (news of newslist().slice(0, 3); track news.id) {
@@ -25,3 +26,4 @@
     </div>
   </div>
 </div>
+}

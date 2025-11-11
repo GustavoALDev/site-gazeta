@@ -1,58 +1,8 @@
-// Variables
+@use '../../../../../style/variables' as vars;
+
 $primary-gradient: linear-gradient(135deg, #c44569, #54016e);
 $dark-gradient: linear-gradient(135deg, #2d3436 0%, #636e72 50%, #74b9ff 100%);
 $font-stack: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-$transition-smooth: all 0.3s ease;
-$transition-cubic: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-
-// Mixins
-@mixin button-base($size: 42px, $bg: rgba(255, 255, 255, 0.25)) {
-  background: $bg;
-  border: none;
-  border-radius: 8px;
-  width: $size;
-  height: $size;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: #ffffff;
-  transition: $transition-smooth;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.35);
-    transform: scale(1.05);
-  }
-
-  &:active {
-    transform: scale(0.95);
-  }
-}
-
-@mixin icon-size($size: 22px, $stroke: 2) {
-  svg {
-    width: $size;
-    height: $size;
-    stroke-width: $stroke;
-  }
-}
-
-@mixin hidden-state {
-  &.hidden {
-    opacity: 0;
-    visibility: hidden;
-    transform: scale(0.8);
-  }
-}
-
-@mixin search-button($size: 34px, $radius: 50%) {
-  @include button-base($size, rgba(255, 255, 255, 0.2));
-  border-radius: $radius;
-  margin-left: 6px;
-  transition: all 0.2s ease;
-
-  @include icon-size(16px, 2.5);
-}
 
 :host {
   width: 100%;
@@ -65,10 +15,11 @@ $transition-cubic: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   width: 100%;
   background: $primary-gradient;
-  padding: 10px 0px;
+  padding: 10px 0;
   border-radius: 15px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   margin: 10px 0;
+  overflow: visible;
 
   .menu-container {
     display: flex;
@@ -77,26 +28,7 @@ $transition-cubic: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     margin: 0 auto;
     padding: 0 35px;
     position: relative;
-    overflow: hidden;
-
-    .right-icons {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-
-      .hamburger-menu {
-        display: none;
-        transition: $transition-smooth;
-        opacity: 1;
-        visibility: visible;
-        @include hidden-state;
-        
-        .hamburger-btn {
-          @include button-base;
-          @include icon-size;
-        }
-      }
-    }
+    overflow: visible;
 
     .menu-items {
       display: flex;
@@ -104,9 +36,7 @@ $transition-cubic: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       margin: 0;
       padding: 0;
       align-items: center;
-      transition: $transition-cubic;
-      transform: translateX(0);
-      opacity: 1;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 
       &.hidden {
         transform: translateX(-100%);
@@ -115,28 +45,105 @@ $transition-cubic: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       }
 
       .menu-item {
+        position: relative;
         margin: 0;
 
         .menu-link {
           display: block;
           padding: 16px 22px;
-          color: #ffffff;
+          color: vars.$white;
           text-decoration: none;
           font-weight: 500;
           font-size: 16px;
           font-family: $font-stack;
-          transition: $transition-smooth;
-          border-radius: 8px;
+          transition: all 0.2s ease;
+          border-radius: var(--radius);
           margin: 0 1px;
-          letter-spacing: 0.3px;
 
           &:hover {
             background-color: rgba(255, 255, 255, 0.15);
-            transform: translateY(-1px);
+          }
+        }
+
+        &.has-submenu {
+          // Ponte invisível que conecta trigger ao dropdown (sempre ativa)
+          &::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: transparent;
+            z-index: 1002;
           }
 
-          &:active {
-            transform: translateY(0);
+          .submenu-trigger {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+
+            .chevron-icon {
+              transition: transform 0.2s ease;
+            }
+          }
+
+          // SOLUÇÃO SIMPLES: CSS :hover puro no elemento pai
+          &:hover {
+            z-index: 1000;
+
+            .chevron-icon {
+              transform: rotate(180deg);
+            }
+
+            .submenu-dropdown {
+              opacity: 1;
+              visibility: visible;
+              transform: translateY(0);
+              pointer-events: all;
+            }
+          }
+
+          .submenu-dropdown {
+            position: absolute;
+            top: calc(100% + 8px); // Gap visual de 8px (coberto pela ponte ::after)
+            left: 0;
+            min-width: 220px;
+            background: vars.$white;
+            border-radius: var(--radius);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+            list-style: none;
+            margin: 0;
+            padding: var(--space-sm) 0;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s ease;
+            pointer-events: none;
+            z-index: 1001;
+
+            .submenu-item {
+              margin: 0;
+
+              .submenu-link {
+                display: block;
+                padding: 12px 20px;
+                color: vars.$text-dark;
+                text-decoration: none;
+                font-weight: 400;
+                font-size: 15px;
+                font-family: $font-stack;
+                transition: all 0.2s ease;
+                border-left: 3px solid transparent;
+
+                &:hover {
+                  background-color: vars.$light; 
+                  border-left-color: #c44569;
+                  padding-left: 24px;
+                }
+              }
+            }
           }
         }
       }
@@ -145,18 +152,22 @@ $transition-cubic: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     .search-bar {
       position: absolute;
       left: 20px;
-      right: 140px;
       height: 100%;
       display: flex;
       align-items: center;
-      transform: translateX(100%);
+      width: 0;
+      transform: translateX(0);
       opacity: 0;
-      transition: $transition-cubic;
+      visibility: hidden;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       pointer-events: none;
+      overflow: hidden;
 
       &.active {
-        transform: translateX(0);
+        right: 140px;
+        width: auto;
         opacity: 1;
+        visibility: visible;
         pointer-events: all;
       }
 
@@ -179,209 +190,229 @@ $transition-cubic: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
           font-size: 16px;
           font-family: $font-stack;
           padding: 8px 12px;
-          
+
           &::placeholder {
             color: rgba(255, 255, 255, 0.7);
           }
-
-          &:focus::placeholder {
-            color: rgba(255, 255, 255, 0.5);
-          }
         }
 
-        .search-submit-btn {
-          @include search-button;
-        }
-
+        .search-submit-btn,
         .search-close-btn {
-          @include search-button;
-          background: rgba(255, 255, 255, 0.15);
-          
+          background: rgba(255, 255, 255, 0.2);
+          border: none;
+          border-radius: 50%;
+          width: 34px;
+          height: 34px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          color: #ffffff;
+          margin-left: 6px;
+          transition: all 0.2s ease;
+
           &:hover {
-            background: rgba(255, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.35);
           }
+
+          svg {
+            width: 18px;
+            height: 18px;
+          }
+        }
+
+        .search-close-btn:hover {
+          background: rgba(255, 0, 0, 0.2);
         }
       }
     }
 
-    .search-icon .search-btn {
-      @include button-base;
-      @include icon-size(22px, 2.5);
+    .right-icons {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .search-btn,
+      .hamburger-btn {
+        background: rgba(255, 255, 255, 0.25);
+        border: none;
+        border-radius: 8px;
+        width: 42px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: #ffffff;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.35);
+          transform: scale(1.05);
+        }
+
+        svg {
+          width: 20px;
+          height: 20px;
+        }
+      }
+
+      .hamburger-menu {
+        display: none;
+        transition: all 0.2s ease;
+
+        &.hidden {
+          opacity: 0;
+          visibility: hidden;
+        }
+      }
     }
   }
 }
 
-
-// Dark mode mixin
-@mixin dark-theme-colors {
-  color: #e8e8e8;
-  
-  &:hover {
-    color: #ffffff;
-  }
-}
-
-@mixin dark-button-theme {
-  background: rgba(255, 255, 255, 0.2);
-  @include dark-theme-colors;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.3);
-    color: #ffffff;
-  }
-}
-
-// Dark mode support
+// Dark mode
 ::ng-deep .dark-mode .menu {
   background: $dark-gradient;
 
   .menu-link {
-    @include dark-theme-colors;
-    
+    color: #e8e8e8;
+
     &:hover {
       background-color: rgba(255, 255, 255, 0.2);
+      color: #ffffff;
     }
   }
 
-  .search-input-container {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.15);
+  .has-submenu .submenu-dropdown {
+    background: vars.$gray-800;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
 
-    .search-input {
-      @include dark-theme-colors;
-      
-      &::placeholder {
-        color: rgba(232, 232, 232, 0.6);
-      }
+    .submenu-link {
+      color: vars.$gray-200;
 
-      &:focus::placeholder {
-        color: rgba(232, 232, 232, 0.4);
-      }
-    }
-
-    .search-submit-btn {
-      @include dark-button-theme;
-      background: rgba(255, 255, 255, 0.15);
-    }
-
-    .search-close-btn {
-      @include dark-button-theme;
-      background: rgba(255, 255, 255, 0.1);
-      
       &:hover {
-        background: rgba(255, 100, 100, 0.2);
+        background-color: rgba(255, 255, 255, 0.1);
+        border-left-color: #74b9ff;
+        color: vars.$white;
       }
     }
   }
-
-  .search-btn,
-  .hamburger-btn {
-    @include dark-button-theme;
-  }
 }
 
-
-// Responsive mixins
-@mixin mobile-layout($padding: 10px 15px, $gap: 8px, $border-radius: 12px, $margin: 8px) {
-  border-radius: $border-radius;
-  margin: $margin;
-
-  .menu-container {
-    padding: $padding;
-    justify-content: flex-end;
-
-    .right-icons {
-      gap: $gap;
-      
-      .hamburger-menu {
-        display: block;
-      }
-    }
-
-    .menu-items {
-      display: none;
-    }
-  }
-}
-
-@mixin responsive-search-bar($left: 15px, $right: 120px) {
-  .search-bar {
-    left: $left;
-    right: $right;
-  }
-}
-
-@mixin responsive-buttons($btn-size: 38px, $search-btn-size: 30px, $icon-size: 20px, $search-icon-size: 14px) {
-  .hamburger-btn {
-    @include button-base($btn-size);
-    @include icon-size($icon-size);
-  }
-
-  .search-btn {
-    @include button-base($btn-size);
-    @include icon-size($icon-size);
-  }
-
-  .search-submit-btn,
-  .search-close-btn {
-    @include search-button($search-btn-size);
-    @include icon-size($search-icon-size);
-    margin-left: 4px;
-  }
-}
-
-@mixin responsive-input($font-size: 15px, $padding: 6px 10px, $container-padding: 6px 10px) {
-  .search-input-container {
-    padding: $container-padding;
-
-    .search-input {
-      font-size: $font-size;
-      padding: $padding;
-    }
-  }
-}
-
-@mixin responsive-menu-links($padding: 14px 18px, $font-size: 15px, $margin: 0) {
-  .menu-link {
-    padding: $padding;
-    font-size: $font-size;
-    margin: $margin;
-  }
-}
-
-// Responsive design
+// Responsive - Tablet
 @media (max-width: 768px) {
   .menu {
-    @include mobile-layout;
-    @include responsive-search-bar(15px, 120px);
+    margin: 8px 0;
+    border-radius: 12px;
+    padding: 8px 0;
 
     .menu-container {
-      @include responsive-buttons(38px, 30px, 20px, 14px);
-      @include responsive-input(15px, 6px 10px, 6px 10px);
+      padding: 0 15px;
+      justify-content: flex-end;
 
-      .menu-item {
-        @include responsive-menu-links(14px 18px, 15px);
+      .menu-items {
+        display: none;
+
+        // Garante que dropdowns não apareçam no mobile
+        .has-submenu .submenu-dropdown {
+          display: none !important;
+        }
+      }
+
+      .search-bar {
+        left: 15px;
+        
+        &.active {
+          right: 120px;
+        }
+      }
+
+      .right-icons {
+        gap: 6px;
+
+        .search-btn,
+        .hamburger-btn {
+          width: 38px;
+          height: 38px;
+
+          svg {
+            width: 18px;
+            height: 18px;
+          }
+        }
+
+        .hamburger-menu {
+          display: block;
+        }
       }
     }
   }
 }
 
+// Responsive - Mobile
 @media (max-width: 480px) {
   .menu {
-    @include mobile-layout(10px, 6px, 10px, 5px);
-    @include responsive-search-bar(10px, 100px);
+    margin: 5px 0;
+    border-radius: 10px;
+    padding: 6px 0;
 
     .menu-container {
-      @include responsive-buttons(36px, 28px, 20px, 12px);
-      @include responsive-input(14px, 5px 8px, 5px 8px);
+      padding: 0 10px;
 
-      .menu-item {
-        @include responsive-menu-links(12px 16px, 14px, 2px);
+      .menu-items {
+        // Garante que dropdowns não apareçam no mobile
+        .has-submenu .submenu-dropdown {
+          display: none !important;
+        }
       }
 
-      .search-submit-btn,
-      .search-close-btn {
-        margin-left: 3px;
+      .search-bar {
+        left: 10px;
+        height: 100%;
+
+        &.active {
+          right: 90px;
+        }
+
+        .search-input-container {
+          padding: 6px 10px;
+
+          .search-input {
+            font-size: 14px;
+            padding: 6px 8px;
+
+            &::placeholder {
+              font-size: 14px;
+            }
+          }
+
+          .search-submit-btn,
+          .search-close-btn {
+            width: 28px;
+            height: 28px;
+            margin-left: 4px;
+
+            svg {
+              width: 14px;
+              height: 14px;
+            }
+          }
+        }
+      }
+
+      .right-icons {
+        gap: 4px;
+
+        .search-btn,
+        .hamburger-btn {
+          width: 36px;
+          height: 36px;
+
+          svg {
+            width: 18px;
+            height: 18px;
+          }
+        }
       }
     }
   }

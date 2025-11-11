@@ -13,9 +13,21 @@ import { Category, News } from '@site-gazeta/models';
 export class NewsCategorySectionComponent {
   category = input.required<Category>();
   news = input.required<News[]>();
-  newslist = computed(() => {
-    return this.news().filter(news => news.categoryId.includes(this.category().id as number));
+  
+  // Computed que garante que category sempre existe antes de usar
+  safeCategory = computed(() => {
+    const cat = this.category();
+    return cat || { id: 0, name: '', color: '#000000' } as Category;
   });
+  
+  newslist = computed(() => {
+    const category = this.safeCategory();
+    if (!category || !category.id) {
+      return [];
+    }
+    return this.news().filter(news => news.categoryId.includes(category.id as number));
+  });
+  
   onImageError(event: Event): void {
     const img = event.target as HTMLImageElement;
     img.src = 'https://via.placeholder.com/300x180?text=Imagem+Indisponível';
