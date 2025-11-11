@@ -24,7 +24,6 @@ export class NewsCategoryGridComponent {
     
     return configs
       .sort(() => Math.random() - 0.5)
-      .slice(0, 3)
       .map(category => {
       // Filtra notícias desta categoria
       const categoryNews = newsData.filter(news => 

@@ -29,6 +29,14 @@
         }       
       </select>
     </div>
+    <div class="filter-group">
+      <label for="filter-emphasis">Destaque</label>
+      <select id="filter-emphasis" class="filter-input" [value]="filterEmphasis() === null ? '' : filterEmphasis() ? 'true' : 'false'" (change)="setFilterEmphasis($any($event.target).value === '' ? null : $any($event.target).value === 'true')">
+        <option value="">Todas</option>
+        <option value="true">Com destaque</option>
+        <option value="false">Sem destaque</option>
+      </select>
+    </div>
     <div class="filter-group search-group">
       <label for="filter-search">Pesquisar</label>
       <input id="filter-search" type="text" class="filter-input search-input" placeholder="Pesquisar notícia..."
@@ -47,7 +55,12 @@
           }
         </div>
         <div class="news-card-content">
-          <h3 class="news-title">{{news.title}}</h3>
+          <div class="news-title-wrapper">
+            <h3 class="news-title">{{news.title}}</h3>
+            @if(news.isEmphasis) {
+              <span class="emphasis-star material-icons" title="Notícia em destaque">star</span>
+            }
+          </div>
           <p class="news-subtitle">{{news.subtitle}}</p>
           <div class="news-meta">
             <span class="news-author"><b>Por:</b> {{news.author}}</span>

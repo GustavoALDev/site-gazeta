@@ -25,6 +25,7 @@ export class NewsListComponent implements OnInit {
   filterViews = signal<'asc' | 'desc' | ''>('');
   filterCategory = signal<number | null>(null);
   filterSearch = signal<string>('');
+  filterEmphasis = signal<boolean | null>(null);
 
   // Signal computado para notícias filtradas
   filteredNews = computed(() => {
@@ -36,6 +37,10 @@ export class NewsListComponent implements OnInit {
     // Filtro por categoria
     if (this.filterCategory()) {
       filtered = filtered.filter(n => n.categoryId?.includes(this.filterCategory()!));
+    }
+    // Filtro por destaque
+    if (this.filterEmphasis() !== null) {
+      filtered = filtered.filter(n => n.isEmphasis === this.filterEmphasis());
     }
     // Filtro por pesquisa
     if (this.filterSearch()) {
@@ -129,4 +134,5 @@ export class NewsListComponent implements OnInit {
     this.filterCategory.set(categoryId ? Number(categoryId) : null);
   }
   setFilterSearch(search: string) { this.filterSearch.set(search); }
+  setFilterEmphasis(isEmphasis: boolean | null) { this.filterEmphasis.set(isEmphasis); }
 }

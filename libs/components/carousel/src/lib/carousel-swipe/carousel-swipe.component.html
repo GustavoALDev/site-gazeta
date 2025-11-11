@@ -10,7 +10,7 @@
       
       <!-- Renderiza todos os itens estendidos (com clones) -->
       @for (item of extendedItems(); track item.id; let i = $index) {
-        <div class="carousel-swipe-slide" [attr.data-index]="i">
+        <div class="carousel-swipe-slide" [attr.data-index]="i" >
           <div class="news-card" [routerLink]="['/news', item.slug]">
             <!-- Container da imagem -->
             <div class="news-card__image-container">

@@ -55,6 +55,9 @@ $text-gray: #e0e0e0;
       position: relative;
       
       .video-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
         position: relative;
         background: $darker-bg;
         border-radius: 12px;
@@ -95,13 +98,10 @@ $text-gray: #e0e0e0;
         }
 
         .video-overlay {
-          
+          width: max-content;
+          height: max-content;
           z-index: 100;
           position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
           display: flex;
           align-items: center;
           justify-content: center;

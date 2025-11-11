@@ -8,10 +8,7 @@ import { HttpClient } from '@angular/common/http';
   providedIn: 'root'
 })
 export class ApiService {
-  private mockNews = new BehaviorSubject<News[]>(mockNewsItems);
-  private mockCategories = new BehaviorSubject<Category[]>(mockCategories);
-  private mockVideos = new BehaviorSubject<Video[]>(mockVideos);
-  private mockMenu = new BehaviorSubject<Menu[]>(mockMenu);
+ 
   private apiUrl = environment.apiUrl;
   private http = inject(HttpClient);
   constructor() { }

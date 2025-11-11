@@ -131,9 +131,9 @@ export class CarouselSwipeComponent implements OnInit, AfterViewInit, OnDestroy 
   });
 
   ngOnInit() {
-    // Event listeners para touch events
-    this.setupTouchEvents();
+    // Carrega categorias
     this.getCategories();
+    // Não configura eventos aqui - será feito no ngAfterViewInit quando o elemento estiver disponível
   }
 
   getCategories() {
@@ -152,6 +152,9 @@ export class CarouselSwipeComponent implements OnInit, AfterViewInit, OnDestroy 
     if (this.carouselTrack?.nativeElement) {
       this.carouselTrack.nativeElement.addEventListener('transitionend', this.onTransitionEnd.bind(this));
     }
+    
+    // Configura eventos de touch/mouse após view init
+    this.setupTouchEvents();
   }
 
   ngOnDestroy() {
@@ -164,25 +167,30 @@ export class CarouselSwipeComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   private setupTouchEvents() {
-    if (typeof window !== 'undefined') {
-      // Touch events
-      document.addEventListener('touchstart', this.onTouchStart.bind(this), { passive: false });
-      document.addEventListener('touchmove', this.onTouchMove.bind(this), { passive: false });
-      document.addEventListener('touchend', this.onTouchEnd.bind(this));
+    // Aguarda o view init para ter acesso ao elemento
+    if (typeof window !== 'undefined' && this.carouselTrack?.nativeElement) {
+      const trackElement = this.carouselTrack.nativeElement;
+      
+      // Touch events - apenas no track do carousel
+      trackElement.addEventListener('touchstart', this.onTouchStart.bind(this), { passive: true });
+      trackElement.addEventListener('touchmove', this.onTouchMove.bind(this), { passive: false });
+      trackElement.addEventListener('touchend', this.onTouchEnd.bind(this), { passive: true });
 
-      // Mouse events para desktop testing
-      document.addEventListener('mousedown', this.onMouseDown.bind(this));
+      // Mouse events para desktop - apenas no track do carousel
+      trackElement.addEventListener('mousedown', this.onMouseDown.bind(this), { passive: true });
       document.addEventListener('mousemove', this.onMouseMove.bind(this));
       document.addEventListener('mouseup', this.onMouseUp.bind(this));
     }
   }
 
   private removeTouchEvents() {
-    if (typeof window !== 'undefined') {
-      document.removeEventListener('touchstart', this.onTouchStart.bind(this));
-      document.removeEventListener('touchmove', this.onTouchMove.bind(this));
-      document.removeEventListener('touchend', this.onTouchEnd.bind(this));
-      document.removeEventListener('mousedown', this.onMouseDown.bind(this));
+    if (typeof window !== 'undefined' && this.carouselTrack?.nativeElement) {
+      const trackElement = this.carouselTrack.nativeElement;
+      
+      trackElement.removeEventListener('touchstart', this.onTouchStart.bind(this));
+      trackElement.removeEventListener('touchmove', this.onTouchMove.bind(this));
+      trackElement.removeEventListener('touchend', this.onTouchEnd.bind(this));
+      trackElement.removeEventListener('mousedown', this.onMouseDown.bind(this));
       document.removeEventListener('mousemove', this.onMouseMove.bind(this));
       document.removeEventListener('mouseup', this.onMouseUp.bind(this));
     }
@@ -191,46 +199,110 @@ export class CarouselSwipeComponent implements OnInit, AfterViewInit, OnDestroy 
 
   // Touch Events
   private onTouchStart(event: TouchEvent) {
-    if (!this.carouselTrack || !this.carouselTrack.nativeElement.contains(event.target as Node)) return;
+    const target = event.target as HTMLElement;
+    
+    // Não inicia drag em botões de navegação
+    if (target.closest('button') && !target.closest('.news-card')) {
+      return;
+    }
     
     const touch = event.touches[0];
     this.startDrag(touch.clientX);
-    event.preventDefault();
+    // Não prevenir default aqui para permitir cliques
   }
 
   private onTouchMove(event: TouchEvent) {
     if (!this.isDragging()) return;
     
     const touch = event.touches[0];
+    const deltaX = Math.abs(touch.clientX - this.startX());
+    const threshold = 15; // Threshold menor para detectar movimento durante o drag
+    
+    // Atualiza a posição do drag
     this.updateDrag(touch.clientX);
-    event.preventDefault();
+    
+    // Só previne default se realmente estiver arrastando (movimento significativo)
+    // Isso permite que cliques rápidos funcionem normalmente
+    if (deltaX > threshold) {
+      event.preventDefault();
+    }
   }
 
-  private onTouchEnd() {
-    if (!this.isDragging()) return;
+  private onTouchEnd(event: TouchEvent) {
+    if (!this.isDragging()) {
+      // Se não estava arrastando, permite que o clique normal aconteça
+      return;
+    }
+    
+    const deltaX = Math.abs(this.currentX() - this.startX());
+    const threshold = 30; // Threshold para diferenciar clique de swipe (em pixels)
+    
+    // Se o movimento foi muito pequeno, não considera como drag e permite clique no routerLink
+    if (deltaX < threshold) {
+      this.isDragging.set(false);
+      this.startX.set(0);
+      this.currentX.set(0);
+      // Não previne default para permitir que o routerLink funcione
+      return;
+    }
+    
+    // Se houve movimento significativo, faz o swipe e previne o clique
     this.endDrag();
+    event.preventDefault();
+    event.stopPropagation();
   }
 
   // Mouse Events (para teste no desktop)
   private onMouseDown(event: MouseEvent) {
-    if (!this.carouselTrack || !this.carouselTrack.nativeElement.contains(event.target as Node)) return;
+    const target = event.target as HTMLElement;
+    
+    // Não inicia drag em botões de navegação (fora do card)
+    if (target.closest('button') && !target.closest('.news-card')) {
+      return;
+    }
+    
+    // Só inicia drag se o botão esquerdo foi pressionado
+    if (event.button !== 0) {
+      return;
+    }
     
     this.startDrag(event.clientX);
-    event.preventDefault();
+    // Não prevenir default aqui para permitir cliques
   }
 
   private onMouseMove(event: MouseEvent) {
     if (!this.isDragging()) return;
+    
+    // Sempre atualiza a posição do drag durante o movimento do mouse
     this.updateDrag(event.clientX);
   }
 
-  private onMouseUp() {
-    if (!this.isDragging()) return;
+  private onMouseUp(event: MouseEvent) {
+    if (!this.isDragging()) {
+      return;
+    }
+    
+    const deltaX = Math.abs(this.currentX() - this.startX());
+    const threshold = 30; // Threshold para diferenciar clique de drag (em pixels)
+    
+    // Se o movimento foi muito pequeno, não considera como drag e permite clique no routerLink
+    if (deltaX < threshold) {
+      this.isDragging.set(false);
+      this.startX.set(0);
+      this.currentX.set(0);
+      // Não previne default para permitir que o routerLink funcione
+      return;
+    }
+    
+    // Se houve movimento significativo, faz o swipe e previne o clique
     this.endDrag();
+    event.preventDefault();
+    event.stopPropagation();
   }
 
   // Drag Logic
   private startDrag(clientX: number) {
+    // Só inicia drag se não estiver clicando em um link
     this.isDragging.set(true);
     this.startX.set(clientX);
     this.currentX.set(clientX);
@@ -244,6 +316,7 @@ export class CarouselSwipeComponent implements OnInit, AfterViewInit, OnDestroy 
     const deltaX = this.currentX() - this.startX();
     const threshold = window.innerWidth * 0.2; // 20% da largura da tela
     
+    // Só navega se o movimento for significativo (threshold)
     if (Math.abs(deltaX) > threshold) {
       if (deltaX > 0) {
         // Swipe para a direita - item anterior
