@@ -135,27 +135,34 @@ export class NewsController {
 
   @Get()
   @ApiOperation({ 
-    summary: 'Listar todas as notícias', 
-    description: 'Endpoint para obter todas as notícias com suas mídias e vídeos. Por padrão, retorna apenas notícias ativas. Permite filtrar por categoria(s).' 
+    summary: 'Listar todas as notícias com filtros', 
+    description: 'Endpoint para obter todas as notícias com suas mídias e vídeos. Por padrão, retorna apenas notícias ativas. Permite filtrar por status, categoria(s), notícias em destaque e incluir itens do lixo.' 
   })
   @ApiQuery({ 
     name: 'status', 
     enum: ['ACTIVE', 'INACTIVE', 'TRASH'], 
     required: false, 
-    description: 'Filtrar por status específico' 
+    description: 'Filtrar por status específico (ACTIVE, INACTIVE ou TRASH)' 
   })
   @ApiQuery({ 
     name: 'includeTrash', 
     type: 'boolean', 
     required: false, 
-    description: 'Incluir itens do lixo na consulta' 
+    description: 'Incluir itens do lixo na consulta (true ou false)' 
   })
   @ApiQuery({ 
     name: 'categoryId', 
     type: 'string', 
     required: false, 
-    description: 'Filtrar por ID(s) de categoria. Aceita um único ID ou múltiplos IDs separados por vírgula (ex: 1,2,3)',
+    description: 'Filtrar por ID(s) de categoria. Aceita um único ID ou múltiplos IDs separados por vírgula. Exemplo: "1" ou "1,2,3"',
     example: '1,2,3'
+  })
+  @ApiQuery({ 
+    name: 'isEmphasis', 
+    type: 'boolean', 
+    required: false, 
+    description: 'Filtrar por notícias em destaque. Use true para listar apenas notícias em destaque, false para notícias não destacadas, ou omita para listar todas',
+    example: true
   })
   @ApiResponse({ 
     status: 200, 
@@ -193,6 +200,56 @@ export class NewsController {
   async findTrash(): Promise<NewsResponseDto[]> {
     try {
       return await this.newsService.findTrash();
+    } catch (error) {
+      throw new HttpException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Erro no servidor, tente novamente mais tarde',
+        error: 'Internal Server Error'
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Get('featured')
+  @ApiOperation({ 
+    summary: 'Listar notícias em destaque', 
+    description: 'Endpoint para obter todas as notícias que estão marcadas como destaque (isEmphasis = true). Retorna apenas notícias ativas, ordenadas por visualizações e data de criação.' 
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Lista de notícias em destaque',
+    type: [NewsResponseDto]
+  })
+  async findFeatured(): Promise<NewsResponseDto[]> {
+    try {
+      return await this.newsService.findFeatured();
+    } catch (error) {
+      throw new HttpException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Erro no servidor, tente novamente mais tarde',
+        error: 'Internal Server Error'
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Get('category/:categoryId')
+  @ApiOperation({ 
+    summary: 'Listar notícias por categoria', 
+    description: 'Endpoint para obter todas as notícias de uma categoria específica. Retorna apenas notícias ativas.' 
+  })
+  @ApiParam({ 
+    name: 'categoryId', 
+    description: 'ID da categoria', 
+    type: 'number',
+    example: 1
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Lista de notícias da categoria',
+    type: [NewsResponseDto]
+  })
+  async findByCategory(@Param('categoryId', ParseIntPipe) categoryId: number): Promise<NewsResponseDto[]> {
+    try {
+      return await this.newsService.findAll({ categoryId: [categoryId] });
     } catch (error) {
       throw new HttpException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,

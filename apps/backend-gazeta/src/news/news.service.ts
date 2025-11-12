@@ -113,6 +113,11 @@ export class NewsService {
       };
     }
 
+    // Filtrar por notícias em destaque se fornecido
+    if (query?.isEmphasis !== undefined) {
+      whereCondition.isEmphasis = query.isEmphasis;
+    }
+
     const news = await this.prisma.news.findMany({
       where: whereCondition,
       include: {
@@ -436,6 +441,30 @@ export class NewsService {
         { createdAt: 'desc' }   // E por data
       ],
       take: limit
+    });
+
+    return news.map(this.formatNewsResponse);
+  }
+
+  async findFeatured(): Promise<NewsResponseDto[]> {
+    const news = await this.prisma.news.findMany({
+      where: {
+        status: NewsStatus.ACTIVE,
+        isEmphasis: true
+      },
+      include: {
+        newsCategories: {
+          include: {
+            category: true
+          }
+        },
+        mediaNews: true,
+        videoNews: true
+      },
+      orderBy: [
+        { views: 'desc' },      // Por views
+        { createdAt: 'desc' }   // E por data
+      ]
     });
 
     return news.map(this.formatNewsResponse);

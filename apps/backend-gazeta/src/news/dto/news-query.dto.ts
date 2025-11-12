@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsEnum, IsInt, IsArray } from 'class-validator';
-import { Type, Transform } from 'class-transformer';
+import { IsOptional, IsEnum, IsBoolean } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { NewsStatus } from './news-status.enum';
 
 export class NewsQueryDto {
@@ -41,4 +41,19 @@ export class NewsQueryDto {
     return [parseInt(value, 10)].filter(id => !isNaN(id));
   })
   categoryId?: number[];
+
+  @ApiProperty({
+    description: 'Filtrar por notícias em destaque (isEmphasis)',
+    required: false,
+    example: true,
+    type: Boolean
+  })
+  @IsOptional()
+  @IsBoolean({ message: 'isEmphasis deve ser true ou false' })
+  @Transform(({ value }) => {
+    if (value === 'true' || value === true) return true;
+    if (value === 'false' || value === false) return false;
+    return undefined;
+  })
+  isEmphasis?: boolean;
 } 
