@@ -11,11 +11,13 @@ export class MetricsMockService {
     const paginasVistas = this.randomInRange(35000, 70000);
     const visitantesUnicos = this.randomInRange(2000, 5000);
     const taxaRejeicao = this.randomInRange(35, 65);
+    const tempoMedio = this.randomInRange(120, 480); // segundos
 
     const kpis: KpiMetric[] = [
       { label: 'Acessos', value: totalAcessos, deltaPercent: this.randomDelta() },
       { label: 'Páginas Vistas', value: paginasVistas, deltaPercent: this.randomDelta() },
       { label: 'Visitantes Únicos', value: visitantesUnicos, deltaPercent: this.randomDelta() },
+      { label: 'Tempo Médio (min)', value: Math.round(tempoMedio / 60), deltaPercent: this.randomDelta() },
       { label: 'Taxa de Rejeição (%)', value: taxaRejeicao, deltaPercent: this.randomDelta() },
     ];
 
@@ -73,8 +75,26 @@ export class MetricsMockService {
   }
 
   getTopNews(range: DateRange, size = 10): Observable<TopNewsItem[]> {
-    const items: TopNewsItem[] = Array.from({ length: size }).map((_, i) => ({
-      title: `Notícia ${i + 1}`,
+    const mockTitles = [
+      'Prefeitura anuncia obras de revitalização na Avenida Principal',
+      'Festival de Música atrai milhares de visitantes ao centro da cidade',
+      'Novo hospital municipal será inaugurado no próximo mês',
+      'Equipe local conquista campeonato estadual de futebol',
+      'Empresas locais promovem feira de empregos com 500 vagas',
+      'Projeto de educação ambiental beneficia escolas municipais',
+      'Trânsito será alterado devido a evento cultural no fim de semana',
+      'Câmara aprova orçamento para melhorias na infraestrutura urbana',
+      'Centro cultural oferece oficinas gratuitas para jovens',
+      'Parque municipal recebe melhorias e nova área de lazer',
+      'Secretaria de Saúde promove campanha de vacinação',
+      'Restaurante local ganha prêmio nacional de gastronomia',
+      'Universidade federal abre inscrições para novos cursos',
+      'Polícia Civil prende quadrilha especializada em furtos',
+      'Meteorologia alerta para possibilidade de chuvas intensas',
+    ];
+
+    const items: TopNewsItem[] = Array.from({ length: Math.min(size, mockTitles.length) }).map((_, i) => ({
+      title: mockTitles[i],
       slug: `noticia-${i + 1}`,
       views: this.randomInRange(500, 8000),
       lastAccess: this.randomDateInRange(range),
