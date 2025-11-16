@@ -64,7 +64,7 @@ Você verá a seção **Analytics** com todos os endpoints documentados.
 #### Registrar uma visualização (público):
 
 ```bash
-curl -X POST http://localhost:3000/analytics/track-view \
+curl -X POST http://localhost:3002/api/analytics/track-view \
   -H "Content-Type: application/json" \
   -d '{
     "newsId": 1,
@@ -76,7 +76,7 @@ curl -X POST http://localhost:3000/analytics/track-view \
 #### Buscar KPIs (autenticado):
 
 ```bash
-curl -X GET "http://localhost:3000/analytics/kpis?startDate=2024-01-01T00:00:00.000Z&endDate=2024-12-31T23:59:59.999Z" \
+curl -X GET "http://localhost:3002/api/analytics/kpis?startDate=2024-01-01T00:00:00.000Z&endDate=2024-12-31T23:59:59.999Z" \
   -H "Authorization: Bearer SEU_TOKEN_JWT"
 ```
 
@@ -305,7 +305,6 @@ export const appConfig: ApplicationConfig = {
 - ✅ Páginas vistas
 - ✅ Visitantes únicos (sessões)
 - ✅ Tempo médio na página
-- ✅ Taxa de rejeição
 
 ### Gráficos
 - ✅ Série temporal de acessos (linha)

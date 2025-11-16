@@ -16,7 +16,6 @@ Sistema completo de rastreamento e análise de métricas para o site Gazeta.
 - **Páginas Vistas**: Quantidade de páginas visualizadas
 - **Visitantes Únicos**: Sessões únicas
 - **Tempo Médio**: Tempo médio na página (minutos)
-- **Taxa de Rejeição**: Percentual de bounce
 
 ### 3. Análise Temporal
 - Séries temporais de acessos (diário/horário)

@@ -112,25 +112,6 @@ export class AnalyticsService {
       _avg: { duration: true },
     });
 
-    // Taxa de rejeição (páginas com duração < 10 segundos ou 1 visualização por sessão)
-    const bounces = await this.prisma.pageView.count({
-      where: {
-        createdAt: { gte: start, lte: end },
-        OR: [{ duration: { lt: 10 } }, { duration: null }],
-      },
-    });
-
-    const previousBounces = await this.prisma.pageView.count({
-      where: {
-        createdAt: { gte: previousStart, lt: previousEnd },
-        OR: [{ duration: { lt: 10 } }, { duration: null }],
-      },
-    });
-
-    const bounceRate = totalAccesses > 0 ? (bounces / totalAccesses) * 100 : 0;
-    const previousBounceRate =
-      previousAccesses > 0 ? (previousBounces / previousAccesses) * 100 : 0;
-
     // Calcular deltas
     const calculateDelta = (current: number, previous: number): number => {
       if (previous === 0) return 0;
@@ -163,11 +144,6 @@ export class AnalyticsService {
           avgDuration._avg.duration || 0,
           previousAvgDuration._avg.duration || 0
         ),
-      },
-      {
-        label: 'Taxa de Rejeição (%)',
-        value: Math.round(bounceRate),
-        deltaPercent: calculateDelta(bounceRate, previousBounceRate),
       },
     ];
   }

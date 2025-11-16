@@ -124,7 +124,7 @@ export class MetricsComponent implements OnInit {
    * Retorna o ícone correspondente ao KPI
    */
   getKpiIcon(index: number): string {
-    const icons = ['pi-users', 'pi-file', 'pi-eye', 'pi-clock', 'pi-chart-bar'];
+    const icons = ['pi-users', 'pi-file', 'pi-eye', 'pi-clock'];
     return icons[index] || 'pi-info-circle';
   }
 
@@ -137,7 +137,6 @@ export class MetricsComponent implements OnInit {
       'Quantidade de páginas visualizadas por todos os visitantes',
       'Número de visitantes únicos que acessaram o site',
       'Tempo médio que os visitantes permanecem no site (em minutos)',
-      'Percentual de visitantes que saem sem interagir com outras páginas',
     ];
     return tooltips[index] || '';
   }

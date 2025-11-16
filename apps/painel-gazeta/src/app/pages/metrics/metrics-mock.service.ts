@@ -10,7 +10,6 @@ export class MetricsMockService {
     const totalAcessos = this.randomInRange(15000, 30000);
     const paginasVistas = this.randomInRange(35000, 70000);
     const visitantesUnicos = this.randomInRange(2000, 5000);
-    const taxaRejeicao = this.randomInRange(35, 65);
     const tempoMedio = this.randomInRange(120, 480); // segundos
 
     const kpis: KpiMetric[] = [
@@ -18,7 +17,6 @@ export class MetricsMockService {
       { label: 'Páginas Vistas', value: paginasVistas, deltaPercent: this.randomDelta() },
       { label: 'Visitantes Únicos', value: visitantesUnicos, deltaPercent: this.randomDelta() },
       { label: 'Tempo Médio (min)', value: Math.round(tempoMedio / 60), deltaPercent: this.randomDelta() },
-      { label: 'Taxa de Rejeição (%)', value: taxaRejeicao, deltaPercent: this.randomDelta() },
     ];
 
     return of(kpis).pipe(delay(400));
