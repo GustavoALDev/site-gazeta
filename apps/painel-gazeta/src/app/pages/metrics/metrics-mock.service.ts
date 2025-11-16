@@ -129,9 +129,16 @@ export class MetricsMockService {
   }
 
   private formatLabel(d: Date, granularity: Granularity): string {
-    return granularity === 'day'
-      ? d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
-      : d.toLocaleTimeString('pt-BR', { hour: '2-digit' });
+    if (granularity === 'day') {
+      // Formata manualmente para evitar problemas de timezone
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      return `${day}/${month}`;
+    } else {
+      // Formata hora com sufixo 'h' para melhor legibilidade
+      const hour = String(d.getHours()).padStart(2, '0');
+      return `${hour}h`;
+    }
   }
 
   private randomInRange(min: number, max: number): number {

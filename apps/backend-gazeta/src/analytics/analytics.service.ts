@@ -114,7 +114,15 @@ export class AnalyticsService {
 
     // Calcular deltas
     const calculateDelta = (current: number, previous: number): number => {
-      if (previous === 0) return 0;
+      // Se não havia dados anteriores
+      if (previous === 0) {
+        // Se agora tem dados, é crescimento de 100%
+        if (current > 0) return 100;
+        // Se continua sem dados, sem mudança
+        return 0;
+      }
+      
+      // Se havia dados anteriores, calcula a variação real
       return Math.round(((current - previous) / previous) * 100);
     };
 
@@ -161,11 +169,12 @@ export class AnalyticsService {
     const format =
       granularity === 'day' ? '%Y-%m-%d' : '%Y-%m-%d %H:00:00';
 
+    // Converte para timezone local (America/Sao_Paulo - UTC-3)
     const results = await this.prisma.$queryRaw<
       Array<{ period: string; count: bigint }>
     >`
       SELECT 
-        DATE_FORMAT(created_at, ${format}) as period,
+        DATE_FORMAT(CONVERT_TZ(created_at, '+00:00', '-03:00'), ${format}) as period,
         COUNT(*) as count
       FROM page_views
       WHERE created_at >= ${start} AND created_at <= ${end}
@@ -178,14 +187,18 @@ export class AnalyticsService {
 
     for (const row of results) {
       if (granularity === 'day') {
-        const date = new Date(row.period);
-        labels.push(
-          date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
-        );
+        // Parseia a data diretamente da string SQL para evitar problemas de timezone
+        // row.period vem como '2025-11-16' do DATE_FORMAT
+        const [year, month, day] = row.period.split('-');
+        labels.push(`${day}/${month}`);
       } else {
-        const date = new Date(row.period);
-        labels.push(date.toLocaleTimeString('pt-BR', { hour: '2-digit' }));
+        // row.period vem como '2025-11-16 14:00:00' do DATE_FORMAT
+        // Extrai apenas a hora e adiciona sufixo 'h' para melhor legibilidade
+        const hourMatch = row.period.match(/\s(\d{2}):/);
+        const hour = hourMatch ? hourMatch[1] : '00';
+        labels.push(`${hour}h`);
       }
+      
       values.push(Number(row.count));
     }
 
