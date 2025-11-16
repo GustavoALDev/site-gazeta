@@ -10,7 +10,6 @@ export class MetricsMockService {
     const totalAcessos = this.randomInRange(15000, 30000);
     const paginasVistas = this.randomInRange(35000, 70000);
     const visitantesUnicos = this.randomInRange(2000, 5000);
-    const taxaRejeicao = this.randomInRange(35, 65);
     const tempoMedio = this.randomInRange(120, 480); // segundos
 
     const kpis: KpiMetric[] = [
@@ -18,7 +17,6 @@ export class MetricsMockService {
       { label: 'Páginas Vistas', value: paginasVistas, deltaPercent: this.randomDelta() },
       { label: 'Visitantes Únicos', value: visitantesUnicos, deltaPercent: this.randomDelta() },
       { label: 'Tempo Médio (min)', value: Math.round(tempoMedio / 60), deltaPercent: this.randomDelta() },
-      { label: 'Taxa de Rejeição (%)', value: taxaRejeicao, deltaPercent: this.randomDelta() },
     ];
 
     return of(kpis).pipe(delay(400));
@@ -131,9 +129,16 @@ export class MetricsMockService {
   }
 
   private formatLabel(d: Date, granularity: Granularity): string {
-    return granularity === 'day'
-      ? d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
-      : d.toLocaleTimeString('pt-BR', { hour: '2-digit' });
+    if (granularity === 'day') {
+      // Formata manualmente para evitar problemas de timezone
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      return `${day}/${month}`;
+    } else {
+      // Formata hora com sufixo 'h' para melhor legibilidade
+      const hour = String(d.getHours()).padStart(2, '0');
+      return `${hour}h`;
+    }
   }
 
   private randomInRange(min: number, max: number): number {

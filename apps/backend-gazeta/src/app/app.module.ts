@@ -13,6 +13,7 @@ import { HomeConfigModule } from '../home-config/home-config.module';
 import { MenuModule } from '../menu/menu.module';
 import { YoutubePlaylistModule } from '../youtube-playlist/youtube-playlist.module';
 import { VideoModule } from '../video/video.module';
+import { AnalyticsModule } from '../analytics/analytics.module';
 
 @Module({
   imports: [
@@ -30,7 +31,8 @@ import { VideoModule } from '../video/video.module';
     HomeConfigModule,
     MenuModule,
     YoutubePlaylistModule,
-    VideoModule
+    VideoModule,
+    AnalyticsModule
   ],
   controllers: [AppController],
   providers: [AppService],
