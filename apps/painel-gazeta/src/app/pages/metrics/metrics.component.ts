@@ -10,7 +10,7 @@ import { TimelineModule } from 'primeng/timeline';
 import { SkeletonModule } from 'primeng/skeleton';
 import { ChartModule } from 'primeng/chart';
 import { TooltipModule } from 'primeng/tooltip';
-import { MetricsMockService } from './metrics-mock.service';
+import { MetricsService } from './metrics.service';
 import { DateRange, Granularity, KpiMetric, LogEvent, TopNewsItem } from './models';
 import { forkJoin } from 'rxjs';
 import type { ChartData, ChartOptions } from 'chart.js';
@@ -53,7 +53,7 @@ export class MetricsComponent implements OnInit {
   topNews: TopNewsItem[] = [];
   logs: LogEvent[] = [];
 
-  private metrics = inject(MetricsMockService);
+  private metrics = inject(MetricsService);
 
   ngOnInit(): void {
     const end = new Date();

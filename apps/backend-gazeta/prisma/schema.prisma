@@ -19,6 +19,7 @@ model User {
   advertisements       Advertisement[]
   homeCategoryConfigs  HomeCategoryConfig[]
   youtubePlaylist      YoutubePlaylist[]
+  userActivities       UserActivity[]
 
   @@map("users")
 }
@@ -57,6 +58,7 @@ model News {
   newsCategories NewsCategory[]
   mediaNews      NewsMedia[]
   videoNews      NewsVideo[]
+  pageViews      PageView[]
 
   @@index([authorId], map: "news_author_id_fkey")
   @@map("news")
@@ -207,4 +209,47 @@ model YoutubePlaylist {
   @@index([displayOrder, isActive], map: "youtube_playlist_order_active_idx")
   @@index([createdBy], map: "youtube_playlist_created_by_fkey")
   @@map("youtube_playlists")
+}
+
+// ============== ANALYTICS MODELS ==============
+
+model PageView {
+  id            Int      @id @default(autoincrement())
+  newsId        Int?     @map("news_id")
+  path          String   @db.VarChar(500) // URL da página visitada
+  userAgent     String?  @db.Text @map("user_agent")
+  ipAddress     String?  @db.VarChar(45) @map("ip_address") // suporta IPv6
+  referer       String?  @db.VarChar(500) // de onde veio
+  sessionId     String?  @db.VarChar(255) @map("session_id") // identificador de sessão
+  duration      Int?     // tempo na página em segundos
+  deviceType    String?  @db.VarChar(20) @map("device_type") // mobile, desktop, tablet
+  browser       String?  @db.VarChar(50) 
+  os            String?  @db.VarChar(50)
+  country       String?  @db.VarChar(100)
+  city          String?  @db.VarChar(100)
+  createdAt     DateTime @default(now()) @map("created_at")
+  news          News?    @relation(fields: [newsId], references: [id], onDelete: SetNull)
+
+  @@index([newsId], map: "page_views_news_id_fkey")
+  @@index([createdAt], map: "page_views_created_at_idx")
+  @@index([path, createdAt], map: "page_views_path_created_idx")
+  @@map("page_views")
+}
+
+model UserActivity {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @map("user_id")
+  action      String   @db.VarChar(100) // login, logout, create_news, edit_news, etc.
+  entityType  String?  @db.VarChar(50) @map("entity_type") // news, category, user, etc.
+  entityId    Int?     @map("entity_id") // ID da entidade afetada
+  description String?  @db.Text // detalhes adicionais
+  ipAddress   String?  @db.VarChar(45) @map("ip_address")
+  userAgent   String?  @db.Text @map("user_agent")
+  createdAt   DateTime @default(now()) @map("created_at")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "user_activities_user_id_fkey")
+  @@index([createdAt], map: "user_activities_created_at_idx")
+  @@index([action, createdAt], map: "user_activities_action_created_idx")
+  @@map("user_activities")
 }
