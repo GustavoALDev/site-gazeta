@@ -9,7 +9,8 @@ import { TableModule } from 'primeng/table';
 import { TimelineModule } from 'primeng/timeline';
 import { SkeletonModule } from 'primeng/skeleton';
 import { ChartModule } from 'primeng/chart';
-import { MetricsMockService } from './metrics-mock.service';
+import { TooltipModule } from 'primeng/tooltip';
+import { MetricsService } from './metrics.service';
 import { DateRange, Granularity, KpiMetric, LogEvent, TopNewsItem } from './models';
 import { forkJoin } from 'rxjs';
 import type { ChartData, ChartOptions } from 'chart.js';
@@ -28,12 +29,14 @@ import type { ChartData, ChartOptions } from 'chart.js';
     TimelineModule,
     SkeletonModule,
     ChartModule,
+    TooltipModule,
   ],
   templateUrl: './metrics.component.html',
   styleUrl: './metrics.component.scss',
 })
 export class MetricsComponent implements OnInit {
   loading = false;
+  lastUpdate: Date | null = null;
 
   period: Date[] = [];
   granularityOptions = [
@@ -50,7 +53,7 @@ export class MetricsComponent implements OnInit {
   topNews: TopNewsItem[] = [];
   logs: LogEvent[] = [];
 
-  private metrics = inject(MetricsMockService);
+  private metrics = inject(MetricsService);
 
   ngOnInit(): void {
     const end = new Date();
@@ -83,6 +86,7 @@ export class MetricsComponent implements OnInit {
       this.topNews = top;
       this.logs = logs;
       this.loading = false;
+      this.lastUpdate = new Date();
     });
   }
 
@@ -116,8 +120,24 @@ export class MetricsComponent implements OnInit {
     return copy;
   }
 
+  /**
+   * Retorna o ícone correspondente ao KPI
+   */
   getKpiIcon(index: number): string {
-    const icons = ['pi-users', 'pi-file', 'pi-eye', 'pi-chart-bar'];
+    const icons = ['pi-users', 'pi-file', 'pi-eye', 'pi-clock'];
     return icons[index] || 'pi-info-circle';
+  }
+
+  /**
+   * Retorna o tooltip explicativo para cada KPI
+   */
+  getKpiTooltip(index: number): string {
+    const tooltips = [
+      'Número total de acessos ao site no período selecionado',
+      'Quantidade de páginas visualizadas por todos os visitantes',
+      'Número de visitantes únicos que acessaram o site',
+      'Tempo médio que os visitantes permanecem no site (em minutos)',
+    ];
+    return tooltips[index] || '';
   }
 }

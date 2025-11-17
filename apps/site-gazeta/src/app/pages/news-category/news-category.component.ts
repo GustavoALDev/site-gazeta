@@ -1,6 +1,8 @@
 import { Component, inject, signal, OnInit, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../core/service/api.service';
+import { AnalyticsService } from '../../core/service/analytics.service';
+import { SessionService } from '../../core/service/session.service';
 import { Category, News } from '@site-gazeta/models';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
@@ -15,6 +17,8 @@ import { SideNewsComponent } from '@site-gazeta/side-news';
 })
 export class NewsCategoryComponent implements OnInit {
   private apiService = inject(ApiService);
+  private analyticsService = inject(AnalyticsService);
+  private sessionService = inject(SessionService);
   protected category = signal<Category | null>(null);
   protected news = signal<News[]>([]);
   private router = inject(ActivatedRoute);
@@ -57,6 +61,7 @@ export class NewsCategoryComponent implements OnInit {
       if(category){
         this.category.set(category);
         this.getNewsForCategory(category);
+        this.trackCategoryView(slug);
       } else {
         setTimeout(() => {
           this.isLoading.set(false);
@@ -76,5 +81,13 @@ export class NewsCategoryComponent implements OnInit {
         
         });
     }
+  }
+
+  private trackCategoryView(slug: string): void {
+    const sessionId = this.sessionService.getSessionId();
+    this.analyticsService.trackPageView(`/category/${slug}`, sessionId).subscribe({
+      next: () => console.log('✅ Category page view tracked:', slug),
+      error: (err) => console.warn('⚠️ Failed to track category page:', err)
+    });
   }
 }

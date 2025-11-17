@@ -1,9 +1,11 @@
-import { Component, signal, computed, OnInit, inject } from '@angular/core';
+import { Component, signal, computed, OnInit, OnDestroy, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { News, NewsMedia } from '@site-gazeta/models';
 import { SanitizeUrlPipe } from '../../pipes/sanitize-url.pipe';
 import { ApiService } from '../../core/service/api.service';
+import { AnalyticsService } from '../../core/service/analytics.service';
+import { SessionService } from '../../core/service/session.service';
 import { RouterModule } from '@angular/router';
 import { RelatedNewsComponent } from '@site-gazeta/related-news';
 import { MoreNewsComponent } from '@site-gazeta/more-news';
@@ -13,14 +15,21 @@ import { MoreNewsComponent } from '@site-gazeta/more-news';
   templateUrl: './news-content.component.html',
   styleUrl: './news-content.component.scss'
 })
-export class NewsContentComponent implements OnInit {
+export class NewsContentComponent implements OnInit, OnDestroy {
   route = inject(ActivatedRoute);
   router = inject(Router);
   apiService = inject(ApiService);
+  analyticsService = inject(AnalyticsService);
+  sessionService = inject(SessionService);
   news = signal<News | null>(null);
   isLoading = signal<boolean>(true);
   relatedNews = signal<News[]>([]);
   moreNews = signal<News[]>([]);
+  
+  // Analytics tracking
+  private sessionId: string = this.sessionService.getSessionId();
+  private viewStartTime: number = Date.now();
+  private hasTrackedInitialView = false;
   emphasisMedia = computed(() => {
     const currentNews = this.news();
     if (!currentNews) return null;
@@ -62,6 +71,9 @@ export class NewsContentComponent implements OnInit {
               this.goToTop();
               console.log(news);
               this.isLoading.set(false);
+              
+              // Rastrear visualização inicial
+              this.trackInitialView(news);
             } 
           });            
       } 
@@ -90,6 +102,50 @@ export class NewsContentComponent implements OnInit {
         .filter((news) => !this.relatedNews().includes(news))
         this.moreNews.set(moreNews);
       });
+  }
+
+  /**
+   * Rastreia visualização inicial da notícia
+   */
+  private trackInitialView(news: News): void {
+    if (this.hasTrackedInitialView) return;
+    
+    this.analyticsService.trackNewsView(
+      news.id,
+      news.slug,
+      this.sessionId
+    ).subscribe({
+      next: () => {
+        console.log('✅ View tracked:', news.slug);
+        this.hasTrackedInitialView = true;
+      },
+      error: (err) => {
+        console.warn('⚠️ Failed to track view:', err);
+      }
+    });
+  }
+
+  /**
+   * Rastreia duração da visualização ao sair da página
+   */
+  ngOnDestroy(): void {
+    const currentNews = this.news();
+    if (!currentNews || !this.hasTrackedInitialView) return;
+
+    const duration = Math.floor((Date.now() - this.viewStartTime) / 1000);
+    
+    // Registrar duração apenas se o usuário ficou pelo menos 5 segundos
+    if (duration >= 5) {
+      this.analyticsService.trackViewDuration(
+        currentNews.id,
+        `/news/${currentNews.slug}`,
+        this.sessionId,
+        duration
+      ).subscribe({
+        next: () => console.log('✅ Duration tracked:', duration, 'seconds'),
+        error: (err) => console.warn('⚠️ Failed to track duration:', err)
+      });
+    }
   }
 
 }
