@@ -4,7 +4,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ApiService } from '../../../core/services/api.service';
 import { Category, Menu } from '@site-gazeta/models';
 
-type MenuType = 'externalLink' | 'internal' | 'category' | 'submenu';
+type MenuType = 'external' | 'internal' | 'category' | 'submenu';
 
 interface InternalRoute {
   path: string;
@@ -84,7 +84,7 @@ export class MenuFormComponent {
 
   private updateValidators(type: MenuType): void {
     const routerLinkControl = this.menuForm.get('routerLink');
-    const externalLinkControl = this.menuForm.get('externalLink');
+    const externalLinkControl = this.menuForm.get('external');
     const categoryIdControl = this.menuForm.get('categoryId');
 
     // Reset validators
@@ -97,7 +97,7 @@ export class MenuFormComponent {
       case 'internal':
         routerLinkControl?.setValidators([Validators.required]);
         break;
-      case 'externalLink':
+      case 'external':
         externalLinkControl?.setValidators([Validators.required, Validators.pattern(/^https?:\/\/.+/)]);
         this.menuForm.patchValue({ name: '' }); // Limpar nome para forçar preenchimento
         break;
@@ -179,7 +179,7 @@ export class MenuFormComponent {
       type: formValue.type,
       order: formValue.order || 1,
       ...(formValue.type === 'internal' && { routerLink: formValue.routerLink }),
-      ...(formValue.type === 'externalLink' && { externalLink: formValue.externalLink }),
+      ...(formValue.type === 'external' && { externalLink: formValue.externalLink }),
       ...(formValue.type === 'category' && { slug: formValue.slug }),
       ...(formValue.parentId && { parentId: formValue.parentId }),
     };

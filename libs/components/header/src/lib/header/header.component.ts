@@ -4,10 +4,11 @@ import { DarkModeService } from '@site-gazeta/dark-mode';
 import { Subject, takeUntil } from 'rxjs';
 import { RouterModule } from '@angular/router';
 import { Ads } from '@site-gazeta/models';
+import { AdsComponent } from '@site-gazeta/ads';
 
 @Component({
   selector: 'lib-header',
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, AdsComponent],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',
 })

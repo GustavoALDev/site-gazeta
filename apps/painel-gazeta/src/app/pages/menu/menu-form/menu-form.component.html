@@ -5,7 +5,7 @@
     <label for="type">Tipo de Menu</label>
     <select id="type" formControlName="type" class="form-control">
       <option value="internal">Página Interna</option>
-      <option value="externalLink">Link Externo</option>
+      <option value="external">Link Externo</option>
       <option value="category">Categoria</option>
       <option value="submenu">Submenu (Dropdown)</option>
     </select>
@@ -56,7 +56,7 @@
   }
 
   <!-- Campos específicos para External Link -->
-  @if (selectedType() === 'externalLink') {
+  @if (selectedType() === 'external') {
     <div class="form-group">
       <label for="externalLink">URL do Link Externo</label>
       <input 

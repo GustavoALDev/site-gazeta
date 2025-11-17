@@ -17,7 +17,7 @@ export class MenuService {
 
     // Verificar conflito de ordem
     if (finalOrder !== undefined) {
-      const existingMenu = await this.prisma.menu.findUnique({
+      const existingMenu = await this.prisma.menu.findFirst({
         where: { order: finalOrder }
       });
       if (existingMenu) {
@@ -161,12 +161,39 @@ export class MenuService {
       throw new NotFoundException('Menu não encontrado');
     }
 
-    // Verificar conflito de ordem apenas se a ordem foi fornecida
+    // Detectar mudança de nível (mover para/de submenu)
+    const isMovingToSubmenu = updateMenuDto.parentId !== undefined && 
+                               existingMenu.parentId === null && 
+                               updateMenuDto.parentId !== null;
+    
+    const isMovingFromSubmenu = updateMenuDto.parentId !== undefined &&
+                                 existingMenu.parentId !== null &&
+                                 updateMenuDto.parentId === null;
+
+    // Se está movendo para submenu, definir order como null
+    if (isMovingToSubmenu) {
+      updateMenuDto.order = null;
+    }
+
+    // Se está removendo de submenu, calcular nova ordem
+    if (isMovingFromSubmenu) {
+      const lastMenu = await this.prisma.menu.findFirst({
+        where: { 
+          isActive: true,
+          parentId: null
+        },
+        orderBy: { order: 'desc' }
+      });
+      updateMenuDto.order = (lastMenu?.order ?? 0) + 1;
+    }
+
+    // Verificar conflito de ordem apenas se a ordem foi fornecida e é diferente
     if (updateMenuDto.order && updateMenuDto.order !== existingMenu.order) {
       const orderConflict = await this.prisma.menu.findFirst({
         where: {
           order: updateMenuDto.order,
-          id: { not: id }
+          id: { not: id },
+          parentId: updateMenuDto.parentId !== undefined ? updateMenuDto.parentId : existingMenu.parentId
         }
       });
 
@@ -200,37 +227,58 @@ export class MenuService {
       type: finalType
     });
 
-    const menu = await this.prisma.menu.update({
-      where: { id },
-      data: cleanedData,
-      select: {
-        id: true,
-        order: true,
-        name: true,
-        type: true,
-        slug: true,
-        routerLink: true,
-        externalLink: true,
-        parentId: true,
-        createdAt: true,
-        updatedAt: true,
-        children: {
-          where: { isActive: true },
-          orderBy: { order: 'asc' },
-          select: {
-            id: true,
-            order: true,
-            name: true,
-            type: true,
-            slug: true,
-            routerLink: true,
-            externalLink: true,
-            parentId: true,
-            createdAt: true,
-            updatedAt: true
+    // Usar transação para atualizar o menu e ajustar ordens se necessário
+    const menu = await this.prisma.$transaction(async (prisma) => {
+      // Se está movendo para submenu, ajustar ordens dos itens restantes no nível original
+      if (isMovingToSubmenu) {
+        const menusToUpdate = await prisma.menu.findMany({
+          where: {
+            order: { gt: existingMenu.order },
+            parentId: null
           }
+        });
+
+        for (const menuToUpdate of menusToUpdate) {
+          await prisma.menu.update({
+            where: { id: menuToUpdate.id },
+            data: { order: menuToUpdate.order - 1 }
+          });
         }
       }
+
+      // Atualizar o menu
+      return await prisma.menu.update({
+        where: { id },
+        data: cleanedData,
+        select: {
+          id: true,
+          order: true,
+          name: true,
+          type: true,
+          slug: true,
+          routerLink: true,
+          externalLink: true,
+          parentId: true,
+          createdAt: true,
+          updatedAt: true,
+          children: {
+            where: { isActive: true },
+            orderBy: { order: 'asc' },
+            select: {
+              id: true,
+              order: true,
+              name: true,
+              type: true,
+              slug: true,
+              routerLink: true,
+              externalLink: true,
+              parentId: true,
+              createdAt: true,
+              updatedAt: true
+            }
+          }
+        }
+      });
     });
 
     return menu as unknown as MenuResponseDto;
@@ -245,9 +293,29 @@ export class MenuService {
       throw new NotFoundException('Menu não encontrado');
     }
 
-    // Hard delete - remove o registro do banco de dados
-    await this.prisma.menu.delete({
-      where: { id }
+    // Usar transação para garantir consistência
+    await this.prisma.$transaction(async (prisma) => {
+      // Hard delete - remove o registro do banco de dados
+      await prisma.menu.delete({
+        where: { id }
+      });
+
+      // Buscar menus que precisam ter a ordem ajustada
+      // (menus do mesmo nível com ordem maior que o deletado)
+      const menusToUpdate = await prisma.menu.findMany({
+        where: {
+          order: { gt: menu.order },
+          ...(menu.parentId ? { parentId: menu.parentId } : { parentId: null })
+        }
+      });
+
+      // Atualizar a ordem de cada menu individualmente
+      for (const menuToUpdate of menusToUpdate) {
+        await prisma.menu.update({
+          where: { id: menuToUpdate.id },
+          data: { order: menuToUpdate.order - 1 }
+        });
+      }
     });
   }
 

@@ -1,0 +1,10 @@
+@if(size() === '728x90') {
+<div class="announcement large" >
+    <img [src]="announcements()[0].imageUrl" alt="announcement">
+</div>
+} @else if(size() === '300x200') {
+<div class="announcement small" >
+    <img [src]="announcements()[0].imageUrl" alt="announcement">
+</div>
+}
+

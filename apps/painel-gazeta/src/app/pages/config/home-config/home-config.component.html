@@ -1,0 +1,35 @@
+<div class="home-config-content">
+  <div class="content-header">
+    <div class="header-icon">
+      <span class="material-icons">home</span>
+    </div>
+    <div class="header-text">
+      <h3>Configuração da Home</h3>
+      <p>Configure as categorias exibidas na página inicial</p>
+    </div>
+  </div>
+
+  <form (ngSubmit)="onSubmit()">
+    <!-- Componente de Configuração de Categorias -->
+    <app-category-config
+      (configChange)="onCategoryConfigChange($event)">
+    </app-category-config>
+
+    <!-- Componente de Ordenação de Seções -->
+    <app-order-section
+      (sectionsChange)="onSectionsChange($event)">
+    </app-order-section>
+
+    <!-- Botões de Ação -->
+    <div class="form-actions">
+      <button type="submit" class="btn-primary">
+        <span class="material-icons">save</span>
+        Salvar Configurações
+      </button>
+      <button type="button" class="btn-secondary" (click)="onReset()">
+        <span class="material-icons">refresh</span>
+        Limpar
+      </button>
+    </div>
+  </form>
+</div>

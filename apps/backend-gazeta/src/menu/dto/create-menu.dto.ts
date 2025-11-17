@@ -6,11 +6,12 @@ export class CreateMenuDto {
     description: 'Ordem do menu',
     example: 1,
     minimum: 1,
-    required: false
+    required: false,
+    nullable: true
   })
   @IsOptional()
   @IsNumber({}, { message: 'Ordem deve ser um número' })
-  order?: number;
+  order?: number | null;
 
   @ApiProperty({
     description: 'Nome do menu',
@@ -133,9 +134,10 @@ export class CreateMenuDto {
   @ApiProperty({
     description: 'ID do menu pai - usado para criar submenus. Se informado, este menu será filho do menu especificado',
     example: 5,
-    required: false
+    required: false,
+    nullable: true
   })
   @IsOptional()
   @IsNumber({}, { message: 'Parent ID deve ser um número' })
-  parentId?: number;
+  parentId?: number | null;
 } 

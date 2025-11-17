@@ -10,6 +10,9 @@ import { Video } from '@site-gazeta/models';
   styleUrl: './video-player.component.scss',
 })
 export class VideoPlayerComponent {
+  constructor(){
+    console.log('viewport')
+  }
   // Input de vídeos
   videos = input.required<Video[]>();
   

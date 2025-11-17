@@ -26,7 +26,7 @@ export class HomeComponent {
     { name: 'Videos', routerLink: 'videos'},
     { name: 'Anúncios', routerLink: 'ads'},
     // { name: 'Usuários', routerLink: 'users'},
-    // { name: 'Configurações', routerLink: 'config' },
+    { name: 'Configurações', routerLink: 'config' },
   ]
   logout(){
     console.log('logout');

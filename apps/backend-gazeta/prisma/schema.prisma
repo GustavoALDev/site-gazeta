@@ -165,7 +165,7 @@ model HomeCategoryConfig {
 
 model Menu {
   id            Int      @id @default(autoincrement())
-  order         Int      @map("order")
+  order         Int?     @map("order")
   name          String   @db.VarChar(255)
   type          String   @db.VarChar(50)
   slug          String?  @db.VarChar(255)
@@ -180,7 +180,6 @@ model Menu {
   parent        Menu?    @relation("MenuToSubmenu", fields: [parentId], references: [id], onDelete: Cascade)
   children      Menu[]   @relation("MenuToSubmenu")
 
-  @@unique([order], map: "menu_order_unique")
   @@index([order, isActive], map: "menu_order_active_idx")
   @@index([parentId], map: "menu_parent_id_idx")
   @@map("menus")

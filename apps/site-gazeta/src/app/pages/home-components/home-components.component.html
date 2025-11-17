@@ -1,3 +1,4 @@
+
 <main>
   @if (isMobile() !== null && !isMobile()) {
     <div class="carousel-desktop">
@@ -10,34 +11,30 @@
       <lib-carousel-swipe [news]="carouselItems()"></lib-carousel-swipe>
     </div>
   }
-
-  <lib-news-category-grid
-    [categories]="categoryGridConfig()"
-    [news]="newsItems()"
-  ></lib-news-category-grid>
-  <span class="divider"></span>
-  <lib-video-player
-    [videos]="videos()"
-    [title]="'Vídeos em alta hoje'"
-  ></lib-video-player>
-  <lib-news-category-section
-    [category]="categories()[0]"
-    [news]="newsItems()"
-  ></lib-news-category-section>
-  <span class="divider"></span>
-  <lib-news-highligths
-    [categories]="categories().slice(1)"
-    [news]="newsItems()"
-  ></lib-news-highligths>
-  <span class="divider"></span>
-
-  <lib-news-cluster
-    [categories]="categories()"
-    [news]="newsItems()"
-  ></lib-news-cluster>
-  <span class="divider"></span>
-  <div class="more-news">
-    <h2>Mais notícias</h2>
-    <lib-more-news [moreNews]="newsItems()" [slice]="3"></lib-more-news>
-  </div>
+  <div class="divider"></div>
+  @if (categories() && categoryGridNews()) {
+    <lib-news-category-grid
+      [news]="categoryGridNews()"
+    ></lib-news-category-grid>
+  }
+  @if(this.newsItems() && this.videos()) {
+    <lib-video-player [videos]="videos()" [title]="'Vídeos em alta hoje'"></lib-video-player>
+    <lib-news-category-section
+      [category]="categories()[0]"
+      [news]="newsItems()"
+    ></lib-news-category-section>
+    <lib-news-highligths
+      [categories]="categories().slice(1)"
+      [news]="newsItems()"
+    ></lib-news-highligths>
+    <span class="divider"></span>
+    <lib-news-cluster
+      [categories]="categories()"
+      [news]="newsItems()"
+    ></lib-news-cluster>
+    <div class="more-news">
+      <h2>Mais notícias</h2>
+      <lib-more-news [moreNews]="newsItems()" [slice]="3"></lib-more-news>
+    </div>
+  }
 </main>

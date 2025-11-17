@@ -1,0 +1,72 @@
+<div class="order-section-content">
+  <div class="form-section">
+    <div class="section-title">
+      <span class="material-icons">reorder</span>
+      <h4>Ordenação de Seções</h4>
+    </div>
+    <p class="section-description">
+      Configure a <strong>ordem</strong> e os <strong>títulos</strong> das seções da página inicial.
+      Use as setas para reordenar.
+    </p>
+
+    <div class="sections-list">
+      @for (section of getSortedSections(); track section.id; let i = $index) {
+        <div class="section-item">
+          <div class="section-order">
+            <span class="order-badge">{{ section.order }}</span>
+          </div>
+
+          <div class="section-icon">
+            <span class="material-icons" [style.color]="'var(--accent-blue)'">{{ section.icon }}</span>
+          </div>
+
+          <div class="section-info">
+            <div class="section-name">{{ section.name }}</div>
+            <div class="section-title-config">
+              <input
+                type="text"
+                class="title-input"
+                [value]="section.title"
+                (input)="updateSectionTitle(section.id, $any($event.target).value)"
+                placeholder="Digite o título da seção"
+                [disabled]="!section.showTitle">
+              <div class="title-toggle">
+                <input
+                  type="checkbox"
+                  [id]="'show-title-' + section.id"
+                  [checked]="section.showTitle"
+                  (change)="toggleSectionTitle(section.id)"
+                  class="toggle-input">
+                <label [for]="'show-title-' + section.id" class="toggle-switch">
+                  <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-label">
+                  {{ section.showTitle ? 'Título visível' : 'Título oculto' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-actions">
+            <button
+              type="button"
+              class="action-btn"
+              (click)="moveSection(i, 'up')"
+              [disabled]="i === 0"
+              title="Mover para cima">
+              <span class="material-icons">arrow_upward</span>
+            </button>
+            <button
+              type="button"
+              class="action-btn"
+              (click)="moveSection(i, 'down')"
+              [disabled]="i === getSortedSections().length - 1"
+              title="Mover para baixo">
+              <span class="material-icons">arrow_downward</span>
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>

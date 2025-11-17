@@ -4,9 +4,7 @@
             <img src="img/logo02.webp" alt="logo">
         </div>
         @if(announcements().length > 0) {
-        <div class="announcement">
-            <img [src]="announcements()[0].imageUrl" alt="announcement">
-        </div>
+            <lib-ads [announcements]="announcements()"></lib-ads>
         }
         <div class="dark_mode">
             <button 

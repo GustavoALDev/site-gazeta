@@ -10,6 +10,7 @@ import { VideoPlayerComponent } from '@site-gazeta/video-player';
 import { MoreNewsComponent } from '@site-gazeta/more-news';
 import { ApiService } from '../../core/service/api.service';
 import { Category, Menu, News, Video } from '@site-gazeta/models';
+import { firstValueFrom, forkJoin, map } from 'rxjs';
 
 @Component({
   selector: 'app-home-components',
@@ -37,7 +38,7 @@ export class HomeComponentsComponent implements OnInit, OnDestroy {
   protected videos = signal<Video[]>([]);
   menuItems = signal<Menu[]>([]);
   carouselItems = signal<News[]>([]);
-  categoryGridConfig = signal<Category[]>([]);
+  categoryGridNews = signal<{featured: News, secondary: News[], category: Category}[]>([]);
   isMobile = signal<boolean | null>(null); // null = ainda não detectado
 
   constructor() {
@@ -49,6 +50,7 @@ export class HomeComponentsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.getCategories();
+    this.setCarouselItems();
     this.getVideos();
     this.getNews();
   }
@@ -81,16 +83,14 @@ export class HomeComponentsComponent implements OnInit, OnDestroy {
 
   getNews() {
     this.apiService.getNews().subscribe((news) => {
-      this.setCategoryGridItems(news);
-      this.setCarouselItems(news);
       this.newsItems.set(news);
-
     });
   }
 
   getCategories() {
     this.apiService.getActiveCategories().subscribe((categories) => {
-      this.categories.set(categories.sort(() => Math.random() - 0.5));
+      this.categories.set(categories);
+      this.setCategoryGridItems();
     });
   }
 
@@ -100,33 +100,45 @@ export class HomeComponentsComponent implements OnInit, OnDestroy {
     });
   }
 
-  setCarouselItems(news: News[]) {
-    const carouselItems = news
-      .filter((news) => {
-        return news.isEmphasis;
-      })
-      .sort(
-        (a, b) =>
-          new Date(b.published).getTime() - new Date(a.published).getTime()
-      );
-    this.carouselItems.set(carouselItems);
+  setCarouselItems() {
+    this.apiService.getNewsFeatured().subscribe((news) => {
+      this.carouselItems.set(news);
+    });
   }
 
-  setCategoryGridItems(news: News[]) {
+  setCategoryGridItems() {
+    console.log('setCategoryGridItems');
     console.log(this.categories());
     const mockCategorieNames = this.categories().filter((category) => {
       return (
-        category.name == 'Tecnologia' ||
         category.name == 'Política' ||
+        category.name == 'Tecnologia' ||
         category.name == 'Esportes'
       );
     });
-    console.log(mockCategorieNames);
-    const categoryGridItems = news.filter((news) => {
-      return mockCategorieNames.some((category) => {
-        return news.categoryId.includes(category.id as number);
-      });
+
+    forkJoin(
+      mockCategorieNames.map(category =>
+        this.apiService.getNewsForCategory(category.id as number).pipe(
+          map(news=>{return {news:news, category:category}})
+        )
+      )
+    ).subscribe({
+      next: (news) =>{
+        console.log(news);
+        this.categoryGridNews.set(this.categoryGridNewsConfig(news));
+      }
     });
-    this.categoryGridConfig.set(mockCategorieNames);
+  }
+
+  categoryGridNewsConfig(config: {news: News[], category: Category}[]){
+    const categorized = config.map(config=>{
+      return {
+        featured: config.news[0],
+        secondary: config.news.slice(1, 3),
+        category: config.category
+      }
+    })
+    return categorized;
   }
 }

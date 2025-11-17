@@ -34,7 +34,9 @@ export class NewsClusterComponent {
   // Inputs
   news = input.required<News[]>();
   categories = input.required<Category[]>();
-
+  constructor(){
+    console.log('viewport')
+  }
   // Computed: organiza as seções de categorias com suas notícias processadas
   categorySections = computed<CategorySection[]>(() => {
     const allNews = this.news();

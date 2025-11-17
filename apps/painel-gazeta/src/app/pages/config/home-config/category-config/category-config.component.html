@@ -1,0 +1,255 @@
+<div class="category-config-content">
+  <div class="form-section">
+    <div class="section-title">
+      <span class="material-icons">category</span>
+      <h4>Categorias em Destaque</h4>
+    </div>
+    <p class="section-description">
+      Selecione <strong>{{ MAX_CATEGORIES }} categorias</strong> para a seção de destaques ou ative o <strong>modo aleatório</strong>.
+      Atualmente selecionadas: <strong>{{ selectedCategories().length }}/{{ MAX_CATEGORIES }}</strong>
+    </p>
+
+    <div class="random-mode-toggle">
+      <div class="toggle-group">
+        <span class="toggle-label-main">Modo Aleatório</span>
+        <div class="toggle-container">
+          <input
+            type="checkbox"
+            id="destaquesRandomMode"
+            [checked]="destaquesRandomMode()"
+            (change)="toggleDestaquesRandomMode()"
+            class="toggle-input">
+          <label for="destaquesRandomMode" class="toggle-switch">
+            <span class="toggle-slider"></span>
+          </label>
+          <span class="toggle-text">
+            {{ destaquesRandomMode() ? 'Ativo' : 'Inativo' }}
+          </span>
+        </div>
+      </div>
+      <small class="random-mode-description">
+        @if (destaquesRandomMode()) {
+          <span class="material-icons">shuffle</span>
+          As categorias serão escolhidas aleatoriamente pelo sistema
+        } @else {
+          <span class="material-icons">select_all</span>
+          Selecione manualmente as categorias abaixo
+        }
+      </small>
+    </div>
+
+    <div class="form-group">
+      <label for="categories">
+        Categorias de Destaques {{ destaquesRandomMode() ? '(Modo Aleatório Ativo)' : '*' }}
+      </label>
+      <div class="category-selector" data-destaques>
+        <div class="selected-categories" [class.disabled]="destaquesRandomMode()">
+          @if (destaquesRandomMode()) {
+            <div class="random-mode-active">
+              <span class="material-icons">shuffle</span>
+              <span>Modo aleatório ativo - As categorias serão escolhidas automaticamente</span>
+            </div>
+          } @else {
+            @if (selectedCategories().length === 0) {
+              <div class="empty-state">
+                <span class="material-icons">add_circle_outline</span>
+                <span>Nenhuma categoria selecionada</span>
+              </div>
+            }
+            @for (category of selectedCategories(); track category.id) {
+              <div class="category-tag">
+                <span>{{ category.name }}</span>
+                <button type="button" class="remove-category" (click)="removeCategory(category.id!)">
+                  <span class="material-icons">close</span>
+                </button>
+              </div>
+            }
+            <button
+              type="button"
+              class="add-category-btn"
+              (click)="toggleCategoryDropdown()"
+              [class.active]="categoryDropdownOpen()"
+              [disabled]="selectedCategories().length >= MAX_CATEGORIES">
+              <span class="material-icons">add</span>
+              {{ selectedCategories().length >= MAX_CATEGORIES ? 'Limite atingido' : 'Adicionar Categoria' }}
+            </button>
+          }
+        </div>
+
+        @if (categoryDropdownOpen()) {
+          <div class="category-dropdown">
+            <div class="dropdown-search">
+              <span class="material-icons">search</span>
+              <input
+                type="text"
+                placeholder="Buscar categoria..."
+                [value]="searchTerm()"
+                (input)="onSearchChange($event)"
+                (click)="$event.stopPropagation()"
+                autocomplete="off">
+            </div>
+
+            <div class="dropdown-list">
+              @if (getFilteredCategories().length > 0) {
+                @for (category of getFilteredCategories(); track category.id) {
+                  <div class="category-option"
+                    (click)="selectCategory(category)"
+                    (keyup.enter)="selectCategory(category)"
+                    (keyup.space)="selectCategory(category)"
+                    tabindex="0"
+                    role="button">
+                    <span class="category-name">{{ category.name }}</span>
+                    @if (category.description) {
+                      <small class="category-description">{{ category.description }}</small>
+                    }
+                  </div>
+                }
+              } @else {
+                <div class="no-categories">
+                  @if (searchTerm()) {
+                    <span class="material-icons">search_off</span>
+                    <span>Nenhuma categoria encontrada para "{{ searchTerm() }}"</span>
+                  } @else {
+                    <span>Todas as categorias foram selecionadas</span>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+      @if (form.get('categoryIds')?.invalid && form.get('categoryIds')?.touched) {
+        <div class="error-message">
+          {{ displayError()!['categoryIds'] }}
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="form-section">
+    <div class="section-title">
+      <span class="material-icons">trending_up</span>
+      <h4>Top Gazeta - Categorias</h4>
+    </div>
+    <p class="section-description">
+      Selecione <strong>{{ MAX_CATEGORIES }} categorias</strong> para a seção Top Gazeta ou ative o <strong>modo aleatório</strong>.
+      Atualmente selecionadas: <strong>{{ topGazetaCategories().length }}/{{ MAX_CATEGORIES }}</strong>
+    </p>
+
+    <div class="random-mode-toggle">
+      <div class="toggle-group">
+        <span class="toggle-label-main">Modo Aleatório</span>
+        <div class="toggle-container">
+          <input
+            type="checkbox"
+            id="randomMode"
+            [checked]="topGazetaRandomMode()"
+            (change)="toggleTopGazetaRandomMode()"
+            class="toggle-input">
+          <label for="randomMode" class="toggle-switch">
+            <span class="toggle-slider"></span>
+          </label>
+          <span class="toggle-text">
+            {{ topGazetaRandomMode() ? 'Ativo' : 'Inativo' }}
+          </span>
+        </div>
+      </div>
+      <small class="random-mode-description">
+        @if (topGazetaRandomMode()) {
+          <span class="material-icons">shuffle</span>
+          As categorias serão escolhidas aleatoriamente pelo sistema
+        } @else {
+          <span class="material-icons">select_all</span>
+          Selecione manualmente as categorias abaixo
+        }
+      </small>
+    </div>
+
+    <div class="form-group">
+      <label for="topGazetaCategories">
+        Categorias do Top Gazeta {{ topGazetaRandomMode() ? '(Modo Aleatório Ativo)' : '*' }}
+      </label>
+      <div class="category-selector" data-top-gazeta>
+        <div class="selected-categories" [class.disabled]="topGazetaRandomMode()">
+          @if (topGazetaRandomMode()) {
+            <div class="random-mode-active">
+              <span class="material-icons">shuffle</span>
+              <span>Modo aleatório ativo - As categorias serão escolhidas automaticamente</span>
+            </div>
+          } @else {
+            @if (topGazetaCategories().length === 0) {
+              <div class="empty-state">
+                <span class="material-icons">add_circle_outline</span>
+                <span>Nenhuma categoria selecionada</span>
+              </div>
+            }
+            @for (category of topGazetaCategories(); track category.id) {
+              <div class="category-tag">
+                <span>{{ category.name }}</span>
+                <button type="button" class="remove-category" (click)="removeTopGazetaCategory(category.id!)">
+                  <span class="material-icons">close</span>
+                </button>
+              </div>
+            }
+            <button
+              type="button"
+              class="add-category-btn"
+              (click)="toggleTopGazetaCategoryDropdown()"
+              [class.active]="topGazetaDropdownOpen()"
+              [disabled]="topGazetaCategories().length >= MAX_CATEGORIES">
+              <span class="material-icons">add</span>
+              {{ topGazetaCategories().length >= MAX_CATEGORIES ? 'Limite atingido' : 'Adicionar Categoria' }}
+            </button>
+          }
+        </div>
+
+        @if (topGazetaDropdownOpen() && !topGazetaRandomMode()) {
+          <div class="category-dropdown">
+            <div class="dropdown-search">
+              <span class="material-icons">search</span>
+              <input
+                type="text"
+                placeholder="Buscar categoria..."
+                [value]="topGazetaSearchTerm()"
+                (input)="onTopGazetaSearchChange($event)"
+                (click)="$event.stopPropagation()"
+                autocomplete="off">
+            </div>
+
+            <div class="dropdown-list">
+              @if (getFilteredTopGazetaCategories().length > 0) {
+                @for (category of getFilteredTopGazetaCategories(); track category.id) {
+                  <div class="category-option"
+                    (click)="selectTopGazetaCategory(category)"
+                    (keyup.enter)="selectTopGazetaCategory(category)"
+                    (keyup.space)="selectTopGazetaCategory(category)"
+                    tabindex="0"
+                    role="button">
+                    <span class="category-name">{{ category.name }}</span>
+                    @if (category.description) {
+                      <small class="category-description">{{ category.description }}</small>
+                    }
+                  </div>
+                }
+              } @else {
+                <div class="no-categories">
+                  @if (topGazetaSearchTerm()) {
+                    <span class="material-icons">search_off</span>
+                    <span>Nenhuma categoria encontrada para "{{ topGazetaSearchTerm() }}"</span>
+                  } @else {
+                    <span>Todas as categorias foram selecionadas</span>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+      @if (!topGazetaRandomMode() && form.get('topGazetaCategoryIds')?.invalid && form.get('topGazetaCategoryIds')?.touched) {
+        <div class="error-message">
+          {{ displayError()!['topGazetaCategoryIds'] }}
+        </div>
+      }
+    </div>
+  </div>
+</div>

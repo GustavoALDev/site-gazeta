@@ -113,6 +113,7 @@ export class MenuListComponent {
       next: () => {
         this.onDelete.emit(menu.id!);
         this.cancelDelete();
+        
       },
       error: (err) => {
         console.error('Erro ao deletar menu:', err);

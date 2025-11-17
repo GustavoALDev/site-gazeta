@@ -7,7 +7,7 @@ import { registerLocaleData, DATE_PIPE_DEFAULT_OPTIONS } from '@angular/common';
 import localePt from '@angular/common/locales/pt';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { providePrimeNG } from 'primeng/config';
-import Lara from '@primeng/themes/lara';
+import Aura from '@primeng/themes/aura';
 
 // Registrar os dados de localização para pt-br
 registerLocaleData(localePt, 'pt-BR');
@@ -20,7 +20,11 @@ export const appConfig: ApplicationConfig = {
     provideAnimations(),
     providePrimeNG({
       theme: {
-        preset: Lara,
+        preset: Aura,
+        options:{
+          darkModeSelector: false,
+          cssLayer: false
+        }
       },
     }),
     { provide: LOCALE_ID, useValue: 'pt-BR' },

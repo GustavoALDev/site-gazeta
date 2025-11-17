@@ -1,5 +1,5 @@
 <div class="news-category-grid">
-  @for (categoryData of categorizedNews(); track categoryData.category.id) {
+  @for (categoryData of news(); track categoryData.category.id) {
     <div class="category-section" [attr.data-category]="categoryData.category.slug" >
       <!-- Header da Categoria -->
       <div class="category-header" [style.border-bottom-color]="categoryData.category.color">
@@ -20,7 +20,6 @@
                 [alt]="categoryData.featured.title"
                 priority
                 fill
-                (error)="onImageError($event)"
               >
               <div class="image-overlay"></div>
             </div>
@@ -48,7 +47,6 @@
                     [alt]="news.title"
                     fill
                     priority
-                    (error)="onImageError($event)"
                   >
                   <div class="image-overlay"></div>
                 </div>

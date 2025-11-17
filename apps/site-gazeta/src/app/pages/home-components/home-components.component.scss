@@ -5,6 +5,7 @@ main {
     flex: 1 1 100%;
     max-width: 1366px;
     padding: 5px;
+    min-height: 100vh;
     .more-news {
         display: flex;
         flex-direction: column;

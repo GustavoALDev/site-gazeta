@@ -113,8 +113,19 @@ export class DragAndDropComponent<T extends DraggableItem> {
     const items = [...this.sortedItems()] as T[];
     moveItemInArray(items, event.previousIndex, event.currentIndex);
 
+    // Atualizar a propriedade 'order' de cada item após reordenação
+    const config = this.config();
+    if (config.getItemOrder) {
+      items.forEach((item, index) => {
+        // Assumindo que a propriedade order pode ser atualizada
+        if ('order' in item) {
+          (item as any).order = index + 1;
+        }
+      });
+    }
+
     // Emit reorder
-    this.config().onReorder?.(items);
+    config.onReorder?.(items);
   }
 
   dropInParent(event: CdkDragDrop<T[], T[], T>, parent: T): void {

@@ -1,0 +1,42 @@
+<div class="social-media-content">
+  <div class="content-header">
+    <div class="header-icon">
+      <span class="material-icons">share</span>
+    </div>
+    <div class="header-text">
+      <h3>Redes Sociais</h3>
+      <p>Configure os links das redes sociais exibidos no site</p>
+    </div>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="social-media-grid">
+      @for (field of socialMediaFields; track field.name) {
+        <div class="form-group" [attr.data-social]="field.name">
+          <label [for]="field.name">
+            <span class="material-icons" [style.color]="field.color">{{ field.icon }}</span>
+            {{ field.label }}
+          </label>
+          <input
+            type="text"
+            [id]="field.name"
+            [formControlName]="field.name"
+            [placeholder]="field.placeholder"
+            [class.error]="form.get(field.name)?.invalid && form.get(field.name)?.touched">
+          <error-message [errorMessage]="displayError()![field.name]"></error-message>
+        </div>
+      }
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn-primary" [disabled]="form.invalid">
+        <span class="material-icons">save</span>
+        Salvar Configurações
+      </button>
+      <button type="button" class="btn-secondary" (click)="onReset()">
+        <span class="material-icons">refresh</span>
+        Limpar
+      </button>
+    </div>
+  </form>
+</div>

@@ -29,6 +29,7 @@ export class MenuComponent implements OnInit {
     this.isLoading.set(true);
     this.apiService.getMenu().subscribe({
       next: (menus) => {
+        console.log('🔄 Menus carregados:', menus);
         this.menus.set(menus);
         this.isLoading.set(false);
       },
