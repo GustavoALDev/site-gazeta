@@ -68,5 +68,22 @@
         </div>
       }
     </div>
+
+    <!-- Botão Salvar Ordenação -->
+    <div class="form-actions">
+      <button 
+        type="button" 
+        class="btn-primary" 
+        (click)="saveSections()"
+        [disabled]="loading()">
+        @if (loading()) {
+          <span class="material-icons spinning">sync</span>
+          Salvando...
+        } @else {
+          <span class="material-icons">save</span>
+          Salvar Ordenação
+        }
+      </button>
+    </div>
   </div>
 </div>

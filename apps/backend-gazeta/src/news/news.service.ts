@@ -467,7 +467,7 @@ export class NewsService {
       ]
     });
 
-    return news.map(this.formatNewsResponse);
+    return news.map(newsItem => this.formatNewsResponseWithTags(newsItem));
   }
 
   private formatNewsResponse(news: any): NewsResponseDto {
@@ -502,6 +502,20 @@ export class NewsService {
       validity: news.validity,
       slug: news.slug,
       isEmphasis: news.isEmphasis
+    };
+  }
+
+  private formatNewsResponseWithTags(news: any): NewsResponseDto {
+    const baseResponse = this.formatNewsResponse(news);
+    
+    // Adiciona os nomes das categorias como tags
+    const tags = news.newsCategories
+      .map(nc => nc.category?.name)
+      .filter(name => name !== undefined && name !== null);
+    
+    return {
+      ...baseResponse,
+      tags: tags.length > 0 ? tags : undefined
     };
   }
 } 

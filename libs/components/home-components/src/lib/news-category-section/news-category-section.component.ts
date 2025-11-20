@@ -1,19 +1,19 @@
 import { Component, computed, input } from '@angular/core';
 import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { Category, News } from '@site-gazeta/models';
-
+import { Ads, Category, News } from '@site-gazeta/models';
+import { AdsComponent } from '@site-gazeta/ads';
 
 @Component({
   selector: 'lib-news-category-section',
-  imports: [CommonModule, RouterModule, NgOptimizedImage],
+  imports: [CommonModule, RouterModule, NgOptimizedImage, AdsComponent],
   templateUrl: './news-category-section.component.html',
   styleUrl: './news-category-section.component.scss',
 })
 export class NewsCategorySectionComponent {
   category = input.required<Category>();
   news = input.required<News[]>();
-  
+  announcements = input<Ads>();
   // Computed que garante que category sempre existe antes de usar
   safeCategory = computed(() => {
     const cat = this.category();

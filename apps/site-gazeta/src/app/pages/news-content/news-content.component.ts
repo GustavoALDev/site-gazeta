@@ -2,7 +2,6 @@ import { Component, signal, computed, OnInit, OnDestroy, inject } from '@angular
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { News, NewsMedia } from '@site-gazeta/models';
-import { SanitizeUrlPipe } from '../../pipes/sanitize-url.pipe';
 import { ApiService } from '../../core/service/api.service';
 import { AnalyticsService } from '../../core/service/analytics.service';
 import { SessionService } from '../../core/service/session.service';
@@ -11,7 +10,7 @@ import { RelatedNewsComponent } from '@site-gazeta/related-news';
 import { MoreNewsComponent } from '@site-gazeta/more-news';
 @Component({
   selector: 'app-news-content',
-  imports: [CommonModule, SanitizeUrlPipe, RouterModule, RelatedNewsComponent, MoreNewsComponent],
+  imports: [CommonModule, RouterModule, RelatedNewsComponent, MoreNewsComponent],
   templateUrl: './news-content.component.html',
   styleUrl: './news-content.component.scss'
 })

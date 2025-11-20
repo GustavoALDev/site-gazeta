@@ -3,7 +3,7 @@ import { Component,  inject, input, output, signal, computed } from '@angular/co
 
 import { NonNullableFormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Category, HexColor, isValidHexColor } from '@site-gazeta/models';
-import { ApiService } from '../../../core/services/api.service';
+import { CategoryService } from '../../../core/services/category.service';
 import { ColorPickerComponent } from '@site-gazeta/color-picker';
 
 @Component({
@@ -14,7 +14,7 @@ import { ColorPickerComponent } from '@site-gazeta/color-picker';
 })
 export class CategoryFormComponent {
   fb = inject(NonNullableFormBuilder);
-  apiService = inject(ApiService);
+  categoryService = inject(CategoryService);
   editingCategory = input(null, {transform: (category: Category | null) => {
     if(category){
       this.setEditingCategory(category);
@@ -92,7 +92,7 @@ export class CategoryFormComponent {
         categoryData.id = this.editingCategory()?.id as number;
         
         console.log('chamou')
-        this.apiService.editCategory(categoryData.id, categoryData)
+        this.categoryService.update(categoryData.id, categoryData)
         .pipe(
           tap(()=> console.log('passou aqui'))
         )
@@ -105,7 +105,7 @@ export class CategoryFormComponent {
           }
         });
       }else{
-      this.apiService.setCategory(categoryData)
+      this.categoryService.create(categoryData)
       .subscribe({
         next: (res) => {
           console.log(res);

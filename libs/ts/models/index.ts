@@ -7,6 +7,43 @@ import { Ads } from './ads.model';
 import { Menu } from './menu.model';
 import { YoutubeVideo } from './youtubeVideos.model';
 import { Video } from './videos.model';
-import { HexColor, isValidHexColor, generateRandomHexColor } from './category.model';
-export { Category, News, NewsMedia, NewsVideo, User, Ads, Menu, YoutubeVideo, Video, HexColor, isValidHexColor, generateRandomHexColor };
+import {
+  HexColor,
+  isValidHexColor,
+  generateRandomHexColor,
+} from './category.model';
+import {
+  DestaqueConfig,
+  TopGazetaConfig,
+  SectionOrderConfig,
+  SectionOrderConfigMap,
+  SocialMediaConfig,
+  CreateDestaqueConfigDto,
+  CreateTopGazetaConfigDto,
+  CreateSectionOrderDto,
+  CreateSocialMediaConfigDto,
+} from './config.model';
 
+export {
+  Category,
+  News,
+  NewsMedia,
+  NewsVideo,
+  User,
+  Ads,
+  Menu,
+  YoutubeVideo,
+  Video,
+  HexColor,
+  isValidHexColor,
+  generateRandomHexColor,
+  DestaqueConfig,
+  TopGazetaConfig,
+  SectionOrderConfig,
+  SectionOrderConfigMap,
+  SocialMediaConfig,
+  CreateDestaqueConfigDto,
+  CreateTopGazetaConfigDto,
+  CreateSectionOrderDto,
+  CreateSocialMediaConfigDto,
+};

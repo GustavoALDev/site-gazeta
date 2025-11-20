@@ -19,16 +19,23 @@ export class AdvertisementResponseDto {
   @ApiProperty({ 
     description: 'Posição do anúncio', 
     example: 'top',
-    enum: ['top', 'bottom', 'sidebar', 'header', 'footer', 'content']
+    enum: ['top', 'center', 'bottom']
   })
   position: string;
 
   @ApiProperty({ 
     description: 'Local de exibição', 
     example: 'home',
-    enum: ['home', 'news']
+    enum: ['header', 'home', 'content']
   })
   placement: string;
+
+  @ApiProperty({ 
+    description: 'Tamanho do anúncio', 
+    example: '728x90',
+    enum: ['728x90', '300x200']
+  })
+  size: string;
 
   @ApiProperty({ description: 'Se o anúncio está ativo', example: true })
   isActive: boolean;

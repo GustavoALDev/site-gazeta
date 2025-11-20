@@ -1,59 +1,60 @@
 <div class="videos-container">
   <div class="videos-card">
-    
-    <!-- Header -->
-    <div class="videos-header">
-      <h2>Gerenciamento de Vídeos</h2>
-      <p>Faça upload e gerencie os vídeos do seu site</p>
+    <!-- Header com título -->
+    <div class="page-header">
+      <h1 class="page-title">Gerenciamento de Vídeos</h1>
+      <p class="page-subtitle">Faça upload e gerencie os vídeos do seu site</p>
     </div>
 
-    <!-- Content Wrapper -->
-    <div class="videos-content-wrapper">
-      
-      <!-- Upload Form Section -->
-      <div class="upload-form-section" [class.collapsed]="!showUploadForm()">
-        <div class="section-header">
-          <h3>
-            <span class="material-icons">{{ videoToEdit() ? 'edit' : 'cloud_upload' }}</span>
-            {{ videoToEdit() ? 'Editar Vídeo' : 'Upload de Vídeo' }}
-          </h3>
-          <button 
-            type="button" 
-            class="toggle-btn" 
-            (click)="toggleUploadForm()"
-            [title]="showUploadForm() ? 'Ocultar formulário' : 'Mostrar formulário'"
-          >
-            <span class="material-icons">{{ showUploadForm() ? 'expand_less' : 'expand_more' }}</span>
-          </button>
-        </div>
-        
-        @if (showUploadForm()) {
-          <div class="form-content">
+    <!-- Menu de abas -->
+    <div class="tabs-container">
+      <div class="tabs-header">
+        <button 
+          class="tab-button" 
+          [class.active]="state().activeTab === 'upload'"
+          (click)="setActiveTab('upload')">
+          <i class="material-icons">{{ isEdit() ? 'edit' : 'cloud_upload' }}</i>
+          {{ isEdit() ? 'Editar Vídeo' : 'Upload de Vídeo' }}
+        </button>
+        <button 
+          class="tab-button" 
+          [class.active]="state().activeTab === 'list'"
+          (click)="setActiveTab('list')">
+          <i class="material-icons">video_library</i>
+          Lista de Vídeos
+        </button>
+      </div>
+
+      <div class="tab-content">
+        <!-- Aba de Upload -->
+        @if (state().activeTab === 'upload') {
+          <div class="tab-pane active">
             <app-video-upload
-              [videoToEdit]="videoToEdit()"
+              [videoToEdit]="state().videoToEdit"
               (onSave)="handleSave($event)"
-              (onCancel)="handleCancel()"
-            />
+              (onCancel)="handleCancel()">
+            </app-video-upload>
+          </div>
+        }
+
+        <!-- Aba da Lista -->
+        @if (state().activeTab === 'list') {
+          <div class="tab-pane active">
+            @if (isLoading()) {
+              <div class="loading-state">
+                <span class="material-icons spinning">refresh</span>
+                <p>Carregando vídeos...</p>
+              </div>
+            } @else {
+              <app-video-list
+                [videos]="videos()"
+                (onEdit)="handleEdit($event)"
+                (onDelete)="handleDelete($event)">
+              </app-video-list>
+            }
           </div>
         }
       </div>
-
-      <!-- Videos List Section -->
-      <div class="videos-list-section">
-        @if (isLoading()) {
-          <div class="loading-state">
-            <span class="material-icons spinning">refresh</span>
-            <p>Carregando vídeos...</p>
-          </div>
-        } @else {
-          <app-video-list
-            [videos]="videos()"
-            (onEdit)="handleEdit($event)"
-            (onDelete)="handleDelete($event)"
-          />
-        }
-      </div>
-
     </div>
   </div>
 </div>

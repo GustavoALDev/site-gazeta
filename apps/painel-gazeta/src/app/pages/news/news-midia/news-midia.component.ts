@@ -13,7 +13,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NewsMedia, NewsVideo } from '@site-gazeta/models';
-import { ApiService } from '../../../core/services/api.service';
+import { NewsService } from '../../../core/services/news.service';
 import { firstValueFrom } from 'rxjs';
 
 interface MediaItem {
@@ -49,7 +49,7 @@ export class NewsMidiaComponent implements OnInit {
   newsMedia = input<NewsMedia[]>();
   newsVideo = input<NewsVideo[]>();
   isEdit = signal<boolean>(false);
-  private apiService = inject(ApiService);
+  private newsService = inject(NewsService);
   previewMidias = signal<MediaItem[]>([]);
   selectedMediaIndex = signal<number | null>(null);
   editingMedia = signal<Partial<MediaItem>>({});
@@ -240,7 +240,7 @@ export class NewsMidiaComponent implements OnInit {
   patchMediaInfo(id:number,media:any) {
     console.log(`Editando mídia com ID: ${id}`, media);
     if(media.imgSize){
-      firstValueFrom(this.apiService.editNewsMedia(id,media))
+      firstValueFrom(this.newsService.updateMedia(id,media))
       .then(() => {
         console.log(`Mídia editada com sucesso.`);
       })
@@ -249,7 +249,7 @@ export class NewsMidiaComponent implements OnInit {
       });
 
     }else{
-      firstValueFrom(this.apiService.editNewsVideo(id,media))
+      firstValueFrom(this.newsService.updateVideo(id,media))
       .then(() => {
         console.log(`Vídeo editado com sucesso.`);
       })
@@ -314,7 +314,7 @@ export class NewsMidiaComponent implements OnInit {
 
   // Função para DELETE (API)
   deleteMediaFromApi(id: number) {
-    firstValueFrom(this.apiService.deleteNewsMedia(id))
+    firstValueFrom(this.newsService.deleteMedia(id))
     .then(() => {
       console.log(`Mídia deletada com sucesso.`);
     })

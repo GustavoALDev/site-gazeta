@@ -1,9 +1,14 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { VideoUploadComponent } from './video-upload/video-upload.component';
 import { VideoListComponent } from './video-list/video-list.component';
-import { ApiService } from '../../core/services/api.service';
+import { VideoService } from '../../core/services/video.service';
 import { Video } from '@site-gazeta/models';
+
+interface VideosComponentState {
+  activeTab: 'upload' | 'list';
+  videoToEdit: Video | null;
+}
 
 @Component({
   selector: 'app-videos',
@@ -13,22 +18,37 @@ import { Video } from '@site-gazeta/models';
   styleUrl: './videos.component.scss',
 })
 export class VideosComponent implements OnInit {
-  private apiService = inject(ApiService);
+  private videoService = inject(VideoService);
 
-  // Signals
+  // Estado do componente usando signals
+  state = signal<VideosComponentState>({
+    activeTab: 'list',
+    videoToEdit: null,
+  });
+
+  // Signals para dados
   videos = signal<Video[]>([]);
-  videoToEdit = signal<Video | null>(null);
   isLoading = signal(false);
-  showUploadForm = signal(true);
+
+  // Computed signals
+  isEdit = computed(() => !!this.state().videoToEdit);
 
   ngOnInit(): void {
     this.loadVideos();
+  }
 
+  setActiveTab(tab: 'upload' | 'list'): void {
+    this.state.update(state => ({ 
+      ...state, 
+      activeTab: tab,
+      // Limpa o modo de edição ao trocar para lista OU ao clicar novamente em upload (reset)
+      videoToEdit: null
+    }));
   }
 
   loadVideos(): void {
     this.isLoading.set(true);
-    this.apiService.getVideos().subscribe({
+    this.videoService.getAll().subscribe({
       next: (videos) => {
         this.videos.set(videos);
         console.log('videos', this.videos());
@@ -43,17 +63,19 @@ export class VideosComponent implements OnInit {
 
   handleSave(video: Video): void {
     this.loadVideos();
-    this.videoToEdit.set(null);
+    this.state.update(state => ({
+      ...state,
+      activeTab: 'list',
+      videoToEdit: null,
+    }));
   }
 
   handleEdit(video: Video): void {
-    this.videoToEdit.set(video);
-    this.showUploadForm.set(true);
-    // Scroll suave para o formulário
-    setTimeout(() => {
-      const formElement = document.querySelector('.upload-form-section');
-      formElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
+    this.state.update(state => ({
+      ...state,
+      activeTab: 'upload',
+      videoToEdit: video,
+    }));
   }
 
   handleDelete(videoId: number): void {
@@ -61,13 +83,10 @@ export class VideosComponent implements OnInit {
   }
 
   handleCancel(): void {
-    this.videoToEdit.set(null);
-  }
-
-  toggleUploadForm(): void {
-    this.showUploadForm.update(v => !v);
-    if (!this.showUploadForm()) {
-      this.videoToEdit.set(null);
-    }
+    this.state.update(state => ({
+      ...state,
+      activeTab: 'list',
+      videoToEdit: null,
+    }));
   }
 }

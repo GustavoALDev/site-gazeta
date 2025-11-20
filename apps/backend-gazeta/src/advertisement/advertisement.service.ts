@@ -112,6 +112,29 @@ export class AdvertisementService {
     return advertisements.map(ad => this.formatResponse(ad));
   }
 
+  async findByPlacement(placement: string): Promise<AdvertisementResponseDto[]> {
+    const advertisements = await this.prisma.advertisement.findMany({
+      where: {
+        placement,
+        isActive: true,
+      },
+      include: {
+        creator: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      orderBy: [
+        { priority: 'desc' },
+        { createdAt: 'desc' }
+      ],
+    });
+
+    return advertisements.map(ad => this.formatResponse(ad));
+  }
+
   async findActiveByPlacementAndPosition(placement: string, position: string): Promise<AdvertisementResponseDto[]> {
     const now = new Date();
     
@@ -300,6 +323,7 @@ export class AdvertisementService {
       clickUrl: advertisement.clickUrl,
       position: advertisement.position,
       placement: advertisement.placement,
+      size: advertisement.size,
       isActive: advertisement.isActive,
       priority: advertisement.priority,
       startDate: advertisement.startDate?.toISOString(),

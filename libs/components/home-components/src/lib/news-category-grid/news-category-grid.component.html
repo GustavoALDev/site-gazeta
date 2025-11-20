@@ -1,5 +1,5 @@
 <div class="news-category-grid">
-  @for (categoryData of news(); track categoryData.category.id) {
+  @for (categoryData of newsList(); track categoryData.category.id) {
     <div class="category-section" [attr.data-category]="categoryData.category.slug" >
       <!-- Header da Categoria -->
       <div class="category-header" [style.border-bottom-color]="categoryData.category.color">
@@ -24,7 +24,7 @@
               <div class="image-overlay"></div>
             </div>
             <div class="card-content">
-              <h3 class="card-title">{{ categoryData.featured.title }}</h3>
+              <h3 class="card-title">{{ categoryData.featured.title}}</h3>
               @if (categoryData.featured.subtitle) {
                 <p class="card-subtitle">{{ categoryData.featured.subtitle }}</p>
               }

@@ -9,6 +9,6 @@ import { Ads } from '@site-gazeta/models';
   styleUrl: './ads.component.scss',
 })
 export class AdsComponent {
-  announcements = input<Ads[]>([]);
-  size = input<'728x90'|'300x200'>('728x90');
+  announcements = input<Ads>();
+  size = input<string>('728x90');
 }

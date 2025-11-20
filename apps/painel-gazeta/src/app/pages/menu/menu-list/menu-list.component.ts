@@ -2,7 +2,7 @@ import { Component, inject, signal, input, output, computed } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { DragDropModule, CdkDragHandle } from '@angular/cdk/drag-drop';
 import { DragAndDropComponent, DraggableListConfig } from '@site-gazeta/drag-and-drop';
-import { ApiService } from '../../../core/services/api.service';
+import { MenuService } from '../../../core/services/menu.service';
 import { Menu } from '@site-gazeta/models';
 
 @Component({
@@ -13,7 +13,7 @@ import { Menu } from '@site-gazeta/models';
   styleUrl: './menu-list.component.scss',
 })
 export class MenuListComponent {
-  private apiService = inject(ApiService);
+  private menuService = inject(MenuService);
 
   // Inputs & Outputs
   menus = input.required<Menu[]>();
@@ -51,7 +51,7 @@ export class MenuListComponent {
       menus: menus.map(m => ({ id: m.id!, order: m.order || 1 }))
     };
 
-    this.apiService.orderMenu(orderData).subscribe({
+    this.menuService.reorder(orderData).subscribe({
       next: () => {
         this.isReordering.set(false);
         this.onReorder.emit(menus);
@@ -65,7 +65,7 @@ export class MenuListComponent {
 
   private moveToSubmenu(menuId: number, parentId: number): void {
     this.isReordering.set(true);
-    this.apiService.moveMenuToSubmenu(menuId, parentId).subscribe({
+    this.menuService.moveToSubmenu(menuId, parentId).subscribe({
       next: () => {
         this.isReordering.set(false);
         this.onReorder.emit([]);
@@ -79,7 +79,7 @@ export class MenuListComponent {
 
   removeFromSubmenu(childId: number): void {
     this.isReordering.set(true);
-    this.apiService.moveMenuToSubmenu(childId, null).subscribe({
+    this.menuService.moveToSubmenu(childId, null).subscribe({
       next: () => {
         this.isReordering.set(false);
         this.onReorder.emit([]);
@@ -109,7 +109,7 @@ export class MenuListComponent {
     const menu = this.menuToDelete();
     if (!menu?.id) return;
 
-    this.apiService.deleteMenu(menu.id).subscribe({
+    this.menuService.delete(menu.id).subscribe({
       next: () => {
         this.onDelete.emit(menu.id!);
         this.cancelDelete();

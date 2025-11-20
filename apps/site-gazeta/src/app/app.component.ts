@@ -27,12 +27,10 @@ export class AppComponent implements OnInit{
   
   title = 'site-gazeta';
   ngOnInit(): void {
-      this.getAdsbyPositionAndPlacement('home', 'top');
-   
+      this.getAdsbyPositionAndPlacement('header', 'top');
   }
   getAdsbyPositionAndPlacement(position: string, placement: string){
     this.apiService.getAdsByPositionAndPlacement(position, placement).subscribe((ads) => {
-      console.log(ads);
       this.announcements.set(ads as Ads[]);
     });
   }

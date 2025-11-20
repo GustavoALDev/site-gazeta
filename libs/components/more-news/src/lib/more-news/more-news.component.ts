@@ -18,9 +18,6 @@ export class MoreNewsComponent implements OnInit{
   
   ngOnInit(): void {
     this.sliceNews();
-    console.log(this.slice());
-    console.log(this.moreNews());
-    console.log(this.category());
   }
 
   sliceNews(){

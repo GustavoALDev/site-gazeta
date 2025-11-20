@@ -1,7 +1,7 @@
 import { Component, inject, signal, effect, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ApiService } from '../../../core/services/api.service';
+import { VideoService } from '../../../core/services/video.service';
 import { Video } from '@site-gazeta/models';
 
 @Component({
@@ -13,7 +13,7 @@ import { Video } from '@site-gazeta/models';
 })
 export class VideoUploadComponent {
   private fb = inject(FormBuilder);
-  private apiService = inject(ApiService);
+  private videoService = inject(VideoService);
 
   // Inputs & Outputs
   videoToEdit = input<Video | null>(null);
@@ -219,8 +219,8 @@ export class VideoUploadComponent {
     }, 200);
 
     const apiCall = videoToEdit
-      ? this.apiService.editVideo(videoToEdit.id, formData)
-      : this.apiService.setVideos(formData);
+      ? this.videoService.update(videoToEdit.id, formData)
+      : this.videoService.upload(formData);
 
     apiCall.subscribe({
       next: (video) => {

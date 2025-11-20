@@ -1,5 +1,9 @@
 .announcement {
     align-self: center;   
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 10px 0;
 }
 
 .large{
@@ -13,7 +17,13 @@
 .small{
     img {
         max-width: 300px;
-        height: 200px;
+        height: 250px;
         width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .large{
+        display: none;
     }
 }

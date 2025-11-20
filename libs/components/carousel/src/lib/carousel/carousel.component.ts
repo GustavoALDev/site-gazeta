@@ -2,9 +2,6 @@ import { RouterModule } from '@angular/router';
 import { Component, signal, computed, input, ElementRef, ViewChild, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { News } from '@site-gazeta/models';
-import { mockCategories } from '@site-gazeta/mock';
-import { Category } from '@site-gazeta/models';
-import { ApiService } from 'apps/painel-gazeta/src/app/core/services/api.service';
 
 // Tipo auxiliar para itens com dados processados
 interface NewsItemWithData extends News {
@@ -22,34 +19,19 @@ interface NewsItemWithData extends News {
 export class CarouselComponent implements OnInit, OnDestroy {
   @ViewChild('carouselWrapper', { static: false }) carouselWrapper!: ElementRef<HTMLElement>;
   news = input<News[]>([]);
-  apiService = inject(ApiService);
 
   private currentIndex = signal(0);
   private itemsPerView = signal(3); 
   protected isDragging = signal(false);
   private startX = signal(0);
   private currentX = signal(0);
-  private categories = signal<Category[]>([]);
 
   
-
-  newsItems = computed(() => {
-    const inputItems = this.news()
-    .sort((a, b) => new Date(b.published).getTime() - new Date(a.published).getTime())
-    .slice(0, 5);
-    return inputItems
-  });
-
-
-  totalItems = computed(() => this.newsItems().length);
+  totalItems = computed(() => this.news().length);
   
   canGoPrevious = computed(() => true);
   canGoNext = computed(() => true);
-  getCategories() {
-    this.apiService.getActiveCategories().subscribe((categories) => {
-      this.categories.set(categories);
-    });
-  }
+
   goToPrevious(): void {
     this.currentIndex.update(index => {
       const newIndex = index - 1;
@@ -65,19 +47,14 @@ export class CarouselComponent implements OnInit, OnDestroy {
   }
 
   newsItemsWithData = computed(() => {
-    const items = this.newsItems();
-    const categoryMap = this.categories();
+    const items = this.news();
     
     return items.map(item => {
       const imageUrl = item.mediaNews?.[0]?.imgSize?.original || '';
-      const tags = item.categoryId.map((id: number) => 
-        categoryMap.find((category) => category.id === id)?.name || 'GERAL'
-      );
       
       return {
         ...item,
         imageUrl,
-        tags
       } as NewsItemWithData;
     });
   });
@@ -107,7 +84,6 @@ export class CarouselComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.setupTouchEvents();
-    this.getCategories();
   }
 
   ngOnDestroy() {

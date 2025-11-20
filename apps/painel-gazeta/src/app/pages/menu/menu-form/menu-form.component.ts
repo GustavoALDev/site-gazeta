@@ -1,7 +1,8 @@
 import { Component, inject, signal, effect, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ApiService } from '../../../core/services/api.service';
+import { MenuService } from '../../../core/services/menu.service';
+import { CategoryService } from '../../../core/services/category.service';
 import { Category, Menu } from '@site-gazeta/models';
 
 type MenuType = 'external' | 'internal' | 'category' | 'submenu';
@@ -20,7 +21,8 @@ interface InternalRoute {
 })
 export class MenuFormComponent {
   private fb = inject(FormBuilder);
-  private apiService = inject(ApiService);
+  private menuService = inject(MenuService);
+  private categoryService = inject(CategoryService);
 
   // Inputs & Outputs
   menuToEdit = input<Menu | null>(null);
@@ -115,7 +117,7 @@ export class MenuFormComponent {
   }
 
   private loadCategories(): void {
-    this.apiService.getActiveCategories().subscribe({
+    this.categoryService.getActive().subscribe({
       next: (categories) => this.categories.set(categories),
       error: (err) => console.error('Erro ao carregar categorias:', err)
     });
@@ -186,8 +188,8 @@ export class MenuFormComponent {
 
     const menuToEdit = this.menuToEdit();
     const apiCall = menuToEdit 
-      ? this.apiService.editMenu(menuToEdit.id!, menuData)
-      : this.apiService.setMenu(menuData);
+      ? this.menuService.update(menuToEdit.id!, menuData)
+      : this.menuService.create(menuData);
 
     apiCall.subscribe({
       next: (menu) => {

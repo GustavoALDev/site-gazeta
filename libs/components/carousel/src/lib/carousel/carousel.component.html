@@ -115,7 +115,7 @@
 
   <!-- Indicadores de navegação (dots) -->
   <div class="carousel-indicators">
-    @for (item of newsItems(); track item.id; let i = $index) {
+    @for (item of news(); track item.id; let i = $index) {
       <button 
         class="carousel-indicator"
         [class.carousel-indicator--active]="i === activeSlideIndex()"

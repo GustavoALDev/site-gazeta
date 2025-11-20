@@ -1,6 +1,6 @@
 import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { MenuComponent } from '@site-gazeta/menu';
-import { Menu } from '@site-gazeta/models';
+import { Menu, SectionOrderConfigMap } from '@site-gazeta/models';
 import { ApiService } from '../../core/service/api.service';
 import { AnalyticsService } from '../../core/service/analytics.service';
 import { SessionService } from '../../core/service/session.service';
@@ -25,11 +25,11 @@ export class HomeComponent implements OnInit{
   menuItems = signal<Menu[]>([]);
   searchActive = signal<boolean>(false);
   searchQuery = signal<string>('');
-
   ngOnInit(): void {
     this.getMenu();
     this.trackPageView();
   }
+
   getMenu(){
     this.apiService.getMenu().subscribe((menu) => {
       this.menuItems.set(menu as Menu[]);

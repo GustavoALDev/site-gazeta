@@ -7,6 +7,7 @@ export interface News {
     subtitle: string;
     content: string;
     categoryId: number[];
+    tags?: string[]; // Nomes das categorias (opcional, vem do backend)
     author: string;
     mediaNews:NewsMedia[];
     videoNews:NewsVideo[];

@@ -1,7 +1,6 @@
-import { inject, Injectable, signal } from '@angular/core';
-import { mockCategories, mockNewsItems, mockVideos, mockMenu } from '@site-gazeta/mock';
-import { Category, News, Video, Menu, Ads } from '@site-gazeta/models';
-import { BehaviorSubject, firstValueFrom, map, Observable, shareReplay, tap } from 'rxjs';
+import { inject, Injectable } from '@angular/core';
+import { Category, News, Video, Menu, Ads, DestaqueConfig, TopGazetaConfig, SectionOrderConfig, SectionOrderConfigMap } from '@site-gazeta/models';
+import { BehaviorSubject, firstValueFrom, forkJoin, map, Observable } from 'rxjs';
 import { environment } from '../env/env';
 import { HttpClient } from '@angular/common/http';
 @Injectable({
@@ -20,7 +19,28 @@ export class ApiService {
   getMenuById(id: number){
     return this.http.get(`${this.apiUrl}/menu/${id}`);
   }
+  getHomeConfig(){
+    return this.http.get<SectionOrderConfig[]>(`${this.apiUrl}/config/sections`);
+  }
 
+  getHomeConfigMap(){
+    return this.http.get<SectionOrderConfigMap>(`${this.apiUrl}/config/sections-map`);
+  }
+  
+  getHomeCategoryConfig(){
+    return forkJoin([
+      this.http.get<DestaqueConfig>(`${this.apiUrl}/config/destaques`),
+      this.http.get<TopGazetaConfig>(`${this.apiUrl}/config/top-gazeta`),
+    ])
+    .pipe(
+      map(([destaque, topGazeta]) => {
+        return {
+          destaque,
+          topGazeta,
+        }
+      })
+    )
+  }
   getVideos(){
     return this.http.get<Video[]>(`${this.apiUrl}/videos`);
   }
@@ -59,6 +79,9 @@ export class ApiService {
 
   getAdsByPositionAndPlacement(placement: string,position: string ){
     return this.http.get<Ads[]>(`${this.apiUrl}/advertisements/active/${placement}/${position}`);
+  }
+  getAdsByPlacement(placement: string){
+    return this.http.get<Ads[]>(`${this.apiUrl}/advertisements/by-page/${placement}`);
   }
 
   getNewsBySlug(slug: string): Observable<News | undefined> {

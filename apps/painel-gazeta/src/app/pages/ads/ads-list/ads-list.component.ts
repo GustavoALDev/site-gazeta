@@ -1,9 +1,11 @@
-import { Component, inject, OnDestroy, OnInit, output } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ApiService } from '../../../core/services/api.service';
+import { AdsService } from '../../../core/services/ads.service';
 import { Subject, takeUntil } from 'rxjs';
 import { Ads } from '@site-gazeta/models';
+import { AlertService } from '@site-gazeta/alert';
+import { AdsFilters, SortConfig } from '@site-gazeta/ads-config';
 
 @Component({
   selector: 'app-ads-list',
@@ -13,20 +15,22 @@ import { Ads } from '@site-gazeta/models';
   styleUrls: ['./ads-list.component.scss']
 })
 export class AdsListComponent implements OnInit, OnDestroy {
-  apiService = inject(ApiService);
-  advertisements: Ads[] = [];
-  filteredAdvertisements: Ads[] = [];
-  loading = false;
+  private adsService = inject(AdsService);
+  private alertService = inject(AlertService);
+  
+  advertisements = signal<Ads[]>([]);
+  filteredAdvertisements = signal<Ads[]>([]);
+  loading = signal(false);
   ExportEditAdvertisement = output<Ads>();
-  destroy$ = new Subject<void>();
+  private destroy$ = new Subject<void>();
 
-  // Filtros
-  filters = {
-    position: '',
-    placement: '',
-    status: '',
-    search: ''
-  };
+  // Filtros com persistência
+  private readonly FILTERS_STORAGE_KEY = 'ads-filters';
+  filters: AdsFilters = this.loadFiltersFromStorage();
+
+  // Ordenação
+  private readonly SORT_STORAGE_KEY = 'ads-sort';
+  sortConfig = signal<SortConfig>(this.loadSortFromStorage());
 
   // Paginação
   currentPage = 1;
@@ -35,7 +39,7 @@ export class AdsListComponent implements OnInit, OnDestroy {
   totalPages = 0;
   
   // Opções para filtros
-  positions = [
+  readonly positions = [
     { value: '', label: 'Todas as posições' },
     { value: 'top', label: 'Topo' },
     { value: 'bottom', label: 'Rodapé' },
@@ -45,36 +49,92 @@ export class AdsListComponent implements OnInit, OnDestroy {
     { value: 'content', label: 'Conteúdo' }
   ];
 
-  placements = [
+  readonly placements = [
     { value: '', label: 'Todas as páginas' },
     { value: 'home', label: 'Home' },
-    { value: 'content', label: 'Conteúdo' }
+    { value: 'content', label: 'Conteúdo' },
+    { value: 'header', label: 'Cabeçalho' }
   ];
 
-  statusOptions = [
+  readonly statusOptions = [
     { value: '', label: 'Todos os status' },
     { value: 'true', label: 'Ativo' },
     { value: 'false', label: 'Inativo' }
+  ];
+
+  readonly sortOptions = [
+    { field: 'title' as const, label: 'Título' },
+    { field: 'priority' as const, label: 'Prioridade' },
+    { field: 'startDate' as const, label: 'Data de Início' },
+    { field: 'endDate' as const, label: 'Data de Fim' },
+    { field: 'isActive' as const, label: 'Status' },
   ];
 
   ngOnInit(): void {
     this.loadAdvertisements();
   }
 
+  private loadFiltersFromStorage(): AdsFilters {
+    const stored = localStorage.getItem(this.FILTERS_STORAGE_KEY);
+    if (stored) {
+      try {
+        return JSON.parse(stored);
+      } catch {
+        return this.getDefaultFilters();
+      }
+    }
+    return this.getDefaultFilters();
+  }
+
+  private getDefaultFilters(): AdsFilters {
+    return {
+      position: '',
+      placement: '',
+      status: '',
+      search: ''
+    };
+  }
+
+  private saveFiltersToStorage(): void {
+    localStorage.setItem(this.FILTERS_STORAGE_KEY, JSON.stringify(this.filters));
+  }
+
+  private loadSortFromStorage(): SortConfig {
+    const stored = localStorage.getItem(this.SORT_STORAGE_KEY);
+    if (stored) {
+      try {
+        return JSON.parse(stored);
+      } catch {
+        return { field: 'priority', direction: 'desc' };
+      }
+    }
+    return { field: 'priority', direction: 'desc' };
+  }
+
+  private saveSortToStorage(): void {
+    localStorage.setItem(this.SORT_STORAGE_KEY, JSON.stringify(this.sortConfig()));
+  }
+
   loadAdvertisements(): void {
-    this.loading = true;
-    this.apiService.getAds()
-    .pipe(takeUntil(this.destroy$))
-    .subscribe((ads) => {
-      console.log(ads);
-      this.advertisements = ads;
-      this.applyFilters();
-      this.loading = false;
-    });
+    this.loading.set(true);
+    this.adsService.getAll()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (ads) => {
+          this.advertisements.set(ads);
+          this.applyFilters();
+          this.loading.set(false);
+        },
+        error: (err) => {
+          const errorMessage = err?.error?.message || 'Erro ao carregar anúncios';
+          this.alertService.error('Erro ao carregar', errorMessage);
+          this.loading.set(false);
+        }
+      });
   }
 
   applyFilters(): void {
-    let filtered = [...this.advertisements];
+    let filtered = [...this.advertisements()];
 
     // Filtro por posição
     if (this.filters.position) {
@@ -97,27 +157,87 @@ export class AdsListComponent implements OnInit, OnDestroy {
       const searchTerm = this.filters.search.toLowerCase().trim();
       filtered = filtered.filter(ad => 
         ad.title.toLowerCase().includes(searchTerm) ||
-        ad.description.toLowerCase().includes(searchTerm)
+        (ad.description && ad.description.toLowerCase().includes(searchTerm))
       );
     }
 
-    this.filteredAdvertisements = filtered;
+    // Aplicar ordenação
+    filtered = this.applySorting(filtered);
+
+    this.filteredAdvertisements.set(filtered);
     this.totalItems = filtered.length;
     this.totalPages = Math.ceil(this.totalItems / this.itemsPerPage);
-    this.currentPage = 1; // Reset para primeira página quando filtrar
+    this.currentPage = 1;
+    
+    // Salvar filtros
+    this.saveFiltersToStorage();
+  }
+
+  private applySorting(ads: Ads[]): Ads[] {
+    const sort = this.sortConfig();
+    return [...ads].sort((a, b) => {
+      let aValue: any = a[sort.field as keyof Ads];
+      let bValue: any = b[sort.field as keyof Ads];
+
+      // Tratamento especial para datas
+      if (sort.field === 'startDate' || sort.field === 'endDate') {
+        aValue = new Date(aValue).getTime();
+        bValue = new Date(bValue).getTime();
+      }
+
+      // Tratamento para booleanos
+      if (typeof aValue === 'boolean') {
+        aValue = aValue ? 1 : 0;
+        bValue = bValue ? 1 : 0;
+      }
+
+      // Tratamento para strings
+      if (typeof aValue === 'string') {
+        aValue = aValue.toLowerCase();
+        bValue = bValue?.toLowerCase() || '';
+      }
+
+      if (aValue < bValue) {
+        return sort.direction === 'asc' ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return sort.direction === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
   }
 
   onFilterChange(): void {
     this.applyFilters();
   }
 
+  onSortChange(field: SortConfig['field']): void {
+    const current = this.sortConfig();
+    if (current.field === field) {
+      // Alternar direção
+      this.sortConfig.set({
+        field,
+        direction: current.direction === 'asc' ? 'desc' : 'asc'
+      });
+    } else {
+      // Novo campo, começar com ascendente
+      this.sortConfig.set({ field, direction: 'asc' });
+    }
+    this.saveSortToStorage();
+    this.applyFilters();
+  }
+
+  getSortIcon(field: SortConfig['field']): string {
+    const current = this.sortConfig();
+    if (current.field !== field) {
+      return 'unfold_more';
+    }
+    return current.direction === 'asc' ? 'arrow_upward' : 'arrow_downward';
+  }
+
   clearFilters(): void {
-    this.filters = {
-      position: '',
-      placement: '',
-      status: '',
-      search: ''
-    };
+    this.filters = this.getDefaultFilters();
+    this.saveFiltersToStorage();
     this.applyFilters();
   }
 
@@ -125,7 +245,7 @@ export class AdsListComponent implements OnInit, OnDestroy {
   get paginatedAdvertisements(): Ads[] {
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
     const endIndex = startIndex + this.itemsPerPage;
-    return this.filteredAdvertisements.slice(startIndex, endIndex);
+    return this.filteredAdvertisements().slice(startIndex, endIndex);
   }
 
   goToPage(page: number): void {
@@ -155,31 +275,49 @@ export class AdsListComponent implements OnInit, OnDestroy {
   }
 
   editAdvertisement(ad: Ads): void {
-    console.log('Editar anúncio:', ad);
     this.ExportEditAdvertisement.emit(ad);
   }
 
   deleteAdvertisement(id: number): void {
-    
-    if (confirm('Tem certeza que deseja excluir este anúncio?')) {
-      console.log('Excluir anúncio:', id);
-      this.apiService.deleteAds(id)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        this.loadAdvertisements();
-      });
+    if (!confirm('Tem certeza que deseja excluir este anúncio?')) {
+      return;
     }
+
+    this.loading.set(true);
+    this.adsService.delete(id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.alertService.success(
+            'Anúncio excluído!',
+            'O anúncio foi excluído com sucesso'
+          );
+          this.loadAdvertisements();
+        },
+        error: (err) => {
+          const errorMessage = err?.error?.message || 'Erro ao excluir anúncio';
+          this.alertService.error('Erro ao excluir', errorMessage);
+          this.loading.set(false);
+        }
+      });
   }
 
   toggleStatus(ad: Ads): void {
-    ad.isActive = !ad.isActive;
-    console.log('Alternar status:', ad);
-    this.apiService.editAdsStatus(ad.id!, ad)
-    .pipe(takeUntil(this.destroy$))
-    .subscribe(() => {
-      this.loadAdvertisements();
-    });
-    // Implementar lógica para atualizar status
+    const newStatus = !ad.isActive;   
+    
+    this.adsService.toggleActive(ad.id!).subscribe({
+      next: () => {
+          this.alertService.success(
+            'Status atualizado!',
+            `Anúncio ${newStatus ? 'ativado' : 'desativado'} com sucesso`
+          );
+          this.loadAdvertisements();
+        },
+        error: (err) => {
+          const errorMessage = err?.error?.message || 'Erro ao alterar status';
+          this.alertService.error('Erro ao alterar status', errorMessage);
+        }
+      });
   }
 
   getPositionLabel(position: string): string {
@@ -203,7 +341,6 @@ export class AdsListComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.advertisements = [];
     this.destroy$.next();
     this.destroy$.complete();
   }

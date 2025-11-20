@@ -8,7 +8,8 @@ export interface Ads {
     clickUrl: string;
     position: string;
     placement: string;
+    size: string;
     isActive: boolean;
     priority: number;
-    imageUrl?: string;
+    imageUrl: string;
 }

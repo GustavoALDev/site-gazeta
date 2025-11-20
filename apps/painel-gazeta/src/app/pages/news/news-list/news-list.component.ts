@@ -1,5 +1,6 @@
 import { Component, computed, inject, OnInit, output, signal } from '@angular/core';
-import { ApiService } from '../../../core/services/api.service';
+import { NewsService } from '../../../core/services/news.service';
+import { CategoryService } from '../../../core/services/category.service';
 import { Category, News } from '@site-gazeta/models';
 import { CommonModule } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
@@ -14,7 +15,8 @@ import { RouterModule } from '@angular/router';
 })
 export class NewsListComponent implements OnInit {
 
-  private apiService = inject(ApiService);
+  private newsService = inject(NewsService);
+  private categoryService = inject(CategoryService);
   news = signal<News[]>([]);
   categories = signal<Category[]>([])
   newsEmitter = output<News>()
@@ -77,7 +79,7 @@ export class NewsListComponent implements OnInit {
 
   getNews(){
     console.log('getNews')
-    this.apiService.getNews()
+    this.newsService.getAll()
     .subscribe({
       next:(news)=>{
         console.log(news)
@@ -90,7 +92,7 @@ export class NewsListComponent implements OnInit {
   };
 
   getCategories(){
-    firstValueFrom(this.apiService.getCategories())
+    firstValueFrom(this.categoryService.getAll())
     .then((categories)=>{
       console.log(categories)
       this.categories.set(categories)
@@ -111,7 +113,7 @@ export class NewsListComponent implements OnInit {
   deleteNews(idNews:number){
     const conf = confirm('Tem certeza que deseja apagar a notícia?')
     if(conf){
-      firstValueFrom(this.apiService.deleteNews(idNews))
+      firstValueFrom(this.newsService.delete(idNews))
       .then((sucess)=>{
         console.log(sucess)
         alert(sucess.message)

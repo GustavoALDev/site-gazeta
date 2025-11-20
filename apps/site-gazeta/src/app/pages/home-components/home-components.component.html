@@ -1,40 +1,129 @@
-
+@if(homeConfig | async; as config ) {
 <main>
-  @if (isMobile() !== null && !isMobile()) {
-    <div class="carousel-desktop">
-      <lib-carousel [news]="carouselItems()"></lib-carousel>
+  
+  @if (hasCarouselItems()) {
+    @if (!isMobile()) {
+      <div class="carousel-desktop" [ngClass]="'order-'+config['carousel'].order">
+        @defer(on viewport ; when hasCarouselItems()) {
+          <lib-carousel [news]="carouselItems()"></lib-carousel>
+        } @placeholder {
+          <div class="carousel-desktop" [ngClass]="'order-'+config['carousel'].order">
+            <div class="carousel-desktop-skeleton"></div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="carousel-mobile">
+        @defer(on viewport ; when hasCarouselItems()) {
+          <lib-carousel-swipe [news]="carouselItems()"></lib-carousel-swipe>
+        } @placeholder {
+          <div class="carousel-mobile-skeleton"></div>
+        }
+      </div>
+    }
+  }
+  
+  <!-- Category Grid: renderiza apenas se houver dados -->
+  @if (hasCategoryGrid()) {
+    @defer(on viewport; when hasCategoryGrid()) {
+      <lib-news-category-grid 
+      [ngClass]="'order-'+config['destaques'].order" 
+      [news]="categoryGridNews()">
+      </lib-news-category-grid>
+    } @placeholder {
+      <div class="category-grid-skeleton"></div>
+    }
+  }
+  
+  <!-- Top Ad: renderiza apenas se existir -->
+  @if (hasTopAd()) {
+    <div class="divider"></div>
+    <div class="ads-container">
+      <lib-ads [announcements]="topAd()!" size="728x90"></lib-ads>
     </div>
+    <div class="divider"></div>
+  }
+  
+  <!-- Video Player: renderiza apenas se houver vídeos -->
+  @if (hasVideos()) {
+    @defer(on viewport; when hasVideos()) {
+    <lib-video-player 
+      [ngClass]="'order-'+ config['videos'].order"
+      [videos]="videos()"
+      [title]="'Vídeos em alta hoje'">
+    </lib-video-player>
+    } @placeholder {
+      <div class="video-player-skeleton"></div>
+    }
+  }
+  
+  <!-- News Category Section: renderiza apenas se houver categoria e notícias -->
+  @if (firstCategory() && hasNews()) {
+    @defer(on viewport ; when hasNews()) {
+    <lib-news-category-section 
+      class="order-5"
+      [category]="firstCategory()!"
+      [news]="newsItems()"
+      [announcements]="centerAd()!">
+    </lib-news-category-section>
+    } @placeholder {
+      <div class="news-category-section-skeleton"></div>
+    }
+  }
+  
+  <!-- News Highlights -->
+  @if (hasTopGazeta() && hasNews()) {
+    @defer(on viewport ; when hasNews()) {
+    <lib-news-highligths
+      [ngClass]="'order-'+config['top-gazeta'].order"
+      [categories]="topGazeta()!.categories"
+      [news]="newsItems()">
+    </lib-news-highligths>
+    } @placeholder {
+      <div class="news-highligths-skeleton"></div>
+    }
   }
 
-  @if (isMobile() === true) {
-    <div class="carousel-mobile">
-      <lib-carousel-swipe [news]="carouselItems()"></lib-carousel-swipe>
+  <!-- News Cluster -->
+  @if (hasCategories() && hasNews()) {
+    @defer(on viewport ; when hasNews()) {
+    <lib-news-cluster
+      [ngClass]="'order-'+ config['cluster'].order"
+      [categories]="categories()"
+      [news]="newsItems()">
+    </lib-news-cluster>
+    } @placeholder {
+      <div class="news-cluster-skeleton"></div>
+    }
+  }
+
+  <!-- More News Section -->
+  @if (hasNews()) {
+    <div class="more-news-container order-6">
+      <div class="more-news-content">
+        <h2>Mais notícias</h2>
+        @defer(on viewport ; when hasNews()) {
+          <lib-more-news [moreNews]="newsItems()" [slice]="3"></lib-more-news>
+        } @placeholder {
+          <div class="more-news-skeleton"></div>
+        }
+      </div>
+      @if (hasBottomAd()) {
+        <div class="ads-container">
+          <lib-ads [announcements]="bottomAd()!" size="160x600"></lib-ads>
+        </div>
+      }
     </div>
   }
-  <div class="divider"></div>
-  @if (categories() && categoryGridNews()) {
-    <lib-news-category-grid
-      [news]="categoryGridNews()"
-    ></lib-news-category-grid>
-  }
-  @if(this.newsItems() && this.videos()) {
-    <lib-video-player [videos]="videos()" [title]="'Vídeos em alta hoje'"></lib-video-player>
-    <lib-news-category-section
-      [category]="categories()[0]"
-      [news]="newsItems()"
-    ></lib-news-category-section>
-    <lib-news-highligths
-      [categories]="categories().slice(1)"
-      [news]="newsItems()"
-    ></lib-news-highligths>
-    <span class="divider"></span>
-    <lib-news-cluster
-      [categories]="categories()"
-      [news]="newsItems()"
-    ></lib-news-cluster>
-    <div class="more-news">
-      <h2>Mais notícias</h2>
-      <lib-more-news [moreNews]="newsItems()" [slice]="3"></lib-more-news>
+  
+  <!-- Bottom Ad separado -->
+  @if (hasBottomAd()) {
+    <div class="ads-container">
+      <lib-ads
+        [announcements]="bottomAd()!"
+        [size]="bottomAd()!.size || '728x90'">
+      </lib-ads>
     </div>
   }
 </main>
+}

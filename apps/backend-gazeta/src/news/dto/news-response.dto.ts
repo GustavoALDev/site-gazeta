@@ -61,6 +61,14 @@ export class NewsResponseDto {
   @ApiProperty({ description: 'IDs das categorias', example: [1, 2, 3], type: [Number] })
   categoryId: number[];
 
+  @ApiProperty({ 
+    description: 'Nomes das categorias', 
+    example: ['Política', 'Esportes', 'Tecnologia'], 
+    type: [String],
+    required: false 
+  })
+  tags?: string[];
+
   @ApiProperty({ description: 'Nome do autor da notícia', example: 'Maria Silva' })
   author: string;
 

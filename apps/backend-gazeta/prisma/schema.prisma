@@ -17,8 +17,11 @@ model User {
   updatedAt            DateTime              @updatedAt @map("updated_at")
   news                 News[]
   advertisements       Advertisement[]
-  homeCategoryConfigs  HomeCategoryConfig[]
   youtubePlaylist      YoutubePlaylist[]
+  destaqueConfig       DestaqueConfig?
+  topGazetaConfig      TopGazetaConfig?
+  sectionOrderConfigs  SectionOrderConfig[]
+  socialMediaConfig    SocialMediaConfig?
   userActivities       UserActivity[]
 
   @@map("users")
@@ -34,7 +37,8 @@ model Category {
   createdAt           DateTime              @default(now()) @map("created_at")
   updatedAt           DateTime              @updatedAt @map("updated_at")
   newsCategories      NewsCategory[]
-  homeCategoryConfig  HomeCategoryConfig?
+  destaqueCategories  DestaqueCategoryRelation[]
+  topGazetaCategories TopGazetaCategoryRelation[]
 
   @@map("categories")
 }
@@ -131,6 +135,7 @@ model Advertisement {
   clickUrl    String?         @db.VarChar(500) @map("click_url")
   position    String          @db.VarChar(100) // top, bottom, sidebar, etc.
   placement   String          @db.VarChar(50)  // home, news
+  size        String          @default("728x90") @db.VarChar(20)  // 728x90, 300x200
   isActive    Boolean         @default(true) @map("is_active")
   priority    Int             @default(0)     // ordem de exibição
   startDate   DateTime?       @map("start_date")
@@ -145,24 +150,98 @@ model Advertisement {
   @@map("advertisements")
 }
 
-model HomeCategoryConfig {
-  id             Int      @id @default(autoincrement())
-  categoryId     Int      @map("category_id")
-  displayOrder   Int      @map("display_order")
-  isVisible      Boolean  @default(true) @map("is_visible")
-  maxNews        Int      @default(6) @map("max_news") // quantas notícias mostrar desta categoria
-  showTitle      Boolean  @default(true) @map("show_title") // se mostra o título da categoria
-  customTitle    String?  @db.VarChar(100) @map("custom_title") // título personalizado
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
-  createdBy      Int      @map("created_by")
-  category       Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  creator        User     @relation(fields: [createdBy], references: [id])
+// ============== CONFIGURAÇÕES ==============
 
-  @@unique([categoryId], map: "home_category_config_category_unique")
-  @@index([displayOrder, isVisible], map: "home_category_config_order_visible_idx")
-  @@index([createdBy], map: "home_category_config_created_by_fkey")
-  @@map("home_category_configs")
+// Configuração de Destaques (Categorias em Destaque)
+model DestaqueConfig {
+  id            Int                         @id @default(autoincrement())
+  randomMode    Boolean                     @default(false) @map("random_mode") // modo aleatório ativo
+  createdAt     DateTime                    @default(now()) @map("created_at")
+  updatedAt     DateTime                    @updatedAt @map("updated_at")
+  createdBy     Int                         @unique @map("created_by")
+  creator       User                        @relation(fields: [createdBy], references: [id])
+  categories    DestaqueCategoryRelation[]  // 3 categorias selecionadas (se não randomMode)
+
+  @@map("destaque_configs")
+}
+
+// Relação N para N entre DestaqueConfig e Categories
+model DestaqueCategoryRelation {
+  id                Int              @id @default(autoincrement())
+  destaqueConfigId  Int              @map("destaque_config_id")
+  categoryId        Int              @map("category_id")
+  destaqueConfig    DestaqueConfig   @relation(fields: [destaqueConfigId], references: [id], onDelete: Cascade)
+  category          Category         @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([destaqueConfigId, categoryId])
+  @@index([destaqueConfigId])
+  @@index([categoryId])
+  @@map("destaque_category_relations")
+}
+
+// Configuração de Top Gazeta
+model TopGazetaConfig {
+  id            Int                          @id @default(autoincrement())
+  randomMode    Boolean                      @default(false) @map("random_mode") // modo aleatório ativo
+  createdAt     DateTime                     @default(now()) @map("created_at")
+  updatedAt     DateTime                     @updatedAt @map("updated_at")
+  createdBy     Int                          @unique @map("created_by")
+  creator       User                         @relation(fields: [createdBy], references: [id])
+  categories    TopGazetaCategoryRelation[]  // 3 categorias selecionadas (se não randomMode)
+
+  @@map("top_gazeta_configs")
+}
+
+// Relação N para N entre TopGazetaConfig e Categories
+model TopGazetaCategoryRelation {
+  id                Int              @id @default(autoincrement())
+  topGazetaConfigId Int              @map("top_gazeta_config_id")
+  categoryId        Int              @map("category_id")
+  topGazetaConfig   TopGazetaConfig  @relation(fields: [topGazetaConfigId], references: [id], onDelete: Cascade)
+  category          Category         @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([topGazetaConfigId, categoryId])
+  @@index([topGazetaConfigId])
+  @@index([categoryId])
+  @@map("top_gazeta_category_relations")
+}
+
+// Configuração de Ordenação das Seções da Home
+model SectionOrderConfig {
+  id          Int      @id @default(autoincrement())
+  sectionId   String   @db.VarChar(50) @map("section_id")  // carousel, videos, destaques, top-gazeta, cluster
+  name        String   @db.VarChar(100)  // nome da seção
+  title       String   @db.VarChar(200)  // título exibido
+  order       Int                        // ordem de exibição
+  showTitle   Boolean  @default(true) @map("show_title")  // exibir título ou não
+  icon        String?  @db.VarChar(50)   // ícone material icons
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  createdBy   Int      @map("created_by")
+  creator     User     @relation(fields: [createdBy], references: [id])
+
+  @@unique([sectionId])
+  @@unique([order])
+  @@index([order])
+  @@map("section_order_configs")
+}
+
+// Configuração de Redes Sociais (JSON básico)
+model SocialMediaConfig {
+  id          Int      @id @default(autoincrement())
+  instagram   String?  @db.VarChar(500)
+  facebook    String?  @db.VarChar(500)
+  youtube     String?  @db.VarChar(500)
+  linkedin    String?  @db.VarChar(500)
+  twitter     String?  @db.VarChar(500)
+  tiktok      String?  @db.VarChar(500)
+  whatsapp    String?  @db.VarChar(50)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  createdBy   Int      @unique @map("created_by")
+  creator     User     @relation(fields: [createdBy], references: [id])
+
+  @@map("social_media_configs")
 }
 
 model Menu {

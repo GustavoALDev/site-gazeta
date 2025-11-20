@@ -8,8 +8,10 @@ import {
 } from '@angular/forms';
 import { FormValidatorService } from '@site-gazeta/form-validator';
 import { Subject, takeUntil, first } from 'rxjs';
-import { ApiService } from '../../../../core/services/api.service';
+import { CategoryService } from '../../../../core/services/category.service';
+import { ConfigService } from '../../../../core/services/config.service';
 import { Category } from '@site-gazeta/models';
+import { AlertService } from '@site-gazeta/alert';
 
 export interface CategoryConfig {
   destaquesCategoryIds: number[];
@@ -25,11 +27,20 @@ export interface CategoryConfig {
   templateUrl: './category-config.component.html',
   styleUrl: './category-config.component.scss',
 })
+
 export class CategoryConfigComponent implements OnInit, OnDestroy {
   fb = inject(NonNullableFormBuilder);
   formValidator = inject(FormValidatorService);
-  apiService = inject(ApiService);
+  categoryService = inject(CategoryService);
   destroy$ = new Subject<void>();
+  
+  // Services
+  private configService = inject(ConfigService);
+  private alertService = inject(AlertService);
+  
+  // Loading states
+  destaquesLoading = signal<boolean>(false);
+  topGazetaLoading = signal<boolean>(false);
   
   // Output para comunicar mudanças com o pai
   configChange = output<CategoryConfig>();
@@ -83,6 +94,7 @@ export class CategoryConfigComponent implements OnInit, OnDestroy {
       });
 
     this.loadCategories();
+    this.loadSavedConfigs();
     
     // Atualizar validação dos Destaques quando modo aleatório mudar
     this.form.get('destaquesRandomMode')?.valueChanges
@@ -130,8 +142,8 @@ export class CategoryConfigComponent implements OnInit, OnDestroy {
   }
 
   loadCategories() {
-    this.apiService
-      .getActiveCategories()
+    this.categoryService
+      .getActive()
       .pipe(first())
       .subscribe((categories) => {
         this.availableCategories.set(categories as Category[]);
@@ -371,6 +383,145 @@ export class CategoryConfigComponent implements OnInit, OnDestroy {
       return false;
     }
     return this.form.valid || (this.destaquesRandomMode() && this.topGazetaRandomMode());
+  }
+
+  // ========== MÉTODOS DE SALVAMENTO ==========
+
+  /**
+   * Salvar configuração de Destaques
+   */
+  saveDestaques() {
+    // Validar
+    if (!this.destaquesRandomMode() && this.selectedCategories().length !== this.MAX_CATEGORIES) {
+      this.alertService.warning('Atenção', 'Selecione exatamente 3 categorias ou ative o modo aleatório');
+      return;
+    }
+
+    this.destaquesLoading.set(true);
+    const categoryIds = this.destaquesRandomMode() ? [] : this.selectedCategories().map(cat => cat.id as number);
+
+    // Tentar atualizar primeiro, se falhar, criar
+    this.configService.updateDestaque({
+      randomMode: this.destaquesRandomMode(),
+      categoryIds: categoryIds.length > 0 ? categoryIds : undefined
+    }).pipe(first()).subscribe({
+      next: (config) => {
+        this.destaquesLoading.set(false);
+        this.alertService.success('Sucesso', 'Configuração de Destaques salva com sucesso!');
+        console.log('Destaques salvos:', config);
+      },
+      error: (error) => {
+        // Se não existe, criar
+        if (error.status === 404) {
+          this.configService.createDestaque({
+            randomMode: this.destaquesRandomMode(),
+            categoryIds: categoryIds.length > 0 ? categoryIds : undefined
+          }).pipe(first()).subscribe({
+            next: (config) => {
+              this.destaquesLoading.set(false);
+              this.alertService.success('Sucesso', 'Configuração de Destaques criada com sucesso!');
+              console.log('Destaques criados:', config);
+            },
+            error: (createError) => {
+              this.destaquesLoading.set(false);
+              this.alertService.error('Erro', 'Erro ao criar configuração de Destaques');
+              console.error('Erro ao criar destaques:', createError);
+            }
+          });
+        } else {
+          this.destaquesLoading.set(false);
+          this.alertService.error('Erro', 'Erro ao salvar configuração de Destaques');
+          console.error('Erro ao salvar destaques:', error);
+        }
+      }
+    });
+  }
+
+  /**
+   * Salvar configuração do Top Gazeta
+   */
+  saveTopGazeta() {
+    // Validar
+    if (!this.topGazetaRandomMode() && this.topGazetaCategories().length !== this.MAX_CATEGORIES) {
+      this.alertService.warning('Atenção', 'Selecione exatamente 3 categorias ou ative o modo aleatório');
+      return;
+    }
+
+    this.topGazetaLoading.set(true);
+    const categoryIds = this.topGazetaRandomMode() ? [] : this.topGazetaCategories().map(cat => cat.id as number);
+
+    // Tentar atualizar primeiro, se falhar, criar
+    this.configService.updateTopGazeta({
+      randomMode: this.topGazetaRandomMode(),
+      categoryIds: categoryIds.length > 0 ? categoryIds : undefined
+    }).pipe(first()).subscribe({
+      next: (config) => {
+        this.topGazetaLoading.set(false);
+        this.alertService.success('Sucesso', 'Configuração do Top Gazeta salva com sucesso!');
+        console.log('Top Gazeta salvo:', config);
+      },
+      error: (error) => {
+        // Se não existe, criar
+        if (error.status === 404) {
+          this.configService.createTopGazeta({
+            randomMode: this.topGazetaRandomMode(),
+            categoryIds: categoryIds.length > 0 ? categoryIds : undefined
+          }).pipe(first()).subscribe({
+            next: (config) => {
+              this.topGazetaLoading.set(false);
+              this.alertService.success('Sucesso', 'Configuração do Top Gazeta criada com sucesso!');
+              console.log('Top Gazeta criado:', config);
+            },
+            error: (createError) => {
+              this.topGazetaLoading.set(false);
+              this.alertService.error('Erro', 'Erro ao criar configuração do Top Gazeta');
+              console.error('Erro ao criar Top Gazeta:', createError);
+            }
+          });
+        } else {
+          this.topGazetaLoading.set(false);
+          this.alertService.error('Erro', 'Erro ao salvar configuração do Top Gazeta');
+          console.error('Erro ao salvar Top Gazeta:', error);
+        }
+      }
+    });
+  }
+
+  /**
+   * Carregar configurações salvas
+   */
+  loadSavedConfigs() {
+    // Carregar Destaques
+    this.configService.getDestaque().pipe(first()).subscribe({
+      next: (config) => {
+        if (config) {
+          this.destaquesRandomMode.set(config.randomMode);
+          this.form.patchValue({ destaquesRandomMode: config.randomMode });
+          
+          if (!config.randomMode && config.categories && config.categories.length > 0) {
+            this.selectedCategories.set(config.categories as Category[]);
+            this.form.patchValue({ categoryIds: config.categoryIds });
+          }
+        }
+      },
+      error: (error) => console.error('Erro ao carregar Destaques:', error)
+    });
+
+    // Carregar Top Gazeta
+    this.configService.getTopGazeta().pipe(first()).subscribe({
+      next: (config) => {
+        if (config) {
+          this.topGazetaRandomMode.set(config.randomMode);
+          this.form.patchValue({ topGazetaRandomMode: config.randomMode });
+          
+          if (!config.randomMode && config.categories && config.categories.length > 0) {
+            this.topGazetaCategories.set(config.categories as Category[]);
+            this.form.patchValue({ topGazetaCategoryIds: config.categoryIds });
+          }
+        }
+      },
+      error: (error) => console.error('Erro ao carregar Top Gazeta:', error)
+    });
   }
 
   // Método público para reset

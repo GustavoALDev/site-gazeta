@@ -20,10 +20,12 @@
         <div class="news-title">{{ news.title }}</div>
       </div>
     }
+    @if(announcements()) {
     <div class="ads-container">
       <span>Conteúdo Publicitário</span>
-      <img src="https://http2.mlstatic.com/D_NQ_NP_627090-MLB89289453722_082025-O.webp" alt="advertisement" class="adv">
+      <lib-ads size="300x200" [announcements]="announcements()"></lib-ads>
     </div>
+    }
   </div>
 </div>
 }

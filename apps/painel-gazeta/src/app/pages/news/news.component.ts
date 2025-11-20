@@ -11,7 +11,8 @@ import { NewsMidiaComponent } from './news-midia/news-midia.component';
 import { NewsMedia, NewsVideo, Category, News } from '@site-gazeta/models';
 import { FormValidatorComponent, FormValidatorService } from '@site-gazeta/form-validator';
 import { concatMap,  first,  firstValueFrom,  from, Subject,   takeUntil, toArray } from 'rxjs';
-import { ApiService } from '../../core/services/api.service';
+import { NewsService } from '../../core/services/news.service';
+import { CategoryService } from '../../core/services/category.service';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { environment } from '../../core/env/env';
 
@@ -33,7 +34,8 @@ export class NewsComponent implements OnInit, OnDestroy {
   @ViewChild(NewsMidiaComponent) newsMidiaComponent!: NewsMidiaComponent;
   fb = inject(NonNullableFormBuilder);
   formValidator = inject(FormValidatorService);
-  apiService = inject(ApiService);
+  newsService = inject(NewsService);
+  categoryService = inject(CategoryService);
   activeRouter = inject(ActivatedRoute)
   apiUrl = environment.apiUrl;
   activeTab: 'info' | 'content' | 'media' = 'info';
@@ -111,7 +113,7 @@ export class NewsComponent implements OnInit, OnDestroy {
         this.getCategories();
         this.isEdit.set(true)
         this.newsId = newsId
-        firstValueFrom(this.apiService.getNewsById(newsId))
+        firstValueFrom(this.newsService.getById(newsId))
         .then((resp)=>{
           console.log(resp);
           const news:News = resp as News
@@ -119,7 +121,10 @@ export class NewsComponent implements OnInit, OnDestroy {
             const category = this.availableCategories().find(cat => cat.id === categoryId);
             this.selectedCategories.update((cats) => [...cats, category!]);
           });
-          this.form.patchValue(resp)
+          this.form.patchValue({
+            ...resp,
+            validity: resp.validity ? null : null
+          } as any)
           this.exportEditNewsMedia.set({newsMedia:news.mediaNews,newsVideos:news.videoNews})
         })
       }
@@ -129,7 +134,7 @@ export class NewsComponent implements OnInit, OnDestroy {
     })
   }
   getCategories(){
-    this.apiService.getActiveCategories()
+    this.categoryService.getActive()
     .pipe(first())
     .subscribe((categories) => {
       this.availableCategories.set(categories as Category[]);
@@ -151,7 +156,7 @@ export class NewsComponent implements OnInit, OnDestroy {
       status: formValue.status as string,
     };
     if(this.isEdit()){
-      this.apiService.editNews(this.newsId as number,newsData as News)
+      this.newsService.update(this.newsId as number,newsData as News)
     .subscribe({
       next: (res) => {
 
@@ -176,7 +181,7 @@ export class NewsComponent implements OnInit, OnDestroy {
 
         from(midias)
         .pipe(
-          concatMap(midia => this.apiService.setNewsMedia(midia)), // uma por vez
+          concatMap(midia => this.newsService.uploadMedia(midia)), // uma por vez
           toArray() // junta os resultados em um array
         )
         .subscribe({
@@ -198,7 +203,7 @@ export class NewsComponent implements OnInit, OnDestroy {
       }
     });
     }else{
-      this.apiService.setNews(newsData as News)
+      this.newsService.create(newsData as News)
     .subscribe({
       next: (res) => {
         const newsMedia = formValue.newsMidia as NewsMedia[]
@@ -215,7 +220,7 @@ export class NewsComponent implements OnInit, OnDestroy {
 
         from(midias)
         .pipe(
-          concatMap(midia => this.apiService.setNewsMedia(midia)), // uma por vez
+          concatMap(midia => this.newsService.uploadMedia(midia)), // uma por vez
           toArray() // junta os resultados em um array
         )
         .subscribe({

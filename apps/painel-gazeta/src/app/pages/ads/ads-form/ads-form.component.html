@@ -1,0 +1,342 @@
+<div class="form-container">
+  <form [formGroup]="adForm" (ngSubmit)="onSubmit()" class="ad-form">
+    
+    <!-- Card: Informações Básicas -->
+    <div class="form-card">
+      <div class="form-card-header">
+        <i class="material-icons">info</i>
+        <h3>Informações Básicas</h3>
+      </div>
+      <div class="form-card-body">
+        <!-- Título -->
+        <div class="form-group">
+          <label for="title" class="required">
+            <i class="material-icons">title</i>
+            Título
+          </label>
+          <input
+            type="text"
+            id="title"
+            formControlName="title"
+            [class.error]="hasError('title')"
+            placeholder="Digite o título do anúncio">
+          @if (hasError('title')) {
+            <div class="error-message">
+              {{ getErrorMessage('title') }}
+            </div>
+          }
+        </div>
+
+        <!-- Descrição -->
+        <div class="form-group">
+          <label for="description">
+            <i class="material-icons">description</i>
+            Descrição
+          </label>
+          <textarea
+            id="description"
+            formControlName="description"
+            class="textarea"
+            rows="3"
+            placeholder="Digite uma descrição para o anúncio (opcional)"></textarea>
+        </div>
+
+        <!-- URL de Clique -->
+        <div class="form-group">
+          <label for="clickUrl">
+            <i class="material-icons">link</i>
+            URL de Redirecionamento
+          </label>
+          <input
+            type="url"
+            id="clickUrl"
+            formControlName="clickUrl"
+            [class.error]="hasError('clickUrl')"
+            placeholder="https://exemplo.com">
+          @if (hasError('clickUrl')) {
+            <div class="error-message">
+              {{ getErrorMessage('clickUrl') }}
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Card: Posicionamento -->
+    <div class="form-card">
+      <div class="form-card-header">
+        <i class="material-icons">place</i>
+        <h3>Posicionamento e Tamanho</h3>
+      </div>
+      <div class="form-card-body">
+        <div class="form-row">
+          <!-- Página de Exibição -->
+          <div class="form-group">
+            <label for="placement" class="required">
+              <i class="material-icons">web</i>
+              Página de Exibição
+            </label>
+            <select
+              id="placement"
+              formControlName="placement"
+              class="select"
+              [class.error]="hasError('placement')">
+              <option value="">Selecione uma página</option>
+              @for (option of placementOptions; track option.value) {
+                <option [value]="option.value">
+                  {{ option.label }}
+                </option>
+              }
+            </select>
+            @if (hasError('placement')) {
+              <div class="error-message">
+                {{ getErrorMessage('placement') }}
+              </div>
+            }
+          </div>
+
+          <!-- Posição -->
+          <div class="form-group">
+            <label for="position" [class.required]="!isPositionDisabled">
+              <i class="material-icons">vertical_align_center</i>
+              Posição
+            </label>
+            <select
+              id="position"
+              formControlName="position"
+              class="select"
+              [class.error]="hasError('position')">
+              @if (!isPositionDisabled) {
+                <option value="">Selecione uma posição</option>
+              }
+              @if (isPositionDisabled) {
+                <option value="">Topo (automático)</option>
+              }
+              @for (option of positionOptions; track option.value) {
+                <option [value]="option.value">
+                  {{ option.label }}
+                </option>
+              }
+            </select>
+            @if (isPositionDisabled) {
+              <div class="file-info">
+                <small><i class="material-icons">info</i> Para página "Cabeçalho", a posição é sempre "Topo"</small>
+              </div>
+            }
+            @if (!isPositionDisabled && hasError('position')) {
+              <div class="error-message">
+                {{ getErrorMessage('position') }}
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Tamanho -->
+        <div class="form-group">
+          <label for="size" class="required">
+            <i class="material-icons">aspect_ratio</i>
+            Dimensões
+          </label>
+          <select
+            id="size"
+            formControlName="size"
+            class="select"
+            [class.error]="hasError('size')">
+            <option value="">Selecione um tamanho</option>
+            @for (option of sizeOptions; track option.value) {
+              <option [value]="option.value">
+                {{ option.label }}
+              </option>
+            }
+          </select>
+          @if (hasError('size')) {
+            <div class="error-message">
+              {{ getErrorMessage('size') }}
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Card: Configurações -->
+    <div class="form-card">
+      <div class="form-card-header">
+        <i class="material-icons">settings</i>
+        <h3>Configurações de Exibição</h3>
+      </div>
+      <div class="form-card-body">
+        <div class="form-row">
+          <!-- Status Ativo -->
+          <div class="toggle-group">
+            <div class="toggle-label">
+              <i class="material-icons">visibility</i>
+              Status
+            </div>
+            <div class="toggle-container">
+              <input
+                type="checkbox"
+                id="isActive"
+                formControlName="isActive"
+                class="toggle-input">
+              <label for="isActive" class="toggle-switch">
+                <div class="toggle-slider"></div>
+              </label>
+              <span class="toggle-text">{{ adForm.get('isActive')?.value ? 'Ativo' : 'Inativo' }}</span>
+            </div>
+          </div>
+
+          <!-- Prioridade -->
+          <div class="form-group">
+            <label for="priority">
+              <i class="material-icons">priority_high</i>
+              Prioridade
+            </label>
+            <input
+              type="number"
+              id="priority"
+              formControlName="priority"
+              min="1"
+              max="10"
+              placeholder="1">
+            <small class="field-hint">Maior prioridade = exibido primeiro (1-10)</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card: Período de Exibição -->
+    <div class="form-card">
+      <div class="form-card-header">
+        <i class="material-icons">date_range</i>
+        <h3>Período de Exibição</h3>
+      </div>
+      <div class="form-card-body">
+        <div class="form-row">
+          <!-- Data de Início -->
+          <div class="form-group">
+            <label for="startDate">
+              <i class="material-icons">schedule</i>
+              Data de Início
+            </label>
+            <input
+              type="datetime-local"
+              id="startDate"
+              formControlName="startDate">
+          </div>
+
+          <!-- Data de Fim -->
+          <div class="form-group">
+            <label for="endDate">
+              <i class="material-icons">event</i>
+              Data de Fim
+            </label>
+            <input
+              type="datetime-local"
+              id="endDate"
+              formControlName="endDate"
+              [class.error]="hasError('endDate')">
+            @if (hasError('endDate')) {
+              <div class="error-message">
+                {{ getErrorMessage('endDate') }}
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card: Imagem -->
+    <div class="form-card">
+      <div class="form-card-header">
+        <i class="material-icons">image</i>
+        <h3>Imagem do Anúncio</h3>
+        @if (!isEdit()) {
+          <span class="required-badge">Obrigatório</span>
+        }
+      </div>
+      <div class="form-card-body">
+        <!-- Preview da imagem -->
+        @if (imagePreviewUrl()) {
+          <div class="image-preview-wrapper">
+            <div class="image-preview-container">
+              <img [src]="imagePreviewUrl()" alt="Preview" class="image-preview">
+              <div class="image-overlay">
+                <button 
+                  type="button" 
+                  class="change-image-btn" 
+                  (click)="triggerFileInput()"
+                  aria-label="Trocar imagem">
+                  <i class="material-icons">edit</i>
+                  <span>Trocar</span>
+                </button>
+                <button 
+                  type="button" 
+                  class="remove-image-btn" 
+                  (click)="onRemoveImage()"
+                  aria-label="Remover imagem">
+                  <i class="material-icons">delete</i>
+                  <span>Remover</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+        
+        <!-- Input de arquivo (sempre presente mas oculto quando há preview) -->
+        <div class="file-input-container" [class.hidden]="imagePreviewUrl()">
+          <input
+            #fileInput
+            type="file"
+            id="image"
+            (change)="onFileSelected($event)"
+            accept="image/*"
+            [class.error]="hasError('image')"
+            class="file-input">
+          <div class="file-input-display">
+            <span class="file-placeholder">
+              <i class="material-icons">cloud_upload</i>
+              <span>Clique para selecionar uma imagem</span>
+              <small>ou arraste e solte aqui</small>
+            </span>
+          </div>
+        </div>
+        
+        <div class="file-info">
+          <i class="material-icons">info_outline</i>
+          <small>Formatos aceitos: JPG, PNG, GIF, WEBP • Tamanho máximo: 5MB</small>
+        </div>
+        
+        @if (hasError('image')) {
+          <div class="error-message">
+            <i class="material-icons">error</i>
+            {{ getErrorMessage('image') }}
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Botões de ação -->
+    <div class="form-actions">
+      <button 
+        type="button" 
+        class="btn btn-secondary" 
+        (click)="onCancel()"
+        [disabled]="isSubmitting()">
+        <i class="material-icons">close</i>
+        Cancelar
+      </button>
+      <button 
+        type="submit" 
+        class="btn btn-primary" 
+        [disabled]="isSubmitting()">
+        @if (isSubmitting()) {
+          <i class="material-icons spinning">sync</i>
+          Salvando...
+        } @else {
+          <i class="material-icons">save</i>
+          {{ isEdit() ? 'Atualizar' : 'Salvar' }} Anúncio
+        }
+      </button>
+    </div>
+  </form>
+</div>

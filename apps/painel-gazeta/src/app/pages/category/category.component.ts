@@ -3,7 +3,7 @@ import { Component, inject, signal, OnInit, computed } from '@angular/core';
 import { Category, HexColor } from '@site-gazeta/models';
 import { CategoryFormComponent } from './category-form/category-form.component';
 import { CategoryListComponent } from './category-list/category-list.component';
-import { ApiService } from '../../core/services/api.service';
+import { CategoryService } from '../../core/services/category.service';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
@@ -15,7 +15,7 @@ import { firstValueFrom } from 'rxjs';
 export class CategoryComponent implements OnInit {
   categories = signal<Category[]>([]);
   editingCategory = signal<Category | null>(null);
-  apiService = inject(ApiService);
+  categoryService = inject(CategoryService);
   
   // Computed property to get all used colors
   usedColors = computed(() => {
@@ -34,7 +34,7 @@ export class CategoryComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.apiService.getCategories().subscribe((categories) => {
+    this.categoryService.getAll().subscribe((categories) => {
       this.categories.set(categories as Category[]);
     });
   }
@@ -45,7 +45,7 @@ export class CategoryComponent implements OnInit {
 
   onDeleteCategory(category: Category) {
     if (category.isActive === false) {
-      return firstValueFrom(this.apiService.deleteCategory(category.id as number))
+      return firstValueFrom(this.categoryService.delete(category.id as number))
         .then((res) => {
           alert('Categoria excluída com sucesso!');
 

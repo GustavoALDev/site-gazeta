@@ -1,6 +1,6 @@
 import { Component, inject, signal, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ApiService } from '../../../core/services/api.service';
+import { VideoService } from '../../../core/services/video.service';
 import { Video } from '@site-gazeta/models';
 
 @Component({
@@ -11,7 +11,7 @@ import { Video } from '@site-gazeta/models';
   styleUrl: './video-list.component.scss',
 })
 export class VideoListComponent {
-  private apiService = inject(ApiService);
+  private videoService = inject(VideoService);
 
   // Inputs & Outputs
   videos = input.required<Video[]>();
@@ -41,7 +41,7 @@ export class VideoListComponent {
     const video = this.videoToDelete();
     if (!video?.id) return;
 
-    this.apiService.deleteVideo(video.id).subscribe({
+    this.videoService.delete(video.id).subscribe({
       next: () => {
         this.onDelete.emit(video.id);
         this.cancelDelete();

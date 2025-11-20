@@ -44,13 +44,14 @@ export class AdvertisementController {
         clickUrl: { type: 'string', example: 'https://exemplo.com/promocao' },
         position: { type: 'string', enum: ['top', 'bottom', 'sidebar', 'header', 'footer', 'content'] },
         placement: { type: 'string', enum: ['home', 'news'] },
+        size: { type: 'string', enum: ['728x90', '300x200'], example: '728x90' },
         isActive: { type: 'boolean', default: true },
         priority: { type: 'number', minimum: 0, maximum: 10, default: 0 },
         startDate: { type: 'string', format: 'date-time' },
         endDate: { type: 'string', format: 'date-time' },
         image: { type: 'string', format: 'binary' },
       },
-      required: ['title', 'position', 'placement', 'image'],
+      required: ['title', 'position', 'placement', 'size', 'image'],
     },
   })
   @ApiResponse({ status: 201, description: 'Anúncio criado com sucesso', type: AdvertisementResponseDto })
@@ -77,6 +78,15 @@ export class AdvertisementController {
   @ApiResponse({ status: 200, description: 'Lista de anúncios', type: [AdvertisementResponseDto] })
   async findAll(@Query() query: AdvertisementQueryDto): Promise<AdvertisementResponseDto[]> {
     return this.advertisementService.findAll(query);
+  }
+
+  @Get('by-page/:placement')
+  @ApiOperation({ summary: 'Buscar anúncios ativos por página' })
+  @ApiResponse({ status: 200, description: 'Lista de anúncios ativos da página', type: [AdvertisementResponseDto] })
+  async findByPlacement(
+    @Param('placement') placement: string,
+  ): Promise<AdvertisementResponseDto[]> {
+    return this.advertisementService.findByPlacement(placement);
   }
 
   @Get('active/:placement/:position')
@@ -113,6 +123,7 @@ export class AdvertisementController {
         clickUrl: { type: 'string' },
         position: { type: 'string', enum: ['top', 'bottom', 'sidebar', 'header', 'footer', 'content'] },
         placement: { type: 'string', enum: ['home', 'news'] },
+        size: { type: 'string', enum: ['728x90', '300x200'], example: '728x90' },
         isActive: { type: 'boolean' },
         priority: { type: 'number', minimum: 0, maximum: 10 },
         startDate: { type: 'string', format: 'date-time' },

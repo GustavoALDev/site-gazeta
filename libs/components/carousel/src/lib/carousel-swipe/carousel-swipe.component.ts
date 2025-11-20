@@ -1,423 +1,474 @@
-import { Component, signal, computed, input, ElementRef, ViewChild, OnInit, OnDestroy, AfterViewInit, inject } from '@angular/core';
+import {
+  Component,
+  signal,
+  computed,
+  input,
+  ElementRef,
+  ViewChild,
+  OnDestroy,
+  AfterViewInit,
+  DestroyRef,
+  inject,
+} from '@angular/core';
 import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { News } from '@site-gazeta/models';
-import { Category } from '@site-gazeta/models';
 import { RouterModule } from '@angular/router';
-import { ApiService } from 'apps/painel-gazeta/src/app/core/services/api.service';
 
-// Interface para itens com dados processados
+
+interface ImageUrls {
+  original: string;
+  small: string;
+  medium: string;
+  superSmall: string;
+}
+
 interface NewsItemWithData extends News {
-  imageUrl: string;
+  imageUrl: ImageUrls;
   tags: string[];
 }
 
-// Interface para itens com clones mínimos
 interface NewsWithClone extends Omit<NewsItemWithData, 'id'> {
-  id: number | string; // Permite IDs originais e de clones
+  id: number | string;
   isClone?: boolean;
   originalIndex?: number;
 }
 
+interface DragState {
+  isDragging: boolean;
+  startX: number;
+  currentX: number;
+}
+
+// ============================================
+// CONSTANTS
+// ============================================
+
+const DRAG_THRESHOLD = 30; // pixels para diferenciar click de drag
+const SWIPE_THRESHOLD = 0.2; // 20% da largura da tela
+const MOVE_DETECTION_THRESHOLD = 15; // pixels para detectar movimento
+const TRANSITION_DURATION = 320; // ms
+
+// ============================================
+// COMPONENT
+// ============================================
+
 @Component({
   selector: 'lib-carousel-swipe',
-  imports: [CommonModule, RouterModule, NgOptimizedImage],
+  standalone: true,
+  imports: [
+    CommonModule, 
+    RouterModule, 
+    NgOptimizedImage,
+  ],
   templateUrl: './carousel-swipe.component.html',
   styleUrl: './carousel-swipe.component.scss',
 })
-export class CarouselSwipeComponent implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild('carouselTrack', { static: false }) carouselTrack!: ElementRef<HTMLElement>;
+export class CarouselSwipeComponent implements AfterViewInit, OnDestroy {
+  // ============================================
+  // INJECTIONS & VIEW REFERENCES
+  // ============================================
+  
+  private readonly destroyRef = inject(DestroyRef);
+  
+  @ViewChild('carouselTrack', { static: false }) 
+  private carouselTrack?: ElementRef<HTMLElement>;
 
-  // Input para receber notícias externamente
-  news = input<News[]>([]);
-  apiService = inject(ApiService);
+  // ============================================
+  // INPUTS
+  // ============================================
+  
+  readonly news = input<News[]>([]);
 
-  // Estado do carousel usando signals - com sistema de clones mínimo
-  private currentIndex = signal(1); // Índice no array estendido (inicia em 1 - primeiro item real)
-  protected isDragging = signal(false);
-  private startX = signal(0);
-  private currentX = signal(0);
-  protected isTransitioning = signal(false);
-  private animationFrameId: number | null = null;
-  private categories = signal<Category[]>([]);
-
-  // Computed que processa os itens de notícias
-  newsItems = computed(() => {
-    const inputItems = this.news()
-      .sort((a, b) => new Date(b.published).getTime() - new Date(a.published).getTime())
-      .slice(0, 5);
-    return inputItems;
+  // ============================================
+  // SIGNALS - STATE
+  // ============================================
+  
+  private readonly currentIndex = signal(1); // Inicia em 1 (primeiro item real)
+  private readonly dragState = signal<DragState>({
+    isDragging: false,
+    startX: 0,
+    currentX: 0,
   });
+  protected readonly isTransitioning = signal(false);
 
-  // Computed que adiciona imageUrl e tags aos itens
-  newsItemsWithData = computed(() => {
-    const items = this.newsItems();
-    const categoryMap = this.categories();
+  // ============================================
+  // COMPUTED SIGNALS - DATA PROCESSING
+  // ============================================
+
+  /**
+   * Processa os itens de notícias adicionando imageUrl e validando tags
+   */
+  private readonly newsItemsWithData = computed<NewsItemWithData[]>(() => {
+    const items = this.news();
     
     return items.map(item => {
-      const imageUrl = item.mediaNews?.[0]?.imgSize?.original || '';
-      const tags = item.categoryId.map((id: number) => 
-        categoryMap.find((category) => category.id === id)?.name || 'GERAL'
-      );
-      
+      // Extrai imageUrl com fallback seguro
+      const imageUrl: ImageUrls = item.mediaNews?.[0]?.imgSize || {
+        original: '',
+        small: '',
+        medium: '',
+        superSmall: '',
+      };
+
+      // Usa tags do backend se disponíveis, senão array vazio
+      const tags = item.tags && item.tags.length > 0 ? item.tags : [];
+
       return {
         ...item,
         imageUrl,
-        tags
+        tags,
       } as NewsItemWithData;
     });
   });
 
-  // Array estendido com clones mínimos: [último, ...originais, primeiro]
-  extendedItems = computed((): NewsWithClone[] => {
+  /**
+   * Cria array estendido com clones para loop infinito
+   * Estrutura: [clone_último, item0, item1, ..., itemN, clone_primeiro]
+   */
+  readonly extendedItems = computed<NewsWithClone[]>(() => {
     const items = this.newsItemsWithData();
     if (items.length === 0) return [];
-    
+
+    const lastItem = items[items.length - 1];
+    const firstItem = items[0];
+
     const extended: NewsWithClone[] = [];
-    
+
     // Clone do último item no início
     extended.push({
-      ...items[items.length - 1],
-      id: `${items[items.length - 1].id}_clone_last`,
+      ...lastItem,
+      id: `${lastItem.id}_clone_last`,
       isClone: true,
-      originalIndex: items.length - 1
+      originalIndex: items.length - 1,
     });
-    
+
     // Itens originais
     items.forEach((item, index) => {
       extended.push({
         ...item,
-        originalIndex: index
+        originalIndex: index,
       });
     });
-    
+
     // Clone do primeiro item no final
     extended.push({
-      ...items[0],
-      id: `${items[0].id}_clone_first`,
+      ...firstItem,
+      id: `${firstItem.id}_clone_first`,
       isClone: true,
-      originalIndex: 0
+      originalIndex: 0,
     });
-    
+
     return extended;
   });
 
-  // Computed properties
-  totalItems = computed(() => this.newsItems().length);
-  totalExtendedItems = computed(() => this.extendedItems().length);
-  
-  // Item atual visível (baseado no índice real)
-  currentItem = computed(() => {
-    const extendedIndex = this.currentIndex();
-    const extended = this.extendedItems();
-    return extended[extendedIndex];
+  // ============================================
+  // COMPUTED SIGNALS - DERIVED STATE
+  // ============================================
+
+  readonly totalItems = computed(() => this.news().length);
+  readonly totalExtendedItems = computed(() => this.extendedItems().length);
+
+  readonly currentItem = computed(() => {
+    const index = this.currentIndex();
+    const items = this.extendedItems();
+    return items[index];
   });
 
-  // Índice real do item atual (0 a n-1)
-  currentRealIndex = computed(() => {
-    const currentItem = this.currentItem();
-    return currentItem?.originalIndex ?? 0;
+  readonly currentRealIndex = computed(() => {
+    return this.currentItem()?.originalIndex ?? 0;
   });
 
-  // Índice atual do carousel (para uso no template)
-  activeIndex = computed(() => this.currentIndex());
+  readonly activeIndex = computed(() => this.currentIndex());
 
-  // Transform style para o track (usando array estendido)
-  trackTransform = computed(() => {
-    const currentIndex = this.currentIndex();
-    const baseTranslate = -currentIndex * 100;
-    const dragOffset = this.isDragging() ? (this.currentX() - this.startX()) / window.innerWidth * 100 : 0;
-    
+  protected readonly isDragging = computed(() => this.dragState().isDragging);
+
+  /**
+   * Calcula a transformação CSS para o track do carousel
+   */
+  readonly trackTransform = computed(() => {
+    const index = this.currentIndex();
+    const baseTranslate = -index * 100;
+
+    const drag = this.dragState();
+    const dragOffset = drag.isDragging
+      ? ((drag.currentX - drag.startX) / window.innerWidth) * 100
+      : 0;
+
     return `translateX(${baseTranslate + dragOffset}%)`;
   });
 
-  ngOnInit() {
-    // Carrega categorias
-    this.getCategories();
-    // Não configura eventos aqui - será feito no ngAfterViewInit quando o elemento estiver disponível
-  }
+  // ============================================
+  // EVENT HANDLERS - BOUND REFERENCES
+  // ============================================
 
-  getCategories() {
-    this.apiService.getActiveCategories().subscribe((categories) => {
-      this.categories.set(categories);
-    });
-  }
+  private readonly boundHandlers = {
+    touchStart: this.onTouchStart.bind(this),
+    touchMove: this.onTouchMove.bind(this),
+    touchEnd: this.onTouchEnd.bind(this),
+    mouseDown: this.onMouseDown.bind(this),
+    mouseMove: this.onMouseMove.bind(this),
+    mouseUp: this.onMouseUp.bind(this),
+    transitionEnd: this.onTransitionEnd.bind(this),
+  };
 
-  ngAfterViewInit() {
-    // Inicialização do carousel após view ready
+  // ============================================
+  // LIFECYCLE HOOKS
+  // ============================================
+
+  ngAfterViewInit(): void {
+    this.setupEventListeners();
+
     if (this.totalItems() > 0) {
-      console.log('Carousel initialized with', this.totalItems(), 'items');
-    }
-    
-    // Event listener para detectar fim da transição CSS
-    if (this.carouselTrack?.nativeElement) {
-      this.carouselTrack.nativeElement.addEventListener('transitionend', this.onTransitionEnd.bind(this));
-    }
-    
-    // Configura eventos de touch/mouse após view init
-    this.setupTouchEvents();
-  }
-
-  ngOnDestroy() {
-    this.removeTouchEvents();
-    
-    // Remove event listener da transição
-    if (this.carouselTrack?.nativeElement) {
-      this.carouselTrack.nativeElement.removeEventListener('transitionend', this.onTransitionEnd.bind(this));
+      console.log(`[CarouselSwipe] Initialized with ${this.totalItems()} items`);
     }
   }
 
-  private setupTouchEvents() {
-    // Aguarda o view init para ter acesso ao elemento
-    if (typeof window !== 'undefined' && this.carouselTrack?.nativeElement) {
-      const trackElement = this.carouselTrack.nativeElement;
-      
-      // Touch events - apenas no track do carousel
-      trackElement.addEventListener('touchstart', this.onTouchStart.bind(this), { passive: true });
-      trackElement.addEventListener('touchmove', this.onTouchMove.bind(this), { passive: false });
-      trackElement.addEventListener('touchend', this.onTouchEnd.bind(this), { passive: true });
-
-      // Mouse events para desktop - apenas no track do carousel
-      trackElement.addEventListener('mousedown', this.onMouseDown.bind(this), { passive: true });
-      document.addEventListener('mousemove', this.onMouseMove.bind(this));
-      document.addEventListener('mouseup', this.onMouseUp.bind(this));
-    }
+  ngOnDestroy(): void {
+    this.removeEventListeners();
   }
 
-  private removeTouchEvents() {
-    if (typeof window !== 'undefined' && this.carouselTrack?.nativeElement) {
-      const trackElement = this.carouselTrack.nativeElement;
-      
-      trackElement.removeEventListener('touchstart', this.onTouchStart.bind(this));
-      trackElement.removeEventListener('touchmove', this.onTouchMove.bind(this));
-      trackElement.removeEventListener('touchend', this.onTouchEnd.bind(this));
-      trackElement.removeEventListener('mousedown', this.onMouseDown.bind(this));
-      document.removeEventListener('mousemove', this.onMouseMove.bind(this));
-      document.removeEventListener('mouseup', this.onMouseUp.bind(this));
-    }
+  // ============================================
+  // EVENT LISTENER MANAGEMENT
+  // ============================================
+
+  private setupEventListeners(): void {
+    const trackElement = this.carouselTrack?.nativeElement;
+    if (!trackElement || typeof window === 'undefined') return;
+
+    // Touch events com passive correto
+    trackElement.addEventListener('touchstart', this.boundHandlers.touchStart, {
+      passive: true,
+    });
+    trackElement.addEventListener('touchmove', this.boundHandlers.touchMove, {
+      passive: false, // Necessário para preventDefault
+    });
+    trackElement.addEventListener('touchend', this.boundHandlers.touchEnd, {
+      passive: false, // Necessário para preventDefault condicional
+    });
+
+    // Mouse events
+    trackElement.addEventListener('mousedown', this.boundHandlers.mouseDown, {
+      passive: true,
+    });
+    document.addEventListener('mousemove', this.boundHandlers.mouseMove);
+    document.addEventListener('mouseup', this.boundHandlers.mouseUp);
+
+    // Transition events
+    trackElement.addEventListener('transitionend', this.boundHandlers.transitionEnd);
   }
 
+  private removeEventListeners(): void {
+    const trackElement = this.carouselTrack?.nativeElement;
+    if (!trackElement || typeof window === 'undefined') return;
 
-  // Touch Events
-  private onTouchStart(event: TouchEvent) {
-    const target = event.target as HTMLElement;
-    
-    // Não inicia drag em botões de navegação
-    if (target.closest('button') && !target.closest('.news-card')) {
-      return;
-    }
-    
+    // Touch events
+    trackElement.removeEventListener('touchstart', this.boundHandlers.touchStart);
+    trackElement.removeEventListener('touchmove', this.boundHandlers.touchMove);
+    trackElement.removeEventListener('touchend', this.boundHandlers.touchEnd);
+
+    // Mouse events
+    trackElement.removeEventListener('mousedown', this.boundHandlers.mouseDown);
+    document.removeEventListener('mousemove', this.boundHandlers.mouseMove);
+    document.removeEventListener('mouseup', this.boundHandlers.mouseUp);
+
+    // Transition events
+    trackElement.removeEventListener('transitionend', this.boundHandlers.transitionEnd);
+  }
+
+  // ============================================
+  // TOUCH EVENT HANDLERS
+  // ============================================
+
+  private onTouchStart(event: TouchEvent): void {
+    if (this.shouldIgnoreEvent(event.target as HTMLElement)) return;
+
     const touch = event.touches[0];
     this.startDrag(touch.clientX);
-    // Não prevenir default aqui para permitir cliques
   }
 
-  private onTouchMove(event: TouchEvent) {
-    if (!this.isDragging()) return;
-    
+  private onTouchMove(event: TouchEvent): void {
+    const drag = this.dragState();
+    if (!drag.isDragging) return;
+
     const touch = event.touches[0];
-    const deltaX = Math.abs(touch.clientX - this.startX());
-    const threshold = 15; // Threshold menor para detectar movimento durante o drag
-    
-    // Atualiza a posição do drag
     this.updateDrag(touch.clientX);
+
+    const deltaX = Math.abs(touch.clientX - drag.startX);
     
-    // Só previne default se realmente estiver arrastando (movimento significativo)
-    // Isso permite que cliques rápidos funcionem normalmente
-    if (deltaX > threshold) {
+    // Só previne scroll se movimento for significativo
+    if (deltaX > MOVE_DETECTION_THRESHOLD) {
       event.preventDefault();
     }
   }
 
-  private onTouchEnd(event: TouchEvent) {
-    if (!this.isDragging()) {
-      // Se não estava arrastando, permite que o clique normal aconteça
+  private onTouchEnd(event: TouchEvent): void {
+    const drag = this.dragState();
+    if (!drag.isDragging) return;
+
+    const deltaX = Math.abs(drag.currentX - drag.startX);
+
+    // Movimento pequeno = click, não previne
+    if (deltaX < DRAG_THRESHOLD) {
+      this.resetDrag();
       return;
     }
-    
-    const deltaX = Math.abs(this.currentX() - this.startX());
-    const threshold = 30; // Threshold para diferenciar clique de swipe (em pixels)
-    
-    // Se o movimento foi muito pequeno, não considera como drag e permite clique no routerLink
-    if (deltaX < threshold) {
-      this.isDragging.set(false);
-      this.startX.set(0);
-      this.currentX.set(0);
-      // Não previne default para permitir que o routerLink funcione
-      return;
-    }
-    
-    // Se houve movimento significativo, faz o swipe e previne o clique
+
+    // Movimento significativo = swipe, previne click
     this.endDrag();
     event.preventDefault();
     event.stopPropagation();
   }
 
-  // Mouse Events (para teste no desktop)
-  private onMouseDown(event: MouseEvent) {
-    const target = event.target as HTMLElement;
-    
-    // Não inicia drag em botões de navegação (fora do card)
-    if (target.closest('button') && !target.closest('.news-card')) {
-      return;
-    }
-    
-    // Só inicia drag se o botão esquerdo foi pressionado
-    if (event.button !== 0) {
-      return;
-    }
-    
+  // ============================================
+  // MOUSE EVENT HANDLERS
+  // ============================================
+
+  private onMouseDown(event: MouseEvent): void {
+    if (this.shouldIgnoreEvent(event.target as HTMLElement)) return;
+    if (event.button !== 0) return; // Apenas botão esquerdo
+
     this.startDrag(event.clientX);
-    // Não prevenir default aqui para permitir cliques
   }
 
-  private onMouseMove(event: MouseEvent) {
-    if (!this.isDragging()) return;
-    
-    // Sempre atualiza a posição do drag durante o movimento do mouse
+  private onMouseMove(event: MouseEvent): void {
+    if (!this.dragState().isDragging) return;
     this.updateDrag(event.clientX);
   }
 
-  private onMouseUp(event: MouseEvent) {
-    if (!this.isDragging()) {
+  private onMouseUp(event: MouseEvent): void {
+    const drag = this.dragState();
+    if (!drag.isDragging) return;
+
+    const deltaX = Math.abs(drag.currentX - drag.startX);
+
+    if (deltaX < DRAG_THRESHOLD) {
+      this.resetDrag();
       return;
     }
-    
-    const deltaX = Math.abs(this.currentX() - this.startX());
-    const threshold = 30; // Threshold para diferenciar clique de drag (em pixels)
-    
-    // Se o movimento foi muito pequeno, não considera como drag e permite clique no routerLink
-    if (deltaX < threshold) {
-      this.isDragging.set(false);
-      this.startX.set(0);
-      this.currentX.set(0);
-      // Não previne default para permitir que o routerLink funcione
-      return;
-    }
-    
-    // Se houve movimento significativo, faz o swipe e previne o clique
+
     this.endDrag();
     event.preventDefault();
     event.stopPropagation();
   }
 
-  // Drag Logic
-  private startDrag(clientX: number) {
-    // Só inicia drag se não estiver clicando em um link
-    this.isDragging.set(true);
-    this.startX.set(clientX);
-    this.currentX.set(clientX);
+  // ============================================
+  // DRAG LOGIC
+  // ============================================
+
+  private shouldIgnoreEvent(target: HTMLElement): boolean {
+    // Ignora eventos em botões de navegação (exceto dentro do card)
+    return !!(target.closest('button') && !target.closest('.news-card'));
   }
 
-  private updateDrag(clientX: number) {
-    this.currentX.set(clientX);
+  private startDrag(clientX: number): void {
+    this.dragState.set({
+      isDragging: true,
+      startX: clientX,
+      currentX: clientX,
+    });
   }
 
-  private endDrag() {
-    const deltaX = this.currentX() - this.startX();
-    const threshold = window.innerWidth * 0.2; // 20% da largura da tela
-    
-    // Só navega se o movimento for significativo (threshold)
+  private updateDrag(clientX: number): void {
+    this.dragState.update(state => ({
+      ...state,
+      currentX: clientX,
+    }));
+  }
+
+  private resetDrag(): void {
+    this.dragState.set({
+      isDragging: false,
+      startX: 0,
+      currentX: 0,
+    });
+  }
+
+  private endDrag(): void {
+    const drag = this.dragState();
+    const deltaX = drag.currentX - drag.startX;
+    const threshold = window.innerWidth * SWIPE_THRESHOLD;
+
     if (Math.abs(deltaX) > threshold) {
       if (deltaX > 0) {
-        // Swipe para a direita - item anterior
         this.goToPrevious();
       } else {
-        // Swipe para a esquerda - próximo item
         this.goToNext();
       }
     }
-    
-    this.isDragging.set(false);
-    this.startX.set(0);
-    this.currentX.set(0);
+
+    this.resetDrag();
   }
 
-  // Navegação com loop infinito usando clones
+  // ============================================
+  // NAVIGATION
+  // ============================================
+
   goToPrevious(): void {
     if (this.isTransitioning()) return;
-    
+
     const currentIndex = this.currentIndex();
     const totalReal = this.totalItems();
-    
+
     if (currentIndex === 1) {
-      // Está no primeiro item real, vai para o clone do último
+      // Primeiro item real -> vai para clone do último
       this.currentIndex.set(0);
-      // Após a transição, reposiciona para o último item real
       setTimeout(() => {
         this.repositionToRealItem(totalReal);
-      }, 320);
+      }, TRANSITION_DURATION);
     } else {
-      // Navegação normal
       this.currentIndex.update(index => index - 1);
     }
   }
 
   goToNext(): void {
     if (this.isTransitioning()) return;
-    
+
     const currentIndex = this.currentIndex();
     const totalExtended = this.totalExtendedItems();
     const totalReal = this.totalItems();
-    
+
     if (currentIndex === totalReal) {
-      // Está no último item real, vai para o clone do primeiro
+      // Último item real -> vai para clone do primeiro
       this.currentIndex.set(totalExtended - 1);
-      // Após a transição, reposiciona para o primeiro item real
       setTimeout(() => {
         this.repositionToRealItem(1);
-      }, 320);
+      }, TRANSITION_DURATION);
     } else {
-      // Navegação normal
       this.currentIndex.update(index => index + 1);
     }
   }
 
-  // Event handler para fim da transição CSS
-  private onTransitionEnd(event: TransitionEvent): void {
-    // Só processa se a transição foi do transform (não de outras propriedades)
-    if (event.propertyName !== 'transform') return;
+  goToSlide(index: number): void {
+    if (index < 0 || index >= this.totalItems()) return;
+
+    // Converte índice real para índice estendido (+1 por causa do clone no início)
+    this.currentIndex.set(index + 1);
+    this.isTransitioning.set(false);
   }
 
-  // Reposiciona para um item real sem animação
   private repositionToRealItem(targetIndex: number): void {
     this.isTransitioning.set(true);
     this.currentIndex.set(targetIndex);
-    
-    // Remove a classe transitioning após um frame
+
     requestAnimationFrame(() => {
       this.isTransitioning.set(false);
     });
   }
 
-  // Navegação direta para um índice específico (baseado no índice real)
-  goToSlide(index: number): void {
-    if (index >= 0 && index < this.totalItems()) {
-      // Converte índice real para índice estendido (+ 1 por causa do clone no início)
-      this.currentIndex.set(index + 1);
-      this.isTransitioning.set(false);
-    }
+  // ============================================
+  // EVENT HANDLERS - TRANSITION
+  // ============================================
+
+  private onTransitionEnd(event: TransitionEvent): void {
+    if (event.propertyName !== 'transform') return;
+    // Lógica adicional se necessário
   }
 
-  // Helper para indicadores (baseado no índice real)
+  // ============================================
+  // PUBLIC HELPERS (TEMPLATE)
+  // ============================================
+
   isActiveSlide(index: number): boolean {
     return index === this.currentRealIndex();
-  }
-
-  // Helpers para extrair dados do modelo News (aceita NewsWithClone)
-  getImageUrl(item: NewsWithClone): string {
-    return item.imageUrl || '';
-  }
-
-  getTags(item: NewsWithClone): string[] {
-    return item.tags || [];
-  }
-
-  getFormattedDate(item: NewsWithClone): string {
-    return item.published || '';
-  }
-
-  getCommentsCount(): number {
-    // Por enquanto retorna 0, pode ser implementado futuramente
-    return 0;
   }
 }

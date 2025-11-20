@@ -9,7 +9,7 @@ import { NewsModule } from '../news/news.module';
 import { MediaModule } from '../media/media.module';
 import { NewsVideoModule } from '../news-video/news-video.module';
 import { AdvertisementModule } from '../advertisement/advertisement.module';
-import { HomeConfigModule } from '../home-config/home-config.module';
+import { ConfigSystemModule } from '../config-system/config-system.module';
 import { MenuModule } from '../menu/menu.module';
 import { YoutubePlaylistModule } from '../youtube-playlist/youtube-playlist.module';
 import { VideoModule } from '../video/video.module';
@@ -28,7 +28,7 @@ import { AnalyticsModule } from '../analytics/analytics.module';
     MediaModule,
     NewsVideoModule,
     AdvertisementModule,
-    HomeConfigModule,
+    ConfigSystemModule,
     MenuModule,
     YoutubePlaylistModule,
     VideoModule,

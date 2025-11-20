@@ -1,5 +1,58 @@
 @use '../../../../../styles/variables' as vars;
 
+// Animação de spinning para loading
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+// Estilos dos botões de ação
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  padding-top: 1.5rem;
+  margin-top: 1.5rem;
+  border-top: 2px solid var(--border);
+  
+  button {
+    @include vars.btn;
+    @include vars.flex(center, center);
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    min-width: 200px;
+    width: auto;
+    transition: all var(--transition);
+    
+    .material-icons {
+      font-size: 20px;
+    }
+  }
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent-red) 0%, var(--accent-blue) 100%);
+  color: white;
+  border: none;
+  
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(10, 128, 196, 0.3);
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+}
+
 .category-config-content {
   display: flex;
   flex-direction: column;

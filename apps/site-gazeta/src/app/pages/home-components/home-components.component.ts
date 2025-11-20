@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, signal, afterNextRender } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CarouselComponent } from '@site-gazeta/carousel';
 import { CarouselSwipeComponent } from '@site-gazeta/carousel';
@@ -9,8 +9,10 @@ import { NewsClusterComponent } from '@site-gazeta/home-components';
 import { VideoPlayerComponent } from '@site-gazeta/video-player';
 import { MoreNewsComponent } from '@site-gazeta/more-news';
 import { ApiService } from '../../core/service/api.service';
-import { Category, Menu, News, Video } from '@site-gazeta/models';
-import { firstValueFrom, forkJoin, map } from 'rxjs';
+import { BreakpointService } from '../../core/service/breakpoint.service';
+import { Ads, Category, Menu, News, SectionOrderConfig, SectionOrderConfigMap, TopGazetaConfig, Video } from '@site-gazeta/models';
+import { firstValueFrom, forkJoin, map, tap } from 'rxjs';
+import { AdsComponent } from '@site-gazeta/ads';
 
 @Component({
   selector: 'app-home-components',
@@ -24,63 +26,77 @@ import { firstValueFrom, forkJoin, map } from 'rxjs';
     NewsClusterComponent,
     VideoPlayerComponent,
     MoreNewsComponent,
+    AdsComponent,
   ],
   templateUrl: './home-components.component.html',
   styleUrl: './home-components.component.scss',
 })
-export class HomeComponentsComponent implements OnInit, OnDestroy {
+export class HomeComponentsComponent implements OnInit {
   private apiService = inject(ApiService);
-  private readonly MOBILE_BREAKPOINT = 1128;
-  private resizeListener?: () => void;
+
+  protected breakpointService = inject(BreakpointService);
+  get isMobile() {
+    return this.breakpointService.isMobile;
+  }
 
   protected newsItems = signal<News[]>([]);
   protected categories = signal<Category[]>([]);
   protected videos = signal<Video[]>([]);
+  private ads = signal<{top: Ads[], center: Ads[], bottom: Ads[]}>({top: [], center: [], bottom: []});
+
   menuItems = signal<Menu[]>([]);
   carouselItems = signal<News[]>([]);
   categoryGridNews = signal<{featured: News, secondary: News[], category: Category}[]>([]);
-  isMobile = signal<boolean | null>(null); // null = ainda não detectado
+  topGazeta = signal<TopGazetaConfig | null>(null);
+  homeConfig = this.apiService.getHomeConfigMap().pipe(tap(config => console.log(config)));
 
+  // Computed signals para otimização do template
+  protected hasCarouselItems = computed(() => this.carouselItems().length > 0);
+  protected hasCategoryGrid = computed(() => this.categoryGridNews().length > 0);
+  protected hasVideos = computed(() => this.videos().length > 0);
+  protected hasNews = computed(() => this.newsItems().length > 0);
+  protected hasCategories = computed(() => this.categories().length > 0);
+  
+  // Computed para anúncios com validação
+  protected topAd = computed(() => this.ads().top.length > 0 ? this.ads().top[0] : null);
+  protected centerAd = computed(() => this.ads().center.length > 0 ? this.ads().center[0] : null);
+  protected bottomAd = computed(() => this.ads().bottom.length > 0 ? this.ads().bottom[0] : null);
+  protected hasTopAd = computed(() => this.topAd() !== null);
+  protected hasBottomAd = computed(() => this.bottomAd() !== null);
+
+  // Computed para primeiro categoria
+  protected firstCategory = computed(() => 
+    this.categories().length > 0 ? this.categories()[0] : null
+  );
+
+  // Computed para Top Gazeta com validação
+  protected hasTopGazeta = computed(() => 
+    this.topGazeta() !== null && 
+    this.topGazeta()!.categories !== undefined && 
+    this.topGazeta()!.categories.length > 0
+  );
   constructor() {
-    // Detecta o breakpoint apenas no cliente após a renderização
-    afterNextRender(() => {
-      this.initializeBreakpointDetection();
+    
+  }
+  ngOnInit(): void {
+    
+    this.setCarouselItems();
+    this.getHomeCategoryConfig();
+    this.getNews();
+    this.getCategories();
+    this.getVideos();
+    this.getAds();
+    
+  }
+
+  getHomeCategoryConfig() {
+    this.apiService.getHomeCategoryConfig().subscribe((config) => {
+      const categories = config.destaque.categories as Category[];
+      this.setCategoryGridItems(categories );
+      this.topGazeta.set(config.topGazeta);
+      console.log(this.topGazeta());
     });
   }
-
-  ngOnInit(): void {
-    this.getCategories();
-    this.setCarouselItems();
-    this.getVideos();
-    this.getNews();
-  }
-
-  ngOnDestroy(): void {
-    if (this.resizeListener && typeof window !== 'undefined') {
-      window.removeEventListener('resize', this.resizeListener);
-    }
-  }
-
-  private initializeBreakpointDetection(): void {
-    if (typeof window === 'undefined') {
-      return;
-    }
-
-    // Verifica o tamanho inicial
-    this.checkBreakpoint();
-
-    // Adiciona listener para mudanças de tamanho
-    this.resizeListener = () => this.checkBreakpoint();
-    window.addEventListener('resize', this.resizeListener);
-  }
-
-  private checkBreakpoint(): void {
-    if (typeof window === 'undefined') {
-      return;
-    }
-    this.isMobile.set(window.innerWidth <= this.MOBILE_BREAKPOINT);
-  }
-
   getNews() {
     this.apiService.getNews().subscribe((news) => {
       this.newsItems.set(news);
@@ -90,7 +106,6 @@ export class HomeComponentsComponent implements OnInit, OnDestroy {
   getCategories() {
     this.apiService.getActiveCategories().subscribe((categories) => {
       this.categories.set(categories);
-      this.setCategoryGridItems();
     });
   }
 
@@ -101,24 +116,34 @@ export class HomeComponentsComponent implements OnInit, OnDestroy {
   }
 
   setCarouselItems() {
-    this.apiService.getNewsFeatured().subscribe((news) => {
+    this.apiService.getNewsFeatured()
+    .pipe(
+      map(news => news.slice(0, 5))
+    )
+    .subscribe((news) => {
       this.carouselItems.set(news);
     });
   }
 
-  setCategoryGridItems() {
-    console.log('setCategoryGridItems');
-    console.log(this.categories());
-    const mockCategorieNames = this.categories().filter((category) => {
-      return (
-        category.name == 'Política' ||
-        category.name == 'Tecnologia' ||
-        category.name == 'Esportes'
-      );
+  getAds() {
+    this.apiService.getAdsByPlacement('home').subscribe((ads) => {
+      this.setAds(ads);
     });
+  }
+
+  setAds(ads: Ads[]) {
+      const groupedAds = {
+        top: ads.filter(ad => ad.position === 'top'),
+        center: ads.filter(ad => ad.position === 'center'),
+        bottom: ads.filter(ad => ad.position === 'bottom'),
+      };
+      console.log(groupedAds);
+      this.ads.set(groupedAds);
+  }
+  setCategoryGridItems(categories: Category[]) {
 
     forkJoin(
-      mockCategorieNames.map(category =>
+      categories.map(category =>
         this.apiService.getNewsForCategory(category.id as number).pipe(
           map(news=>{return {news:news, category:category}})
         )

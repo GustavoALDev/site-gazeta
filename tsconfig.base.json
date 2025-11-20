@@ -16,6 +16,7 @@
     "baseUrl": ".",
     "paths": {
       "@site-gazeta/ads": ["libs/components/ads/src/index.ts"],
+      "@site-gazeta/ads-config": ["libs/ts/types/index.ts"],
       "@site-gazeta/alert": ["libs/shared/alert/src/index.ts"],
       "@site-gazeta/carousel": ["libs/components/carousel/src/index.ts"],
       "@site-gazeta/color-picker": [

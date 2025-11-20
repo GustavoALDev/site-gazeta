@@ -13,7 +13,11 @@ import { RouterModule } from '@angular/router';
 export class NewsCategoryGridComponent {
 
   news = input.required<{featured: News, secondary: News[], category: Category}[]>();
+  newsList = computed(() => {
+    const news = this.news();
+    return news;
+  });
   constructor(){
-    console.log('viewport')
+    
   }
 }

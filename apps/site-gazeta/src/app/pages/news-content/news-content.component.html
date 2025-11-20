@@ -82,7 +82,7 @@
                 <div class="video-item">
                   <div class="video-wrapper">
                     <iframe 
-                      [src]="video.url | sanitizeUrl" 
+                      [src]="video.url" 
                       frameborder="0" 
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                       allowfullscreen>
@@ -102,7 +102,7 @@
               @for (media of otherMedias(); track media.id) {
                 <div class="gallery-item">
                   <img 
-                    [src]="media.imgSize?.medium" 
+                    [src]="media.imgSize?.small" 
                     [alt]="'Imagem ' + $index"
                     class="gallery-image"
                   >
