@@ -21,9 +21,14 @@
       </div>
     }
     @if(announcements()) {
-    <div class="ads-container">
+    <div class="ads-container" [class.ads-lateral]="adSize() === '160x160'" [style.min-height]="adSize() === '160x160' ? '100%' : 'auto'">
       <span>Conteúdo Publicitário</span>
-      <lib-ads [size]="adSize()" [announcements]="announcements()"></lib-ads>
+      <lib-ads 
+        [size]="adSize()" 
+        [announcements]="announcements()"
+        [style.height]="adSize() === '160x160' ? '100%' : 'auto'"
+        [style.min-height]="adSize() === '160x160' ? '100%' : 'auto'">
+      </lib-ads>
     </div>
     }
   </div>

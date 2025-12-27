@@ -42,7 +42,9 @@ export class AdsListComponent implements OnInit, OnDestroy {
   readonly positions = [
     { value: '', label: 'Todas as posições' },
     { value: 'top', label: 'Topo' },
+    { value: 'center', label: 'Centro' },
     { value: 'bottom', label: 'Rodapé' },
+    { value: 'lateral', label: 'Lateral' },
     { value: 'sidebar', label: 'Barra Lateral' },
     { value: 'header', label: 'Cabeçalho' },
     { value: 'footer', label: 'Rodapé da Página' },
@@ -323,7 +325,9 @@ export class AdsListComponent implements OnInit, OnDestroy {
   getPositionLabel(position: string): string {
     const positions: { [key: string]: string } = {
       'top': 'Topo',
+      'center': 'Centro',
       'bottom': 'Rodapé',
+      'lateral': 'Lateral',
       'sidebar': 'Barra Lateral',
       'header': 'Cabeçalho',
       'footer': 'Rodapé da Página',

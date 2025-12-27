@@ -1,9 +1,10 @@
 .announcement {
-    align-self: center;   
+    align-self: stretch;   
     display: flex;
     justify-content: center;
     align-items: center;
     margin: 10px 0;
+    height: 100%;
 }
 
 .large{
@@ -23,17 +24,20 @@
 }
 
 .lateral{
+    height: 100%;
+    display: flex;
+    align-items: stretch;
+    
     img {
-        max-width: 160px;
-        height: 160px;
+        min-height: 200px;
         width: 100%;
+        height: 100%;
         object-fit: cover;
     }
 }
 
 .sidebar{
     img {
-        max-width: 160px;
         height: 600px;
         width: 100%;
         object-fit: cover;

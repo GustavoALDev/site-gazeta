@@ -29,6 +29,7 @@
 
 .news-cards-row {
   display: flex;
+  align-items: stretch; // Garante que todos os itens tenham a mesma altura
   gap: 2rem;
   overflow-x: auto;
   padding: 10px 0px;
@@ -92,18 +93,51 @@
   display: flex;
   flex-direction: column;
   cursor: pointer;
+  align-self: stretch; // Faz o container ter a mesma altura dos cards ao lado
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.281);
+  overflow: hidden;
+  
   span{
     font-family: 'Open Sans', sans-serif;
-    font-size: 0.875rem;
-    color: #2d115c;
-    margin-bottom: 0.5rem;
+    font-size: 0.75rem;
+    color: #666;
+    padding: 0.5rem 1rem;
     font-weight: 600;
+    flex-shrink: 0; // Mantém o texto fixo no topo
+    text-align: center;
+    background: #f8f8f8;
+    border-bottom: 1px solid #e0e0e0;
   }
   
-  // Ajuste para anúncios 160x160
-  &[data-size="160x160"] {
-    min-width: 160px;
-    max-width: 160px;
+  lib-ads {
+    flex: 1;
+    display: flex;
+    min-height: 0; // Permite que o flex funcione corretamente
+    align-items: stretch;
+  }
+  
+  &.ads-lateral {
+  
+    lib-ads {
+      height: 100% !important;
+      min-height: 100%;
+      
+      ::ng-deep {
+        .announcement.lateral {
+          height: 100% !important;
+          min-height: 100%;
+          margin: 0;
+          
+          img {
+            height: 100% !important;
+            min-height: 100%;
+            border-radius: 0;
+          }
+        }
+      }
+    }
   }
 }
 
@@ -133,6 +167,10 @@
     width: 70px;
     height: 3px;
     margin-bottom: 1rem;
+  }
+  .ads-container{
+    min-width: 220px;
+    max-width: 240px;
   }
 }
 
@@ -167,10 +205,21 @@
   }
   .ads-container{
     max-width: none;
-    height: auto;
-    img {
-      width: 100%;
-      height: auto;
+    width: 100%;
+    
+    lib-ads {
+      height: 250px !important;
+      
+      ::ng-deep {
+        .announcement.lateral {
+          height: 250px !important;
+          
+          img {
+            max-width: 100%;
+            height: 250px !important;
+          }
+        }
+      }
     }
   }
 }
