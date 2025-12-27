@@ -23,7 +23,7 @@
     @if(announcements()) {
     <div class="ads-container">
       <span>Conteúdo Publicitário</span>
-      <lib-ads size="300x200" [announcements]="announcements()"></lib-ads>
+      <lib-ads [size]="adSize()" [announcements]="announcements()"></lib-ads>
     </div>
     }
   </div>

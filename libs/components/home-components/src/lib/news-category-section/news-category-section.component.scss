@@ -86,7 +86,7 @@
   }
 }
 .ads-container{
-  min-width: 260px;
+  min-width: 160px;
   max-width: 300px;
   flex: 0 0 auto;
   display: flex;
@@ -94,6 +94,16 @@
   cursor: pointer;
   span{
     font-family: 'Open Sans', sans-serif;
+    font-size: 0.875rem;
+    color: #2d115c;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+  }
+  
+  // Ajuste para anúncios 160x160
+  &[data-size="160x160"] {
+    min-width: 160px;
+    max-width: 160px;
   }
 }
 

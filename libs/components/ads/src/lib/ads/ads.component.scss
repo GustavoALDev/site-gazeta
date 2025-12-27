@@ -22,8 +22,29 @@
     }
 }
 
+.lateral{
+    img {
+        max-width: 160px;
+        height: 160px;
+        width: 100%;
+        object-fit: cover;
+    }
+}
+
+.sidebar{
+    img {
+        max-width: 160px;
+        height: 600px;
+        width: 100%;
+        object-fit: cover;
+    }
+}
+
 @media (max-width: 768px) {
     .large{
+        display: none;
+    }
+    .sidebar{
         display: none;
     }
 }

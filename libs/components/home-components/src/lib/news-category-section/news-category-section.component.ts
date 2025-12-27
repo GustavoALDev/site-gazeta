@@ -28,6 +28,11 @@ export class NewsCategorySectionComponent {
     return this.news().filter(news => news.categoryId.includes(category.id as number));
   });
   
+  adSize = computed(() => {
+    const ad = this.announcements();
+    return ad?.size || '300x200';
+  });
+  
   onImageError(event: Event): void {
     const img = event.target as HTMLImageElement;
     img.src = 'https://via.placeholder.com/300x180?text=Imagem+Indisponível';

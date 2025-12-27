@@ -67,6 +67,7 @@ export class AdsFormComponent implements OnInit {
     { value: 'top', label: 'Topo', pages: ['home'] },
     { value: 'center', label: 'Centro', pages: ['home', 'content'] },
     { value: 'bottom', label: 'Rodapé', pages: ['home', 'content'] },
+    { value: 'lateral', label: 'Lateral', pages: ['home'] },
   ];
 
   readonly placementOptions: SelectOption[] = [
@@ -77,8 +78,9 @@ export class AdsFormComponent implements OnInit {
 
   readonly sizeOptions: SelectOption[] = [
     { value: '728x90', label: '728x90 (Leaderboard)' },
-    { value: '300x250', label: '300x250 (Medium Rectangle)' },
-    { value: '160x600', label: '160x600 (Banner)' },
+    { value: '300x200', label: '300x200 (Medium Rectangle)' },
+    { value: '160x160', label: '160x160 (Lateral Quadrado)' },
+    { value: '160x600', label: '160x600 (Banner Vertical)' },
   ];
 
   readonly ALLOWED_IMAGE_TYPES = [

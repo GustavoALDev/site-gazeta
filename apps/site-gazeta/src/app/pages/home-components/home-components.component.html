@@ -64,7 +64,7 @@
       class="order-5"
       [category]="firstCategory()!"
       [news]="newsItems()"
-      [announcements]="centerAd()!">
+      [announcements]="hasLateralAd() ? lateralAd()! : (centerAd() || undefined)">
     </lib-news-category-section>
     } @placeholder {
       <div class="news-category-section-skeleton"></div>

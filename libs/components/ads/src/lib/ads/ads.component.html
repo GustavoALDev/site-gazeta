@@ -6,4 +6,12 @@
 <div class="announcement small">
   <img [src]="announcements()!.imageUrl" alt="announcement" />
 </div>
+} @else if(size() === '160x160') {
+<div class="announcement lateral">
+  <img [src]="announcements()!.imageUrl" alt="announcement" />
+</div>
+} @else if(size() === '160x600') {
+<div class="announcement sidebar">
+  <img [src]="announcements()!.imageUrl" alt="announcement" />
+</div>
 } }

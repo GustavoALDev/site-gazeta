@@ -42,9 +42,9 @@ export class AdvertisementController {
         title: { type: 'string', example: 'Promoção Especial' },
         description: { type: 'string', example: 'Uma oferta imperdível!' },
         clickUrl: { type: 'string', example: 'https://exemplo.com/promocao' },
-        position: { type: 'string', enum: ['top', 'bottom', 'sidebar', 'header', 'footer', 'content'] },
+        position: { type: 'string', enum: ['top', 'bottom', 'sidebar', 'header', 'footer', 'content', 'lateral'] },
         placement: { type: 'string', enum: ['home', 'news'] },
-        size: { type: 'string', enum: ['728x90', '300x200'], example: '728x90' },
+        size: { type: 'string', enum: ['728x90', '300x200', '160x160', '160x600'], example: '728x90' },
         isActive: { type: 'boolean', default: true },
         priority: { type: 'number', minimum: 0, maximum: 10, default: 0 },
         startDate: { type: 'string', format: 'date-time' },
@@ -72,7 +72,7 @@ export class AdvertisementController {
   @Get()
   @ApiOperation({ summary: 'Listar todos os anúncios com filtros' })
   @ApiQuery({ name: 'placement', required: false, enum: ['home', 'news'] })
-  @ApiQuery({ name: 'position', required: false, enum: ['top', 'bottom', 'sidebar', 'header', 'footer', 'content'] })
+  @ApiQuery({ name: 'position', required: false, enum: ['top', 'bottom', 'sidebar', 'header', 'footer', 'content', 'lateral'] })
   @ApiQuery({ name: 'isActive', required: false, type: 'boolean' })
   @ApiQuery({ name: 'search', required: false, type: 'string' })
   @ApiResponse({ status: 200, description: 'Lista de anúncios', type: [AdvertisementResponseDto] })
@@ -121,9 +121,9 @@ export class AdvertisementController {
         title: { type: 'string' },
         description: { type: 'string' },
         clickUrl: { type: 'string' },
-        position: { type: 'string', enum: ['top', 'bottom', 'sidebar', 'header', 'footer', 'content'] },
+        position: { type: 'string', enum: ['top', 'bottom', 'sidebar', 'header', 'footer', 'content', 'lateral'] },
         placement: { type: 'string', enum: ['home', 'news'] },
-        size: { type: 'string', enum: ['728x90', '300x200'], example: '728x90' },
+        size: { type: 'string', enum: ['728x90', '300x200', '160x160', '160x600'], example: '728x90' },
         isActive: { type: 'boolean' },
         priority: { type: 'number', minimum: 0, maximum: 10 },
         startDate: { type: 'string', format: 'date-time' },
