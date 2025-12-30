@@ -1,0 +1,131 @@
+<div 
+#dropdownContainer
+  class="multi-select-container" 
+  [class.disabled]="isDisabled()"
+  (keydown)="onKeyDown($event)">
+  
+  <!-- Selected Items Display -->
+  <div 
+    class="selected-items" 
+    #dropdownContainer
+    tabindex="0"
+    >
+    
+    <!-- Toggle Button -->
+    <button
+      type="button"
+      class="toggle-btn"
+      (click)="toggleDropdown($event)"
+      [disabled]="isDisabled()"
+      [attr.aria-expanded]="dropdownOpen()"
+      [attr.aria-label]="dropdownOpen() ? 'Fechar dropdown' : 'Abrir dropdown'">
+      <span class="material-icons">
+        {{ dropdownOpen() ? 'expand_less' : 'expand_more' }}
+      </span>
+    </button>
+    
+    <!-- Empty State -->
+    @if (selectedItems().length === 0) {
+      <div class="empty-state">
+        <span class="material-icons">add_circle_outline</span>
+        <span>{{ mergedConfig().placeholder }}</span>
+      </div>
+    }
+    
+    <!-- Selected Tags -->
+    @for (item of selectedItems(); track item.id) {
+      <div class="item-tag" [class.disabled]="item.disabled">
+        <span class="item-label">{{ item.label? item.label : item.name }}</span>
+        <button 
+          type="button" 
+          class="remove-item-btn" 
+          (click)="removeItem(item, $event)"
+          [disabled]="isDisabled() || item.disabled"
+          [attr.aria-label]="'Remover ' + (item.label? item.label : item.name)">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+    }
+    
+    <!-- Add Button -->
+    <button
+      type="button"
+      class="add-item-btn"
+      (click)="toggleDropdown($event)"
+      [disabled]="isDisabled()"
+      [class.active]="dropdownOpen()">
+      <span class="material-icons">add</span>
+      {{ selectedItems().length > 0 
+        ? mergedConfig().addMoreButtonLabel 
+        : mergedConfig().addButtonLabel }}
+    </button>
+  </div>
+
+  <!-- Dropdown List -->
+  @if (dropdownOpen() && !isDisabled()) {
+    <div 
+      class="dropdown-menu"
+      tabindex="0"
+      #dropdownMenu
+      (focusout)="onDropdownBlur($event)"
+      (click)="$event.stopPropagation()"
+      [style.max-height]="mergedConfig().maxHeight">
+      
+      
+      <!-- Search Input -->
+      @if (mergedConfig().showSearch) {
+        <div class="dropdown-search">
+          <span class="material-icons">search</span>
+          <input
+            #searchInput
+            type="text"
+            [placeholder]="mergedConfig().searchPlaceholder"
+            [value]="searchTerm()"
+            (input)="onSearchChange($event)"
+            (click)="$event.stopPropagation()"
+            autocomplete="off"
+            tabindex="0">
+        </div>
+      }
+
+      <!-- Items List -->
+      <div class="dropdown-list">
+        @if (filteredItems().length > 0) {
+          @for (item of filteredItems(); track item.id) {
+            <div 
+              class="dropdown-item"
+              [class.selected]="isItemSelected(item)"
+              [class.disabled]="item.disabled"
+              (click)="selectItem(item, $event)"
+              (keyup.enter)="selectItem(item, $event)"
+              (keyup.space)="selectItem(item, $event)"
+              [tabindex]="item.disabled ? -1 : 0"
+              role="button"
+              [attr.aria-pressed]="isItemSelected(item)"
+              [attr.aria-disabled]="item.disabled">
+              
+              <span class="material-icons check-icon">
+                {{ isItemSelected(item) ? 'check_box' : 'check_box_outline_blank' }}
+              </span>
+              
+              <div class="item-info">
+                <span class="item-label">{{ item.label? item.label : item.name }}</span>
+                
+              </div>
+            </div>
+          }
+        } @else {
+          <div class="no-items">
+            @if (searchTerm()) {
+              <span class="material-icons">search_off</span>
+              <span>{{ mergedConfig().noResultsMessage }} "{{ searchTerm() }}"</span>
+            } @else {
+              <span class="material-icons">inbox</span>
+              <span>{{ mergedConfig().emptyMessage }}</span>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>
