@@ -13,19 +13,19 @@ export class NewsMediaDto {
   @ApiProperty({ 
     description: 'Tamanhos da imagem', 
     required: false,
-    example: [{
+    example: {
       original: 'https://exemplo.com/original.jpg',
       small: 'https://exemplo.com/small.jpg',
       medium: 'https://exemplo.com/medium.jpg',
       superSmall: 'https://exemplo.com/super-small.jpg'
-    }]
+    }
   })
-  imgSize?: Array<{
+  imgSize?: {
     original: string;
     small: string;
     medium: string;
     superSmall: string;
-  }>;
+  };
 
   @ApiProperty({ description: 'Autor da mídia', example: 'João Fotógrafo', required: false })
   author?: string;

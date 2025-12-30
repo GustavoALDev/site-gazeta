@@ -1,48 +1,21 @@
 <div class="ads-container">
   <div class="ads-card">
-    <!-- Header com título -->
-    <div class="page-header">
-      <h1 class="page-title">Gerenciamento de Anúncios</h1>
+    @if (isEdit()) {
+      <button class="back-btn" [routerLink]="['/adsList']">
+        <span class="material-icons">arrow_back</span>
+        Voltar
+      </button>
+    }
+    
+    <div class="ads-header">
+      <h2>Gerenciar Anúncios</h2>
+      <p>Crie e edite seus anúncios</p>
     </div>
 
-    <!-- Menu de abas -->
-    <div class="tabs-container">
-      <div class="tabs-header">
-        <button 
-          class="tab-button" 
-          [class.active]="state().activeTab === 'form'"
-          (click)="setActiveTab('form')">
-          <i class="material-icons">{{ isEdit() ? 'edit' : 'add' }}</i>
-          {{ isEdit() ? 'Editar Anúncio' : 'Criar Anúncio' }}
-        </button>
-        <button 
-          class="tab-button" 
-          [class.active]="state().activeTab === 'list'"
-          (click)="setActiveTab('list')">
-          <i class="material-icons">list</i>
-          Lista de Anúncios
-        </button>
-      </div>
-
-      <div class="tab-content">
-        <!-- Aba do Formulário -->
-        @if (state().activeTab === 'form') {
-          <div class="tab-pane active">
-            <app-ads-form 
-              [adToEdit]="state().adToEdit"
-              (formSubmitted)="onFormSubmitted()"
-              (formCancelled)="onFormCancelled()">
-            </app-ads-form>
-          </div>
-        }
-
-        <!-- Aba da Lista -->
-        @if (state().activeTab === 'list') {
-          <div class="tab-pane active">
-            <app-ads-list (ExportEditAdvertisement)="setEditAdvertisement($event)"></app-ads-list>
-          </div>
-        }
-      </div>
-    </div>
+    <app-ads-form 
+      [adToEdit]="adToEdit()"
+      (formSubmitted)="handleSubmit()"
+      (formCancelled)="handleCancel()">
+    </app-ads-form>
   </div>
 </div>

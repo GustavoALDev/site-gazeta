@@ -1,8 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../env/env';
-import { Observable } from 'rxjs';
-import { CreateDestaqueConfigDto, DestaqueConfig, CreateTopGazetaConfigDto, TopGazetaConfig, CreateSectionOrderDto, SectionOrderConfig, CreateSocialMediaConfigDto, SocialMediaConfig } from '@site-gazeta/models';
+import { Observable, map } from 'rxjs';
+import { CreateTopCategoriesConfigDto, TopCategoriesConfig, CreateDestaqueConfigDto, PrimaryConfig, CreateTopGazetaConfigDto, SecondaryConfig, CreateSectionOrderDto, SectionOrderConfig, CreateSocialMediaConfigDto, SocialMediaConfig } from '@site-gazeta/models';
 
 
 @Injectable({
@@ -13,33 +13,51 @@ export class ConfigService {
   private apiUrl = `${environment.apiUrl}/config`;
 
   
-  createDestaque(body: CreateDestaqueConfigDto): Observable<DestaqueConfig> {
-    return this.http.post<DestaqueConfig>(`${this.apiUrl}/destaques`, body);
+  createTopCategoriesPrimary(body: CreateTopCategoriesConfigDto): Observable<TopCategoriesConfig> {
+    return this.http.post<TopCategoriesConfig>(`${this.apiUrl}/top-categories-primary`, body);
   }
 
- 
-  getDestaque(): Observable<DestaqueConfig | null> {
-    return this.http.get<DestaqueConfig | null>(`${this.apiUrl}/destaques`);
+  updateTopCategoriesPrimary(body: Partial<CreateTopCategoriesConfigDto>): Observable<TopCategoriesConfig> {
+    return this.http.patch<TopCategoriesConfig>(`${this.apiUrl}/top-categories-primary`, body);
   }
 
- 
-  updateDestaque(body: Partial<CreateDestaqueConfigDto>): Observable<DestaqueConfig> {
-    return this.http.patch<DestaqueConfig>(`${this.apiUrl}/destaques`, body);
+  createTopCategoriesSecondary(body: CreateTopCategoriesConfigDto): Observable<TopCategoriesConfig> {
+    return this.http.post<TopCategoriesConfig>(`${this.apiUrl}/top-categories-secondary`, body);
   }
 
- 
-  createTopGazeta(body: CreateTopGazetaConfigDto): Observable<TopGazetaConfig> {
-    return this.http.post<TopGazetaConfig>(`${this.apiUrl}/top-gazeta`, body);
+  updateTopCategoriesSecondary(body: Partial<CreateTopCategoriesConfigDto>): Observable<TopCategoriesConfig> {
+    return this.http.patch<TopCategoriesConfig>(`${this.apiUrl}/top-categories-secondary`, body);
   }
 
-
-  getTopGazeta(): Observable<TopGazetaConfig | null> {
-    return this.http.get<TopGazetaConfig | null>(`${this.apiUrl}/top-gazeta`);
+  // Métodos mantidos para compatibilidade (deprecated)
+  createDestaque(body: CreateDestaqueConfigDto): Observable<PrimaryConfig> {
+    return this.createTopCategoriesPrimary(body) as any;
   }
 
- 
-  updateTopGazeta(body: Partial<CreateTopGazetaConfigDto>): Observable<TopGazetaConfig> {
-    return this.http.patch<TopGazetaConfig>(`${this.apiUrl}/top-gazeta`, body);
+  getDestaque(): Observable<PrimaryConfig | null> {
+    return this.http.get<{primary: TopCategoriesConfig | null, secondary: TopCategoriesConfig | null}>(`${this.apiUrl}/top-categories`)
+      .pipe(
+        map(response => response.primary as any)
+      );
+  }
+
+  updateDestaque(body: Partial<CreateDestaqueConfigDto>): Observable<PrimaryConfig> {
+    return this.updateTopCategoriesPrimary(body) as any;
+  }
+
+  createTopGazeta(body: CreateTopGazetaConfigDto): Observable<SecondaryConfig> {
+    return this.createTopCategoriesSecondary(body) as any;
+  }
+
+  getTopGazeta(): Observable<SecondaryConfig | null> {
+    return this.http.get<{primary: TopCategoriesConfig | null, secondary: TopCategoriesConfig | null}>(`${this.apiUrl}/top-categories`)
+      .pipe(
+        map(response => response.secondary as any)
+      );
+  }
+
+  updateTopGazeta(body: Partial<CreateTopGazetaConfigDto>): Observable<SecondaryConfig> {
+    return this.updateTopCategoriesSecondary(body) as any;
   }
 
  
@@ -85,5 +103,49 @@ export class ConfigService {
   updateSocialMedia(body: Partial<CreateSocialMediaConfigDto>): Observable<SocialMediaConfig> {
     return this.http.patch<SocialMediaConfig>(`${this.apiUrl}/social-media`, body);
   }
+
+  // =============== MAINTENANCE CONFIG ===============
+
+  createMaintenance(body: { isActive: boolean }): Observable<MaintenanceConfig> {
+    return this.http.post<MaintenanceConfig>(`${this.apiUrl}/maintenance`, body);
+  }
+
+  getMaintenance(): Observable<MaintenanceConfig | null> {
+    return this.http.get<MaintenanceConfig | null>(`${this.apiUrl}/maintenance`);
+  }
+
+  updateMaintenance(body: { isActive: boolean }): Observable<MaintenanceConfig> {
+    return this.http.patch<MaintenanceConfig>(`${this.apiUrl}/maintenance`, body);
+  }
+
+  // =============== CAROUSEL CONFIG ===============
+
+  createCarousel(body: { featuredNewsLimit: number }): Observable<CarouselConfig> {
+    return this.http.post<CarouselConfig>(`${this.apiUrl}/carousel`, body);
+  }
+
+  getCarousel(): Observable<CarouselConfig | null> {
+    return this.http.get<CarouselConfig | null>(`${this.apiUrl}/carousel`);
+  }
+
+  updateCarousel(body: { featuredNewsLimit: number }): Observable<CarouselConfig> {
+    return this.http.patch<CarouselConfig>(`${this.apiUrl}/carousel`, body);
+  }
+}
+
+export interface MaintenanceConfig {
+  id: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: number;
+}
+
+export interface CarouselConfig {
+  id: number;
+  featuredNewsLimit: number;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: number;
 }
 

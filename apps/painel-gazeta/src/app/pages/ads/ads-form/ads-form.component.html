@@ -1,8 +1,10 @@
 <div class="form-container">
   <form [formGroup]="adForm" (ngSubmit)="onSubmit()" class="ad-form">
-    
-    <!-- Card: Informações Básicas -->
-    <div class="form-card">
+    <div class="form-grid">
+      <!-- Coluna Esquerda: Campos do Formulário -->
+      <div class="form-fields">
+        <!-- Card: Informações Básicas -->
+        <div class="form-card">
       <div class="form-card-header">
         <i class="material-icons">info</i>
         <h3>Informações Básicas</h3>
@@ -149,6 +151,11 @@
               </option>
             }
           </select>
+          @if (sizeOptions.length === 0) {
+            <div class="file-info">
+              <small><i class="material-icons">info</i> Selecione uma página e posição primeiro</small>
+            </div>
+          }
           @if (hasError('size')) {
             <div class="error-message">
               {{ getErrorMessage('size') }}
@@ -245,73 +252,79 @@
       </div>
     </div>
 
-    <!-- Card: Imagem -->
-    <div class="form-card">
-      <div class="form-card-header">
-        <i class="material-icons">image</i>
-        <h3>Imagem do Anúncio</h3>
-        @if (!isEdit()) {
-          <span class="required-badge">Obrigatório</span>
-        }
       </div>
-      <div class="form-card-body">
-        <!-- Preview da imagem -->
-        @if (imagePreviewUrl()) {
-          <div class="image-preview-wrapper">
-            <div class="image-preview-container">
-              <img [src]="imagePreviewUrl()" alt="Preview" class="image-preview">
-              <div class="image-overlay">
-                <button 
-                  type="button" 
-                  class="change-image-btn" 
-                  (click)="triggerFileInput()"
-                  aria-label="Trocar imagem">
-                  <i class="material-icons">edit</i>
-                  <span>Trocar</span>
-                </button>
-                <button 
-                  type="button" 
-                  class="remove-image-btn" 
-                  (click)="onRemoveImage()"
-                  aria-label="Remover imagem">
-                  <i class="material-icons">delete</i>
-                  <span>Remover</span>
-                </button>
+
+      <!-- Coluna Direita: Preview da Imagem -->
+      <div class="form-previews">
+        <!-- Card: Imagem -->
+        <div class="form-card">
+          <div class="form-card-header">
+            <i class="material-icons">image</i>
+            <h3>Imagem do Anúncio</h3>
+            @if (!isEdit()) {
+              <span class="required-badge">Obrigatório</span>
+            }
+          </div>
+          <div class="form-card-body">
+            <!-- Preview da imagem -->
+            @if (imagePreviewUrl()) {
+              <div class="image-preview-wrapper">
+                <div class="image-preview-container">
+                  <img [src]="imagePreviewUrl()" alt="Preview" class="image-preview">
+                  <div class="image-overlay">
+                    <button 
+                      type="button" 
+                      class="change-image-btn" 
+                      (click)="triggerFileInput()"
+                      aria-label="Trocar imagem">
+                      <i class="material-icons">edit</i>
+                      <span>Trocar</span>
+                    </button>
+                    <button 
+                      type="button" 
+                      class="remove-image-btn" 
+                      (click)="onRemoveImage()"
+                      aria-label="Remover imagem">
+                      <i class="material-icons">delete</i>
+                      <span>Remover</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
+            
+            <!-- Input de arquivo (sempre presente mas oculto quando há preview) -->
+            <div class="file-input-container" [class.hidden]="imagePreviewUrl()">
+              <input
+                #fileInput
+                type="file"
+                id="image"
+                (change)="onFileSelected($event)"
+                accept="image/*"
+                [class.error]="hasError('image')"
+                class="file-input">
+              <div class="file-input-display">
+                <span class="file-placeholder">
+                  <i class="material-icons">cloud_upload</i>
+                  <span>Clique para selecionar uma imagem</span>
+                  <small>ou arraste e solte aqui</small>
+                </span>
               </div>
             </div>
-          </div>
-        }
-        
-        <!-- Input de arquivo (sempre presente mas oculto quando há preview) -->
-        <div class="file-input-container" [class.hidden]="imagePreviewUrl()">
-          <input
-            #fileInput
-            type="file"
-            id="image"
-            (change)="onFileSelected($event)"
-            accept="image/*"
-            [class.error]="hasError('image')"
-            class="file-input">
-          <div class="file-input-display">
-            <span class="file-placeholder">
-              <i class="material-icons">cloud_upload</i>
-              <span>Clique para selecionar uma imagem</span>
-              <small>ou arraste e solte aqui</small>
-            </span>
+            
+            <div class="file-info">
+              <i class="material-icons">info_outline</i>
+              <small>Formatos aceitos: JPG, PNG, GIF, WEBP • Tamanho máximo: 5MB</small>
+            </div>
+            
+            @if (hasError('image')) {
+              <div class="error-message">
+                <i class="material-icons">error</i>
+                {{ getErrorMessage('image') }}
+              </div>
+            }
           </div>
         </div>
-        
-        <div class="file-info">
-          <i class="material-icons">info_outline</i>
-          <small>Formatos aceitos: JPG, PNG, GIF, WEBP • Tamanho máximo: 5MB</small>
-        </div>
-        
-        @if (hasError('image')) {
-          <div class="error-message">
-            <i class="material-icons">error</i>
-            {{ getErrorMessage('image') }}
-          </div>
-        }
       </div>
     </div>
 

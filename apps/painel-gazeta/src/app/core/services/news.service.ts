@@ -47,10 +47,28 @@ export class NewsService {
   }
 
   /**
+   * Buscar notícias por termo
+   */
+  search(searchTerm: string, limit: number = 50): Observable<News[]> {
+    const params = new HttpParams()
+      .set('search', searchTerm)
+      .set('limit', limit.toString());
+    
+    return this.http.get<News[]>(`${this.apiUrl}/search`, { params });
+  }
+
+  /**
    * Buscar notícia por ID
    */
   getById(id: number): Observable<News> {
     return this.http.get<News>(`${this.apiUrl}/${id}`);
+  }
+
+  /**
+   * Buscar notícia por slug
+   */
+  getBySlug(slug: string): Observable<News> {
+    return this.http.get<News>(`${this.apiUrl}/slug/${slug}`);
   }
 
   /**

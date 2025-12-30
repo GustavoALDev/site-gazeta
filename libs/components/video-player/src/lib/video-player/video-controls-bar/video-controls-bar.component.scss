@@ -1,0 +1,146 @@
+@use '../../../../../../style/variables' as *;
+
+// Barra de controles
+.controls-bar {
+  @include flex-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.controls-left,
+.controls-right {
+  @include flex-center;
+  gap: 0.5rem;
+}
+
+.control-btn {
+  @include flex-center;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  max-width: 40px;
+  max-height: 40px;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  color: white;
+  cursor: pointer;
+  transition: all $transition;
+  box-sizing: border-box;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.05);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  .material-icons {
+    font-size: 22px;
+  }
+}
+
+.play-pause-btn {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+  max-width: 48px;
+  max-height: 48px;
+  border-radius: 50%;
+  @include gradient-bg($primary, $secondary, 135deg);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-sizing: border-box;
+
+  .material-icons {
+    font-size: 28px;
+  }
+
+  &:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  }
+}
+
+// Controle de velocidade
+.playback-rate-btn {
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  min-height: 42px;
+  max-width: 42px;
+  max-height: 42px;
+  padding: 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+
+// Responsividade
+@include mobile {
+  .controls-bar {
+    gap: 0.25rem;
+    flex-wrap: nowrap;
+  }
+
+  .controls-left,
+  .controls-right {
+    gap: 0.25rem;
+    flex-shrink: 0;
+  }
+
+  // Botões menores
+  .control-btn {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    min-height: 28px;
+    max-width: 28px;
+    max-height: 28px;
+    padding: 0;
+    border-radius: 50%;
+    box-sizing: border-box;
+
+    .material-icons {
+      font-size: 18px;
+    }
+  }
+
+  // Botão play/pause menor mas ainda visível
+  .play-pause-btn {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
+    max-width: 32px;
+    max-height: 32px;
+    border-width: 1.5px;
+    border-radius: 50%;
+    box-sizing: border-box;
+
+    .material-icons {
+      font-size: 20px;
+    }
+  }
+
+  // Botão de velocidade mais compacto
+  .playback-rate-btn {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
+    max-width: 32px;
+    max-height: 32px;
+    padding: 0;
+    font-size: 0.6875rem;
+    border-radius: 50%;
+    box-sizing: border-box;
+  }
+}
+

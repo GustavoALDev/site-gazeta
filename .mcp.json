@@ -4,6 +4,16 @@
       "type": "stdio",
       "command": "npx",
       "args": ["nx", "mcp"]
+    },
+    "chrome-sidekick": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@chromesidekick/mcp-server"]
+    },
+    "playwright": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-playwright"]
     }
   }
 }

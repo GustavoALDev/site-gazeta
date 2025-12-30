@@ -161,7 +161,7 @@
                         (ready)="onReady($event)"
                         formControlName="content"
                         [apiUrl]="apiUrl"
-                        [postId]="newsId || 0">
+                        [newsId]="newsId || undefined">
                       </lib-text-editor>
                       @if (form.get('content')?.invalid && form.get('content')?.touched) {
                         <div class="error-message">
@@ -240,10 +240,15 @@
                           </div>
 
                           <div class="sidebar-actions">
-                            <button type="submit" class="btn-primary" [disabled]="form.invalid" >
-                              {{isEdit() ? 'Atualizar Notícia' : 'Criar Notícia'}}
+                            <button type="submit" class="btn-primary" [disabled]="form.invalid || isUploadingMedia()" >
+                              @if (isUploadingMedia()) {
+                                <span class="material-icons spinning">refresh</span>
+                                <span>Enviando mídias... ({{ mediaUploadProgress().current }}/{{ mediaUploadProgress().total }})</span>
+                              } @else {
+                                {{isEdit() ? 'Atualizar Notícia' : 'Criar Notícia'}}
+                              }
                             </button>
-                            <button type="button" class="btn-secondary" (click)="onReset()">
+                            <button type="button" class="btn-secondary" (click)="onReset()" [disabled]="isUploadingMedia()">
                               Limpar
                             </button>
                           </div>

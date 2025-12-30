@@ -13,17 +13,20 @@ import {
   generateRandomHexColor,
 } from './category.model';
 import {
-  DestaqueConfig,
-  TopGazetaConfig,
+  TopCategoryType,
+  TopCategoriesConfig,
+  PrimaryConfig,
+  SecondaryConfig,
   SectionOrderConfig,
   SectionOrderConfigMap,
   SocialMediaConfig,
+  CreateTopCategoriesConfigDto,
   CreateDestaqueConfigDto,
   CreateTopGazetaConfigDto,
   CreateSectionOrderDto,
   CreateSocialMediaConfigDto,
 } from './config.model';
-
+import { HomeData } from './homeData.model';
 export {
   Category,
   News,
@@ -37,13 +40,17 @@ export {
   HexColor,
   isValidHexColor,
   generateRandomHexColor,
-  DestaqueConfig,
-  TopGazetaConfig,
+  TopCategoryType,
+  TopCategoriesConfig,
+  PrimaryConfig,
+  SecondaryConfig,
   SectionOrderConfig,
   SectionOrderConfigMap,
   SocialMediaConfig,
+  CreateTopCategoriesConfigDto,
   CreateDestaqueConfigDto,
   CreateTopGazetaConfigDto,
   CreateSectionOrderDto,
   CreateSocialMediaConfigDto,
+  HomeData,
 };

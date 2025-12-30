@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { AlertService } from '@site-gazeta/alert';
 
 interface User {
   id: number;
@@ -15,6 +16,8 @@ interface User {
   styleUrl: './userList.component.scss'
 })
 export class UserListComponent {
+  private alertService = inject(AlertService);
+  
   // Mock de usuários
   users: User[] = [
     { id: 1, nome: 'João Silva', email: 'joao@example.com' },
@@ -28,13 +31,13 @@ export class UserListComponent {
   editUser(user: User) {
     // Aqui você implementaria a lógica de edição
     console.log('Editar usuário:', user);
-    alert(`Editar usuário: ${user.nome}`);
+    this.alertService.info('Informação', `Editar usuário: ${user.nome}`);
   }
 
   deleteUser(userId: number) {
     if (confirm('Tem certeza que deseja excluir este usuário?')) {
       this.users = this.users.filter(u => u.id !== userId);
-      alert('Usuário excluído com sucesso!');
+      this.alertService.success('Sucesso', 'Usuário excluído com sucesso!');
     }
   }
 }

@@ -1,0 +1,36 @@
+<div class="maintenance-container">
+  <div class="maintenance-content">
+    <div class="maintenance-icon">
+      <img src="/img/logo02.webp" alt="Gazeta do Pará" class="maintenance-logo">
+    </div>
+    
+    <h1>Site em Manutenção</h1>
+    
+    <p class="maintenance-message">
+      Estamos realizando melhorias no site para oferecer uma melhor experiência.
+      Por favor, tente novamente em alguns instantes.
+    </p>
+
+    <div class="maintenance-info">
+      <div class="info-item">
+        <i class="material-icons">schedule</i>
+        <span>Voltaremos em breve</span>
+      </div>
+      <div class="info-item">
+        <i class="material-icons">info</i>
+        <span>Estamos trabalhando para melhorar nossos serviços</span>
+      </div>
+    </div>
+
+    <button class="retry-button" (click)="retry()" [disabled]="isLoading">
+      @if (isLoading) {
+        <i class="material-icons spinning">sync</i>
+        Verificando...
+      } @else {
+        <i class="material-icons">refresh</i>
+        Tentar Novamente
+      }
+    </button>
+  </div>
+</div>
+

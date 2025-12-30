@@ -1,62 +1,74 @@
-:host {
-  margin: 10px;
-}
+@use '../../../../../style/variables' as *;
 
 .side-news {
+  border: 1px solid $border;
   display: flex;
   flex-direction: column;
-  border-radius: 20px;
+  border-radius: $radius-xl;
   width: 340px;
-  padding-bottom: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.363);
+  padding-bottom: $space-sm;
+  @include shadow-md;
+  background: $white;
+  
   .header {
-    border-radius: 20px 20px 0 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-bottom: 1px solid rgba(99, 99, 99, 0.473);
-    padding: 10px;
+    border-radius: $radius-xl $radius-xl 0 0;
+    @include flex-center;
+    border-bottom: 1px solid rgba($gray-600, 0.473);
+    padding: $space-sm;
+    
     h2 {
-      font-family: 'Open Sans', sans-serif;
+      font-family: $font-family-primary;
       font-size: 1.5rem;
       font-weight: 600;
       text-align: center;
+      color: $secondary;
+      margin: 0;
+      border-bottom: 3px solid $primary;
     }
   }
+  
   .news-list {
     display: flex;
     flex-direction: column;
-    gap: 5px;
-    padding: 5px;
+    gap: $space-xs;
+    padding: $space-xs;
+    
     .news-item {
-    cursor: pointer;
-      border-bottom: 1px solid rgba(131, 131, 131, 0.582);
-      border-radius: 10px;
+      cursor: pointer;
+      border-bottom: 1px solid rgba($gray-500, 0.582);
+      border-radius: $radius-lg;
       display: flex;
       align-items: center;
-      gap: 10px;
-      font-family: 'Open Sans', sans-serif;
-      &:hover{
-        scale: (1.02);
-        transition: scale 0.3s ease;
+      gap: $space-sm;
+      font-family: $font-family-primary;
+      transition: transform $transition-slow;
+      
+      &:hover {
+        transform: scale(1.02);
+        
         .news-title {
           text-decoration: underline;
         }
       }
+      
       .news-index {
         height: 100%;
         font-size: 1.5rem;
         font-weight: 600;
-        border-right: 1px solid ;
-        padding: 10px;
+        color: $primary;
+        border-right: 1px solid $border;
+        padding: $space-sm;
+        border-bottom: 1px solid $secondary;
       }
+      
       .news-content {
         .news-title {
           font-size: 0.9rem;
           font-weight: 500;
+          color: $text;
+          margin: 0;
         }
       }
-      
     }
   }
 }

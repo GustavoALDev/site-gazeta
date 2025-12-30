@@ -2,38 +2,59 @@ import { Injectable, Logger } from '@nestjs/common';
 import { writeFile, mkdir, unlink } from 'fs/promises';
 import * as path from 'path';
 import sharp from 'sharp';
+import { sanitizeFileName } from '../../utils/file-name-sanitizer';
 
 @Injectable()
 export class VideoProcessingService {
   private readonly logger = new Logger(VideoProcessingService.name);
-  private readonly uploadDir = 'uploads/videos';
+  private readonly baseUploadDir = 'uploads';
 
   async saveVideo(file: any, filename: string): Promise<string> {
-    await this.ensureUploadDirectoryExists();
+    // Extrair timestamp do filename (formato: {timestamp}_{nome} ou {timestamp}_{randomId}_{nome})
+    const timestampMatch = filename.match(/^(\d{13})/);
+    const timestamp = timestampMatch ? timestampMatch[1] : Date.now().toString();
     
-    const videoPath = path.join(this.uploadDir, filename);
+    // Remover timestamp e randomId do início do filename para obter o nome original
+    const nameWithoutTimestamp = filename.replace(/^\d{13}_/, '').replace(/^\d{13}_[a-z0-9]+_/, '');
+    const sanitizedName = sanitizeFileName(nameWithoutTimestamp);
+    
+    // Criar diretório baseado no timestamp
+    const timestampDir = path.join(this.baseUploadDir, timestamp);
+    await this.ensureUploadDirectoryExists(timestampDir);
+    
+    const videoPath = path.join(timestampDir, sanitizedName);
     await writeFile(videoPath, file.buffer);
     
     return videoPath;
   }
 
   async saveThumbnail(file: any, videoFilename: string): Promise<string> {
-    await this.ensureUploadDirectoryExists();
+    // Extrair timestamp do filename (formato: {timestamp}_{nome} ou {timestamp}_{randomId}_{nome})
+    const timestampMatch = videoFilename.match(/^(\d{13})/);
+    const timestamp = timestampMatch ? timestampMatch[1] : Date.now().toString();
     
-    const baseFilename = path.parse(videoFilename).name;
-    const thumbnailFilename = `${baseFilename}_thumb.jpg`;
-    const thumbnailPath = path.join(this.uploadDir, thumbnailFilename);
+    // Remover timestamp e randomId do início do filename para obter o nome base
+    const nameWithoutTimestamp = videoFilename.replace(/^\d{13}_/, '').replace(/^\d{13}_[a-z0-9]+_/, '');
+    const sanitizedName = sanitizeFileName(nameWithoutTimestamp);
+    const baseFilename = path.parse(sanitizedName).name;
     
-    // Se for uma imagem, processamos com Sharp
+    // Criar diretório baseado no timestamp
+    const timestampDir = path.join(this.baseUploadDir, timestamp);
+    await this.ensureUploadDirectoryExists(timestampDir);
+    
+    const thumbnailFilename = `${baseFilename}_thumb.webp`;
+    const thumbnailPath = path.join(timestampDir, thumbnailFilename);
+    
+    // Se for uma imagem, processamos com Sharp (convertendo para WebP)
     if (file.mimetype.startsWith('image/')) {
       await sharp(file.buffer)
         .resize(640, 360, {
           fit: 'cover',
           position: 'center'
         })
-        .jpeg({
+        .webp({
           quality: 85,
-          progressive: true
+          effort: 4
         })
         .toFile(thumbnailPath);
     } else {
@@ -72,9 +93,10 @@ export class VideoProcessingService {
     }
   }
 
-  private async ensureUploadDirectoryExists(): Promise<void> {
+  private async ensureUploadDirectoryExists(dir?: string): Promise<void> {
+    const targetDir = dir || this.baseUploadDir;
     try {
-      await mkdir(this.uploadDir, { recursive: true });
+      await mkdir(targetDir, { recursive: true });
     } catch (error) {
       this.logger.error(`Erro ao criar diretório de upload: ${error.message}`);
       throw error;

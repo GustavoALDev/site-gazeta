@@ -13,7 +13,8 @@ import {
   UseInterceptors,
   UploadedFile,
   UploadedFiles,
-  Req
+  Req,
+  Query
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -21,7 +22,8 @@ import {
   ApiResponse,
   ApiParam,
   ApiConsumes,
-  ApiBody
+  ApiBody,
+  ApiQuery
 } from '@nestjs/swagger';
 import { FileInterceptor, FileFieldsInterceptor } from '@nestjs/platform-express';
 import { VideoService } from './video.service';
@@ -142,7 +144,12 @@ export class VideoController {
     @Req() req: Request,
     @UploadedFiles() files: { video?: any[]; thumbnail?: any[] },
     @Body('title') title: string,
-    @Body('duration') duration?: string
+    @Body('duration') duration?: string,
+    @Body('categoryId') categoryId?: string | string[],
+    @Body('featured') featured?: string,
+    @Body('tags') tags?: string | string[],
+    @Body('description') description?: string,
+    @Body('newsSlug') newsSlug?: string
   ): Promise<VideoResponseDto> {
     try {
       if (!files.video || files.video.length === 0) {
@@ -156,10 +163,38 @@ export class VideoController {
       const videoFile = files.video[0];
       const thumbnailFile = files.thumbnail && files.thumbnail.length > 0 ? files.thumbnail[0] : undefined;
 
+      // Processar categoryId (pode vir como array ou string)
+      let categoryIds: number[] | undefined;
+      if (categoryId) {
+        if (Array.isArray(categoryId)) {
+          categoryIds = categoryId.map(id => parseInt(id, 10));
+        } else {
+          categoryIds = [parseInt(categoryId, 10)];
+        }
+      }
+
+      // Processar featured (string 'true'/'false' para boolean)
+      const featuredBool = featured === 'true';
+
+      // Processar tags (pode vir como array ou string)
+      let tagsArray: string[] | undefined;
+      if (tags) {
+        if (Array.isArray(tags)) {
+          tagsArray = tags;
+        } else {
+          tagsArray = [tags];
+        }
+      }
+
       const baseUrl = this.getBaseUrl(req);
       return await this.videoService.createWithUpload(videoFile, thumbnailFile, {
         title,
-        duration
+        duration,
+        categoryId: categoryIds,
+        featured: featuredBool,
+        tags: tagsArray,
+        description,
+        newsSlug
       }, baseUrl);
     } catch (error) {
       if (error instanceof HttpException) {
@@ -186,6 +221,90 @@ export class VideoController {
   async findAll(): Promise<VideoResponseDto[]> {
     try {
       return await this.videoService.findAll();
+    } catch (error) {
+      throw new HttpException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Erro no servidor, tente novamente mais tarde',
+        error: 'Internal Server Error'
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Get('featured')
+  @ApiOperation({
+    summary: 'Listar vídeos em destaque',
+    description: 'Endpoint para obter apenas vídeos em destaque (featured: true)'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de vídeos em destaque',
+    type: [VideoResponseDto]
+  })
+  async findFeatured(): Promise<VideoResponseDto[]> {
+    try {
+      return await this.videoService.findFeatured();
+    } catch (error) {
+      throw new HttpException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Erro no servidor, tente novamente mais tarde',
+        error: 'Internal Server Error'
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Get('latest')
+  @ApiOperation({
+    summary: 'Listar últimos vídeos postados',
+    description: 'Endpoint para obter os últimos 6 vídeos postados (excluindo vídeos em destaque), ordenados do mais recente para o mais antigo'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista dos últimos 6 vídeos postados',
+    type: [VideoResponseDto]
+  })
+  async findLatest(): Promise<VideoResponseDto[]> {
+    try {
+      return await this.videoService.findLatest();
+    } catch (error) {
+      throw new HttpException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Erro no servidor, tente novamente mais tarde',
+        error: 'Internal Server Error'
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Get('by-category')
+  @ApiOperation({
+    summary: 'Listar vídeos agrupados por categoria',
+    description: 'Endpoint para obter vídeos agrupados por categoria, excluindo vídeos em destaque e opcionalmente IDs específicos. Útil para evitar duplicação com vídeos já exibidos em outras seções.'
+  })
+  @ApiQuery({
+    name: 'excludeIds',
+    required: false,
+    description: 'IDs dos vídeos a serem excluídos (separados por vírgula). Exemplo: "1,2,3"',
+    example: '1,2,3'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de vídeos (já formatados para agrupamento por categoria)',
+    type: [VideoResponseDto]
+  })
+  async findVideosByCategory(
+    @Req() req: Request,
+    @Query('excludeIds') excludeIds?: string
+  ): Promise<VideoResponseDto[]> {
+    try {
+      // Parse excludeIds se fornecido (formato: "1,2,3" ou "1, 2, 3")
+      let excludeIdsArray: number[] | undefined;
+      if (excludeIds) {
+        excludeIdsArray = excludeIds
+          .split(',')
+          .map(id => parseInt(id.trim(), 10))
+          .filter(id => !isNaN(id));
+      }
+
+      return await this.videoService.findVideosByCategory(excludeIdsArray);
     } catch (error) {
       throw new HttpException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -325,13 +444,55 @@ export class VideoController {
     @Req() req: Request,
     @UploadedFiles() files: { video?: any[]; thumbnail?: any[] },
     @Body('title') title?: string,
-    @Body('duration') duration?: string
+    @Body('duration') duration?: string,
+    @Body('categoryId') categoryId?: string | string[],
+    @Body('featured') featured?: string,
+    @Body('tags') tags?: string | string[],
+    @Body('description') description?: string,
+    @Body('newsSlug') newsSlug?: string,
+    @Body('removeThumbnail') removeThumbnail?: string
   ): Promise<VideoResponseDto> {
     try {
       const videoFile = files.video && files.video.length > 0 ? files.video[0] : undefined;
       const thumbnailFile = files.thumbnail && files.thumbnail.length > 0 ? files.thumbnail[0] : undefined;
+      
+      // Processar categoryId (pode vir como array ou string)
+      let categoryIds: number[] | undefined;
+      if (categoryId) {
+        if (Array.isArray(categoryId)) {
+          categoryIds = categoryId.map(id => parseInt(id, 10));
+        } else {
+          categoryIds = [parseInt(categoryId, 10)];
+        }
+      }
+
+      // Processar featured (string 'true'/'false' para boolean)
+      const featuredBool = featured === 'true';
+
+      // Processar tags (pode vir como array ou string)
+      let tagsArray: string[] | undefined;
+      if (tags) {
+        if (Array.isArray(tags)) {
+          tagsArray = tags;
+        } else {
+          tagsArray = [tags];
+        }
+      }
+
+      // Processar removeThumbnail (string 'true'/'false' para boolean)
+      const removeThumbnailBool = removeThumbnail === 'true';
+
       const baseUrl = this.getBaseUrl(req);
-      return await this.videoService.updateWithUpload(id, videoFile, thumbnailFile, { title, duration }, baseUrl);
+      return await this.videoService.updateWithUpload(id, videoFile, thumbnailFile, {
+        title,
+        duration,
+        categoryId: categoryIds,
+        featured: featuredBool,
+        tags: tagsArray,
+        description,
+        newsSlug,
+        removeThumbnail: removeThumbnailBool
+      }, baseUrl);
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;

@@ -20,11 +20,21 @@ async function bootstrap() {
   // Configuração de CORS para desenvolvimento
   app.enableCors(devCorsConfig);
 
-  // Servir arquivos estáticos
+  // Servir arquivos estáticos com suporte a Range Requests para streaming progressivo
   const uploadsPath = join(process.cwd(), 'uploads');
   Logger.log(`📁 Serving static files from: ${uploadsPath}`);
   app.useStaticAssets(uploadsPath, {
     prefix: '/uploads/',
+    // Headers para streaming progressivo de vídeo
+    setHeaders: (res, path) => {
+      // Se for um arquivo de vídeo, adicionar headers apropriados
+      if (path.match(/\.(mp4|webm|ogg)$/i)) {
+        res.setHeader('Accept-Ranges', 'bytes');
+        res.setHeader('Content-Type', 'video/mp4');
+        // Cache por 1 dia para vídeos
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+      }
+    },
   });
 
   // Configuração da validação global

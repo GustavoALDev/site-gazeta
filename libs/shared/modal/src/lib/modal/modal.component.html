@@ -1,0 +1,25 @@
+@if (isOpen()) {
+  <div class="modal-overlay" 
+       (click)="onBackdropClick($event)"
+       [attr.aria-hidden]="!isOpen()"
+       role="dialog"
+       aria-modal="true">
+    <div class="modal-content" 
+         (click)="$event.stopPropagation()">
+      
+      <!-- Botão de fechar -->
+      
+      <!-- Conteúdo do modal (projetável via ng-content) -->
+      <div class="modal-body">
+        <button class="modal-close" 
+                (click)="onCloseClick()"
+                aria-label="Fechar modal"
+                type="button">
+          <span class="material-icons">close</span>
+        </button>
+        <ng-content></ng-content>
+      </div>
+    </div>
+  </div>
+}
+

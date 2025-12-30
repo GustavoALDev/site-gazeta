@@ -1,0 +1,68 @@
+<div class="carousel-section">
+  <div class="category-header">
+    <h2 class="category-title">{{ categoryName() }}</h2>
+    <div class="carousel-nav-group">
+      <button 
+        class="carousel-nav carousel-nav--prev"
+        (click)="goToPrevious()"
+        [disabled]="!canGoPrevious()"
+        [class.carousel-nav--disabled]="!canGoPrevious()"
+        aria-label="Vídeo anterior">
+        <span class="material-icons">chevron_left</span>
+      </button>
+      <button 
+        class="carousel-nav carousel-nav--next"
+        (click)="goToNext()"
+        [disabled]="!canGoNext()"
+        [class.carousel-nav--disabled]="!canGoNext()"
+        aria-label="Próximo vídeo">
+        <span class="material-icons">chevron_right</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="carousel-container">
+    <div class="carousel-wrapper" #carouselWrapper>
+    <div class="carousel-track" [class.dragging]="isDragging()">
+      @for (video of visibleItems(); track video.id) {
+        <div class="video-card" (click)="onVideoClick(video)">
+          <div class="video-card__thumbnail">
+            @if (video.thumbnail) {
+              <img [src]="video.thumbnail" [alt]="video.title" class="video-card__image">
+            } @else {
+              <video
+                [src]="video.url"
+                preload="metadata"
+                class="video-card__video"
+                muted
+              ></video>
+            }
+            <button 
+              class="video-card__play-button"
+              (click)="playVideo(video, $event)"
+              [attr.aria-label]="'Reproduzir ' + video.title">
+              <span class="material-icons">play_arrow</span>
+            </button>
+            <div class="video-card__duration">{{ video.duration }}</div>
+          </div>
+          <h3 class="video-card__title">{{ video.title }}</h3>
+        </div>
+      }
+    </div>
+    </div>
+  </div>
+
+  @if (totalItems() > itemsPerView()) {
+    <div class="carousel-indicators">
+      @for (groupIndex of slideGroups(); track groupIndex; let i = $index) {
+        <button 
+          class="carousel-indicator"
+          [class.carousel-indicator--active]="i === activeGroupIndex()"
+          (click)="goToSlide(groupIndex)"
+          [attr.aria-label]="'Ir para grupo ' + (i + 1)">
+        </button>
+      }
+    </div>
+  }
+</div>
+

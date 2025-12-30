@@ -1,0 +1,226 @@
+@use '../../../../../style/variables' as *;
+
+:host {
+  display: block;
+  width: 100%;
+  font-family: $font-family-primary;
+}
+.header{
+  width: max-content;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 10px;
+  border-radius: 10px 10px 0 0;
+  width: 100%;
+  margin-bottom: 1rem;
+  h2{
+      font-size: 1.75rem;
+      font-weight: 500;
+      color: $secondary;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin: 0;
+      padding: 0;
+      border: none;
+      border-bottom: 2px solid $primary;
+  }
+}
+.video-featured-container {
+  width: 100%;
+}
+
+.featured-title {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  right: 1rem;
+  color: white;
+  font-family: $font-family-primary;
+  font-size: 1.75rem;
+  font-weight: 500;
+  margin: 0;
+  z-index: 5;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8), 0 0 16px rgba(0, 0, 0, 0.6);
+  @include text-clamp(2);
+  line-height: 1.3;
+}
+
+.secondary-title {
+  font-size: 1.25rem;
+  top: 0.75rem;
+  left: 0.75rem;
+  right: 0.75rem;
+}
+
+.video-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1rem;
+  width: 100%;
+  align-items: stretch;
+}
+
+.video-card {
+  cursor: pointer;
+  position: relative;
+  background: #000;
+  border-radius: $radius-xl;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: transform $transition, box-shadow $transition;
+  min-height: 0;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  }
+}
+
+.main-card {
+  aspect-ratio: 16 / 9;
+  width: 100%;
+}
+
+.video-cards-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  height: 100%;
+  min-height: 0;
+}
+
+.secondary-card {
+  width: 100%;
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.video-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #000;
+}
+
+.video-element {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  background: #000;
+}
+
+.play-button {
+  position: absolute;
+  bottom: 1rem;
+  left: 1rem;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  @include gradient-bg($primary, $secondary, 135deg);
+  color: white;
+  cursor: pointer;
+  @include flex-center;
+  transition: all $transition;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  z-index: 10;
+
+  .material-icons {
+    font-size: 36px;
+    margin-left: 4px;
+  }
+
+  &:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+  }
+
+  &:active {
+    transform: scale(1.05);
+  }
+}
+
+.secondary-card .play-button {
+  width: 48px;
+  height: 48px;
+
+  .material-icons {
+    font-size: 32px;
+  }
+}
+
+// Responsividade
+@include tablet {
+  .video-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .video-cards-column {
+    flex-direction: row;
+  }
+
+  .main-card,
+  .secondary-card {
+    flex: 1;
+  }
+}
+
+@include mobile {
+  .featured-title {
+    font-size: 1.25rem;
+    top: 0.75rem;
+    left: 0.75rem;
+    right: 0.75rem;
+  }
+
+  .secondary-title {
+    font-size: 1rem;
+    top: 0.5rem;
+    left: 0.5rem;
+    right: 0.5rem;
+  }
+
+  .video-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .main-card {
+    aspect-ratio: 16 / 9;
+    width: 100%;
+  }
+
+  .video-cards-column {
+    flex-direction: column;
+    height: auto;
+    gap: 0.75rem;
+  }
+
+  .secondary-card {
+    aspect-ratio: 16 / 9;
+    width: 100%;
+    flex: none;
+    min-height: auto;
+  }
+
+  .play-button {
+    width: 44px;
+    height: 44px;
+
+    .material-icons {
+      font-size: 28px;
+    }
+  }
+
+  .secondary-card .play-button {
+    width: 40px;
+    height: 40px;
+
+    .material-icons {
+      font-size: 24px;
+    }
+  }
+}
+

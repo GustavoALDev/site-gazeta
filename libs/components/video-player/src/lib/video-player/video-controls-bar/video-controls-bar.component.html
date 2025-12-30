@@ -1,0 +1,57 @@
+<div class="controls-bar">
+  <div class="controls-left">
+    <!-- Play/Pause -->
+    <button 
+      class="control-btn play-pause-btn"
+      (click)="onPlayToggle()"
+      [attr.aria-label]="isPlaying() ? 'Pausar' : 'Reproduzir'"
+    >
+      @if (isPlaying()) {
+        <span class="material-icons">pause</span>
+      } @else {
+        <span class="material-icons">play_arrow</span>
+      }
+    </button>
+
+    <!-- Volume -->
+    <lib-video-volume-control
+      [volume]="volume()"
+      [isMuted]="isMuted()"
+      (volumeChange)="onVolumeChange($event)"
+      (muteToggle)="onMuteToggle()"
+    />
+
+    <!-- Tempo -->
+    <lib-video-time-display
+      [currentTime]="currentTimeFormatted()"
+      [duration]="durationFormatted()"
+    />
+  </div>
+
+  <div class="controls-right">
+    <!-- Velocidade de reprodução -->
+    <div class="playback-rate-control">
+      <button 
+        class="control-btn playback-rate-btn"
+        (click)="onPlaybackRateToggle()"
+        [attr.aria-label]="'Velocidade: ' + playbackRate() + 'x'"
+      >
+        {{ playbackRate() }}x
+      </button>
+    </div>
+
+    <!-- Fullscreen -->
+    <button 
+      class="control-btn fullscreen-btn"
+      (click)="onFullscreenToggle()"
+      [attr.aria-label]="isFullscreen() ? 'Sair da tela cheia' : 'Tela cheia'"
+    >
+      @if (isFullscreen()) {
+        <span class="material-icons">fullscreen_exit</span>
+      } @else {
+        <span class="material-icons">fullscreen</span>
+      }
+    </button>
+  </div>
+</div>
+

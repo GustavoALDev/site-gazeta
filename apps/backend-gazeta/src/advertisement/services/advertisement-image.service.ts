@@ -2,6 +2,7 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { ImageProcessingService } from '../../media/services/image-processing.service';
 import * as path from 'path';
 import * as fs from 'fs/promises';
+import { sanitizeFileName } from '../../utils/file-name-sanitizer';
 
 @Injectable()
 export class AdvertisementImageService {
@@ -25,22 +26,21 @@ export class AdvertisementImageService {
     }
 
     try {
-      // Gerar nome único para o arquivo
+      // Gerar nome único para o arquivo (formato: {timestamp}_{nome_sanitizado})
       const timestamp = Date.now();
-      const extension = path.extname(file.originalname);
-      const filename = `advertisement_${timestamp}${extension}`;
+      const sanitizedFilename = sanitizeFileName(file.originalname);
       
-      // Criar diretório se não existir
-      const uploadsDir = path.join(process.cwd(), 'uploads', 'advertisements');
-      await fs.mkdir(uploadsDir, { recursive: true });
+      // Criar diretório baseado no timestamp
+      const timestampDir = path.join(process.cwd(), 'uploads', timestamp.toString());
+      await fs.mkdir(timestampDir, { recursive: true });
       
       // Salvar arquivo
-      const filePath = path.join(uploadsDir, filename);
+      const filePath = path.join(timestampDir, sanitizedFilename);
       await fs.writeFile(filePath, file.buffer);
       
       // Gerar URL pública
       const baseUrl = process.env.BASE_URL || 'http://localhost:3002';
-      const publicUrl = `${baseUrl}/uploads/advertisements/${filename}`;
+      const publicUrl = `${baseUrl}/uploads/${timestamp}/${sanitizedFilename}`;
       
       return publicUrl;
     } catch (error) {
@@ -50,16 +50,20 @@ export class AdvertisementImageService {
 
   async deleteAdvertisementImage(imageUrl: string): Promise<void> {
     try {
-      // Extrair nome do arquivo da URL
-      const filename = path.basename(imageUrl);
-      const filePath = path.join(process.cwd(), 'uploads', 'advertisements', filename);
-      
-      // Verificar se arquivo existe e deletar
-      try {
-        await fs.access(filePath);
-        await fs.unlink(filePath);
-      } catch (error) {
-        // Arquivo não existe, ignorar erro
+      // Extrair timestamp e nome do arquivo da URL (formato: /uploads/{timestamp}/{filename})
+      const urlMatch = imageUrl.match(/\/uploads\/(\d+)\/([^\/]+)$/);
+      if (urlMatch) {
+        const timestamp = urlMatch[1];
+        const filename = urlMatch[2];
+        const filePath = path.join(process.cwd(), 'uploads', timestamp, filename);
+        
+        // Verificar se arquivo existe e deletar
+        try {
+          await fs.access(filePath);
+          await fs.unlink(filePath);
+        } catch (error) {
+          // Arquivo não existe, ignorar erro
+        }
       }
     } catch (error) {
       // Log do erro mas não lançar exceção para não quebrar a exclusão do anúncio

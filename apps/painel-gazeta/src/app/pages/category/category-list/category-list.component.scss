@@ -14,8 +14,9 @@ $font-size-small: 0.75rem;
     gap: 1rem;
     width: 100%;
     height: 100%;
-    overflow-y: auto;
+    min-height: 0; // Permite que o flex encolha
     border-radius: 12px;
+    overflow: hidden; // Previne estouro do host
 }
 
 .categories-section {
@@ -23,6 +24,7 @@ $font-size-small: 0.75rem;
     display: flex;
     flex-direction: column;
     height: 100%;
+    min-height: 0; // Permite que o flex encolha
     overflow: hidden;
 
     h3 {
@@ -45,6 +47,7 @@ $font-size-small: 0.75rem;
         border-radius: 12px;
         border: 1px solid rgba($secondary-color, 0.1);
         backdrop-filter: blur(10px);
+        flex-shrink: 0; // Não encolhe, mantém tamanho fixo
 
         .search-container {
             position: relative;
@@ -121,28 +124,26 @@ $font-size-small: 0.75rem;
         flex-direction: column;
         gap: 0.5rem;
         flex: 1;
+        min-height: 0; // Permite que o flex encolha
         padding: 0 5px;
+        overflow-y: auto; // Sempre permite scroll quando necessário
+        overflow-x: hidden; // Previne scroll horizontal
+        
+        &::-webkit-scrollbar {
+            width: 6px;
+        }
 
-        &:has(.category-item:nth-child(6)) {
-            max-height: 400px;
-            overflow-y: auto;
+        &::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 3px;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background: rgba($secondary-color, 0.3);
+            border-radius: 3px;
             
-            &::-webkit-scrollbar {
-                width: 6px;
-
-                &-track {
-                    background: rgba(0, 0, 0, 0.1);
-                    border-radius: 3px;
-                }
-
-                &-thumb {
-                    background: rgba($secondary-color, 0.3);
-                    border-radius: 3px;
-                    
-                    &:hover {
-                        background: rgba($secondary-color, 0.5);
-                    }
-                }
+            &:hover {
+                background: rgba($secondary-color, 0.5);
             }
         }
 
@@ -198,18 +199,53 @@ $font-size-small: 0.75rem;
                 gap: 1rem;
                 flex-shrink: 0;
 
-                .category-status {
-                    display: inline-block;
-                    padding: 0.25rem 0.75rem;
-                    border-radius: 20px;
-                    font-size: $font-size-small;
-                    font-weight: 600;
-                    background: #dc3545;
-                    color: white;
-                    white-space: nowrap;
-
-                    &.active {
-                        background: #28a745;
+                .toggle-container-inline {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.75rem;
+                    
+                    .toggle-input {
+                        display: none;
+                    }
+                    
+                    .toggle-switch {
+                        position: relative;
+                        display: inline-block;
+                        width: 50px;
+                        height: 24px;
+                        background-color: rgba(0, 0, 0, 0.2);
+                        border-radius: 24px;
+                        cursor: pointer;
+                        transition: background-color $transition-default;
+                        flex-shrink: 0;
+                        
+                        .toggle-slider {
+                            position: absolute;
+                            top: 2px;
+                            left: 2px;
+                            width: 20px;
+                            height: 20px;
+                            background-color: white;
+                            border-radius: 50%;
+                            transition: transform $transition-default;
+                            box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.24);
+                        }
+                    }
+                    
+                    .toggle-input:checked + .toggle-switch {
+                        background-color: #28a745;
+                        
+                        .toggle-slider {
+                            transform: translateX(26px);
+                        }
+                    }
+                    
+                    .toggle-text {
+                        font-weight: 600;
+                        color: #333;
+                        font-size: $font-size-small;
+                        white-space: nowrap;
+                        min-width: 50px;
                     }
                 }
 

@@ -1,0 +1,18 @@
+:host{
+    display: flex;
+    flex-direction: column;
+}
+.carousel-container-desktop {
+    display: block;
+}
+.carousel-container-mobile {
+    display: none;
+}
+@media (max-width: 1128px) {
+    .carousel-container-desktop {
+        display: none;
+    }
+    .carousel-container-mobile {
+        display: block;
+    }
+}

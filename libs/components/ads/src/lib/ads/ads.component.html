@@ -1,9 +1,19 @@
-@if(announcements()) { @if(size() === '728x90') {
-<div class="announcement large">
-  <img [src]="announcements()!.imageUrl" alt="announcement" />
-</div>
-} @else if(size() === '300x200') {
-<div class="announcement small">
-  <img [src]="announcements()!.imageUrl" alt="announcement" />
-</div>
-} }
+@if(announcements()) { 
+  @if(size() === '728x90') {
+    <div class="announcement large">
+      <img [src]="announcements()!.imageUrl" alt="announcement" />
+    </div>
+  } @else if(size() === '300x250') {
+    <div class="announcement small">
+      <img [src]="announcements()!.imageUrl" alt="announcement" />
+    </div>
+  } @else if(size() === '160x600') {
+    <div class="announcement vertical">
+      <img [src]="announcements()!.imageUrl" alt="announcement" />
+    </div>
+  }@else if(size() === '200x200') {
+    <div class="announcement superSmall">
+      <img [src]="announcements()!.imageUrl" alt="announcement" />
+    </div>
+  }
+} 

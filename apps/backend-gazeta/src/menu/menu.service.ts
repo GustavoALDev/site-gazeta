@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateMenuDto } from './dto/create-menu.dto';
 import { UpdateMenuDto } from './dto/update-menu.dto';
 import { MenuResponseDto } from './dto/menu-response.dto';
+import { CreateCategoryMenusDto, CreateCategoryMenuDto } from './dto/create-category-menus.dto';
 
 @Injectable()
 export class MenuService {
@@ -68,6 +69,98 @@ export class MenuService {
     });
 
     return menu as unknown as MenuResponseDto;
+  }
+
+  async createCategoryMenus(createCategoryMenusDto: CreateCategoryMenusDto, parentId?: number | null): Promise<MenuResponseDto[]> {
+    const { menus } = createCategoryMenusDto;
+
+    // Validar que todos os menus têm name e slug
+    for (const menu of menus) {
+      if (!menu.name || !menu.slug) {
+        throw new ConflictException('Todos os menus devem ter name e slug');
+      }
+    }
+
+    // Calcular ordem inicial baseada no parentId (se houver)
+    const calculateStartOrder = async (prisma: any) => {
+      const lastMenu = await prisma.menu.findFirst({
+        where: { 
+          isActive: true,
+          parentId: parentId ?? null
+        },
+        orderBy: { order: 'desc' }
+      });
+      return (lastMenu?.order ?? 0) + 1;
+    };
+
+    // Criar todos os menus em uma transação
+    const createdMenus = await this.prisma.$transaction(async (prisma) => {
+      const results: MenuResponseDto[] = [];
+      const startOrder = await calculateStartOrder(prisma);
+
+      for (let i = 0; i < menus.length; i++) {
+        const menuData = menus[i];
+        const order = menuData.order ?? (startOrder + i);
+
+        // Verificar conflito de ordem
+        const existingMenu = await prisma.menu.findFirst({
+          where: { order, parentId: parentId ?? null }
+        });
+        if (existingMenu) {
+          throw new ConflictException(`Já existe um menu com a ordem ${order}`);
+        }
+
+        // Validar que é do tipo category
+        if (!menuData.slug) {
+          throw new ConflictException('Slug é obrigatório para menus do tipo category');
+        }
+
+        // Criar o menu
+        const menu = await prisma.menu.create({
+          data: {
+            name: menuData.name,
+            type: 'category',
+            slug: menuData.slug,
+            order,
+            parentId: parentId ?? null
+          },
+          select: {
+            id: true,
+            order: true,
+            name: true,
+            type: true,
+            slug: true,
+            routerLink: true,
+            externalLink: true,
+            parentId: true,
+            createdAt: true,
+            updatedAt: true,
+            children: {
+              where: { isActive: true },
+              orderBy: { order: 'asc' },
+              select: {
+                id: true,
+                order: true,
+                name: true,
+                type: true,
+                slug: true,
+                routerLink: true,
+                externalLink: true,
+                parentId: true,
+                createdAt: true,
+                updatedAt: true
+              }
+            }
+          }
+        });
+
+        results.push(menu as unknown as MenuResponseDto);
+      }
+
+      return results;
+    });
+
+    return createdMenus;
   }
 
   async findAll(): Promise<MenuResponseDto[]> {

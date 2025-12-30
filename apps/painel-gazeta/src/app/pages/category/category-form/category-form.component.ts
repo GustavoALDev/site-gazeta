@@ -1,5 +1,5 @@
 import { tap } from 'rxjs';
-import { Component,  inject, input, output, signal, computed } from '@angular/core';
+import { Component,  inject, input, output, signal, computed, effect } from '@angular/core';
 
 import { NonNullableFormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Category, HexColor, isValidHexColor } from '@site-gazeta/models';
@@ -30,6 +30,45 @@ export class CategoryFormComponent {
   
   // Color picker state
   selectedColor = signal<HexColor>('#3b82f6');
+  
+  // Effect para atualizar cor quando usedColors mudar (inicialização e mudanças)
+  private colorUpdateEffect = effect(() => {
+    const used = this.usedColors();
+    const editing = this.editingCategory();
+    
+    // Se não está editando, garantir que a cor selecionada está disponível
+    if (!editing) {
+      const currentColor = this.selectedColor();
+      // Se a cor atual está em uso ou se é a inicialização (cor padrão), selecionar uma disponível
+      if (used.includes(currentColor) || (currentColor === '#3b82f6' && used.length > 0)) {
+        this.selectAvailableColor();
+      }
+    }
+  });
+  
+  // Predefined colors (same as color picker)
+  private predefinedColors: HexColor[] = [
+    '#ef4444', // red-500
+    '#f97316', // orange-500
+    '#eab308', // yellow-500
+    '#22c55e', // green-500
+    '#06b6d4', // cyan-500
+    '#3b82f6', // blue-500
+    '#8b5cf6', // violet-500
+    '#ec4899', // pink-500
+    '#6b7280', // gray-500
+    '#1f2937', // gray-800
+    '#dc2626', // red-600
+    '#ea580c', // orange-600
+    '#ca8a04', // yellow-600
+    '#16a34a', // green-600
+    '#0891b2', // cyan-600
+    '#2563eb', // blue-600
+    '#7c3aed', // violet-600
+    '#db2777', // pink-600
+    '#4b5563', // gray-600
+    '#111827', // gray-900
+  ];
 
   form = this.fb.group({
     name: ['', Validators.required],
@@ -67,7 +106,8 @@ export class CategoryFormComponent {
       this.isEditing.set(true);
     }else{
       this.form.reset({ isActive: true });
-      this.selectedColor.set('#3b82f6');
+      // Selecionar uma cor disponível ao invés de uma cor fixa
+      this.selectAvailableColor();
       this.isEditing.set(false);
     }
   }
@@ -91,7 +131,6 @@ export class CategoryFormComponent {
       if (this.isEditing()) {
         categoryData.id = this.editingCategory()?.id as number;
         
-        console.log('chamou')
         this.categoryService.update(categoryData.id, categoryData)
         .pipe(
           tap(()=> console.log('passou aqui'))
@@ -99,6 +138,10 @@ export class CategoryFormComponent {
         .subscribe({
           next: (res) => {
             this.categorySubmit.emit(res as Category);
+            // Após editar, selecionar uma cor disponível
+            this.selectAvailableColor();
+            this.setEditingCategory(null);
+            this.form.reset({ isActive: true });
           },
           error:(error)=>{
             throw error
@@ -110,22 +153,22 @@ export class CategoryFormComponent {
         next: (res) => {
           console.log(res);
           this.categorySubmit.emit(res as Category);
-          this.form.reset();
+          // Após criar, selecionar uma cor disponível
+          this.selectAvailableColor();
+          this.form.reset({ isActive: true });
         },
         error: (err) => {
           console.error(err);
         }
       });
     }
-      if (!this.isEditing()) {
-        this.form.reset({ isActive: true });
-      }
     }
   }
 
   onCancel() {
     this.form.reset({ isActive: true });
-    this.selectedColor.set('#3b82f6');
+    // Selecionar uma cor disponível ao cancelar
+    this.selectAvailableColor();
     this.cancelEdit.emit();
   }
 
@@ -138,5 +181,22 @@ export class CategoryFormComponent {
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-')
       .trim();
+  }
+
+  /**
+   * Seleciona uma cor disponível da lista de cores predefinidas
+   * que não está sendo usada por outras categorias
+   */
+  private selectAvailableColor(): void {
+    const used = this.usedColors();
+    const availableColor = this.predefinedColors.find(color => !used.includes(color));
+    
+    if (availableColor) {
+      this.selectedColor.set(availableColor);
+    } else {
+      // Se todas as cores predefinidas estão em uso, usar a primeira cor predefinida
+      // (isso não deveria acontecer, mas é um fallback seguro)
+      this.selectedColor.set(this.predefinedColors[0]);
+    }
   }
 }

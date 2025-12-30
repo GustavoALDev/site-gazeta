@@ -1,0 +1,79 @@
+<div class="news-list-filters">
+  <div class="filter-group">
+    <label for="filter-date">Data de publicação</label>
+    <input 
+      id="filter-date" 
+      type="date" 
+      class="filter-input" 
+      placeholder="Data de publicação" 
+      [value]="filterDate()" 
+      (input)="onDateChange($any($event.target).value)" 
+    />
+  </div>
+  
+  <div class="filter-group">
+    <label for="filter-order">Ordem</label>
+    <select 
+      id="filter-order" 
+      class="filter-input" 
+      [value]="filterOrder() ?? ''" 
+      (change)="onOrderChange($any($event.target).value)">
+      <option value="">Todos</option>
+      <option value="desc">Mais recente</option>
+      <option value="asc">Mais antigo</option>
+    </select>
+  </div>
+  
+  <div class="filter-group">
+    <label for="filter-views">Visualizações</label>
+    <select 
+      id="filter-views" 
+      class="filter-input" 
+      [value]="filterViews()" 
+      (change)="onViewsChange($any($event.target).value)">
+      <option value="">Todos</option>
+      <option value="desc">Mais vistos</option>
+      <option value="asc">Menos vistos</option>
+    </select>
+  </div>
+  
+  <div class="filter-group">
+    <label for="filter-category">Categoria</label>
+    <select 
+      id="filter-category" 
+      class="filter-input" 
+      [value]="filterCategory() ?? ''" 
+      (change)="onCategoryChange($any($event.target).value)">
+      <option value="">Todos</option>
+      @for (category of categories(); track category.id) {
+        <option [value]="category.id">{{ category.name }}</option>
+      }       
+    </select>
+  </div>
+  
+  <div class="filter-group">
+    <label for="filter-emphasis">Destaque</label>
+    <select 
+      id="filter-emphasis" 
+      class="filter-input" 
+      [value]="filterEmphasis() === null ? '' : filterEmphasis() ? 'true' : 'false'" 
+      (change)="onEmphasisChange($any($event.target).value)">
+      <option value="">Todas</option>
+      <option value="true">Com destaque</option>
+      <option value="false">Sem destaque</option>
+    </select>
+  </div>
+  
+  <div class="filter-group search-group">
+    <label for="filter-search">Pesquisar</label>
+    <input 
+      id="filter-search" 
+      type="text" 
+      class="filter-input search-input" 
+      placeholder="Pesquisar notícia..."
+      [value]="filterSearch()" 
+      (input)="onSearchChange($any($event.target).value)" 
+    />
+  </div>
+</div>
+

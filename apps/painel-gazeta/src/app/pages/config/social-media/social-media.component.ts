@@ -7,6 +7,7 @@ import {
 } from '@angular/forms';
 import { FormValidatorComponent, FormValidatorService } from '@site-gazeta/form-validator';
 import { Subject, takeUntil } from 'rxjs';
+import { AlertService } from '@site-gazeta/alert';
 
 @Component({
   selector: 'app-social-media',
@@ -18,6 +19,7 @@ import { Subject, takeUntil } from 'rxjs';
 export class SocialMediaComponent implements OnInit, OnDestroy {
   fb = inject(NonNullableFormBuilder);
   formValidator = inject(FormValidatorService);
+  private alertService = inject(AlertService);
   destroy$ = new Subject<void>();
   displayError = signal<{ [key: string]: string } | null>({});
 
@@ -130,9 +132,9 @@ export class SocialMediaComponent implements OnInit, OnDestroy {
       console.log('Dados do formulário:', formValue);
       
       // TODO: Implementar chamada da API para salvar
-      alert('Configurações de redes sociais salvas com sucesso!');
+      this.alertService.success('Sucesso', 'Configurações de redes sociais salvas com sucesso!');
     } else {
-      alert('Por favor, corrija os erros no formulário antes de salvar.');
+      this.alertService.warning('Atenção', 'Por favor, corrija os erros no formulário antes de salvar.');
     }
   }
 

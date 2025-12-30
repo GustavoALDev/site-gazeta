@@ -1,16 +1,14 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { HeaderComponent } from '@site-gazeta/header';
 import { FooterComponent } from '@site-gazeta/footer';
 import { ApiService } from './core/service/api.service';
 import { Ads, Menu } from '@site-gazeta/models';
 @Component({
-  imports: [RouterModule,HeaderComponent, FooterComponent],
+  imports: [RouterModule],
   selector: 'app-root',
   template: `
-    <lib-header [announcements]="announcements()"></lib-header>
     <router-outlet></router-outlet>
-    <lib-footer></lib-footer>
   `,
   styles:[`
     :host{
@@ -19,7 +17,8 @@ import { Ads, Menu } from '@site-gazeta/models';
       height: 100%;
       width: 100%;
     }
-  `]
+  `],
+  changeDetection:ChangeDetectionStrategy.OnPush
 })
 export class AppComponent implements OnInit{
   apiService = inject(ApiService);

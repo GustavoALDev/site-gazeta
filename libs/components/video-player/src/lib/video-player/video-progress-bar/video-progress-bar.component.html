@@ -1,0 +1,37 @@
+<div 
+  class="progress-bar-container"
+  (click)="onProgressBarClick($event)"
+  (mousemove)="onProgressBarHover($event)"
+  (mouseleave)="onProgressBarLeave()"
+>
+  <div class="progress-bar-background">
+    <!-- Barra de buffer -->
+    <div 
+      class="progress-bar-buffered" 
+      [style.width.%]="buffered()"
+    ></div>
+    
+    <!-- Barra de progresso com gradiente -->
+    <div 
+      class="progress-bar-filled" 
+      [style.width.%]="progress()"
+    ></div>
+    
+    <!-- Indicador de hover -->
+    @if (isHovering()) {
+      <div 
+        class="progress-bar-hover" 
+        [style.left.%]="hoverPosition()"
+      >
+        <div class="hover-tooltip">{{ formattedHoverTime() }}</div>
+      </div>
+    }
+    
+    <!-- Indicador de progresso atual -->
+    <div 
+      class="progress-bar-handle" 
+      [style.left.%]="progress()"
+    ></div>
+  </div>
+</div>
+

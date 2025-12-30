@@ -1,0 +1,52 @@
+@if(mainVideo(); as mainVideoData) {
+<div class="header">
+  <h2>Videos em destaque</h2>
+</div>
+<div class="video-featured-container">
+  <div class="video-grid">
+    <!-- Card principal (esquerda) -->
+    @if (mainVideo(); as mainVideoData) {
+      <div class="video-card main-card" (click)="emitCurrentVideo(mainVideoData)">
+        <div class="video-wrapper">
+          <img
+            [src]="mainVideoData.thumbnail"
+            [alt]="mainVideoData.title"
+            class="video-element"
+          >
+          <h2 class="featured-title">{{ mainVideoData.title }}</h2>
+          <button 
+            class="play-button"
+            (click)="emitCurrentVideo(mainVideoData); $event.stopPropagation()"
+            [attr.aria-label]="'Reproduzir ' + mainVideoData.title"
+          >
+            <span class="material-icons">play_arrow</span>
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- Cards menores (direita) -->
+    <div class="video-cards-column">
+      @for (video of secondaryVideos(); track video.id) {
+        <div class="video-card secondary-card" (click)="emitCurrentVideo(video)">
+          <div class="video-wrapper">
+            <img
+              [src]="video.thumbnail"
+              [alt]="video.title"
+              class="video-element"
+            >
+            <h3 class="featured-title secondary-title">{{ video.title }}</h3>
+            <button 
+              class="play-button"
+              (click)="emitCurrentVideo(video); $event.stopPropagation()"
+              [attr.aria-label]="'Reproduzir ' + video.title"
+            >
+              <span class="material-icons">play_arrow</span>
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+}

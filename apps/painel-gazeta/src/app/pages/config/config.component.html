@@ -24,6 +24,13 @@
               (click)="setActiveTab('home-config')">
               Configuração Home
             </button>
+            <button
+              type="button"
+              class="tab-button"
+              [class.active]="activeTab === 'maintenance'"
+              (click)="setActiveTab('maintenance')">
+              Manutenção
+            </button>
           </div>
         </div>
 
@@ -33,6 +40,10 @@
 
         <div class="tab-content" [class.active]="activeTab === 'home-config'">
           <app-home-config></app-home-config>
+        </div>
+
+        <div class="tab-content" [class.active]="activeTab === 'maintenance'">
+          <app-maintenance></app-maintenance>
         </div>
 
       </div>

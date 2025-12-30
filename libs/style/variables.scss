@@ -1,128 +1,274 @@
-// Variáveis CSS Customizadas Globais
-:root {
-    // Cores principais
-    --primary: #eb3237;
-    --secondary: #0a80c4;
-    --success: #28a745;
-    --danger: #dc3545;
-    --warning: #ffc107;
-    --light: #f8f9fa;
-    --border: #dee2e6;
-    --text: #343a40;
-    --text-muted: #6c757d;
-    
-    // Cores específicas
-    --accent-red: #eb3237;
-    --accent-blue: #0a80c4;
-    
-    // Dimensões
-    --radius: 0.375rem;
-    --space-sm: 0.5rem;
-    --space-md: 1rem;
-    --space-lg: 1.5rem;
-    --space-xl: 2rem;
-    
-    // Animações
-    --transition: 0.15s ease-in-out;
-    --transition-slow: 0.3s ease-in-out;
+// ============================================
+// Variáveis SCSS - Cores Principais
+// ============================================
+$primary: #eb3237;
+$secondary: #0a80c4;
+$success: #28a745;
+$danger: #dc3545;
+$warning: #ffc107;
+$info: #17a2b8;
+$light: #f8f9fa;
+$dark: #343a40;
+
+// Cores específicas do projeto
+$accent-red: #eb3237;
+$accent-blue: #0a80c4;
+
+// Variáveis legadas (manter para compatibilidade)
+$primary-color: $primary;
+$secondary-color: $secondary;
+$success-color: $success;
+$danger-color: $danger;
+$warning-color: $warning;
+$info-color: $info;
+  
+// ============================================
+// Variáveis SCSS - Cores de Texto
+// ============================================
+$text: #343a40;
+$text-dark: #343a40;
+$text-muted: #6c757d;
+$text-light: #ffffff;
+
+$font-family-primary: 'Open Sans', sans-serif;
+// ============================================
+// Variáveis SCSS - Cores Neutras/Grays
+// ============================================
+$white: #ffffff;
+$black: #000000;
+$gray-100: #f8f9fa;
+$gray-200: #e9ecef;
+$gray-300: #dee2e6;
+$gray-400: #ced4da;
+$gray-500: #adb5bd;
+$gray-600: #6c757d;
+$gray-700: #495057;
+$gray-800: #343a40;
+$gray-900: #212529;
+
+// ============================================
+// Variáveis SCSS - Bordas
+// ============================================
+$border: #dee2e6;
+$border-color: #dee2e6;
+$border-light: #f1f3f4;
+  
+// ============================================
+// Variáveis SCSS - Dimensões e Espaçamentos
+// ============================================
+$radius: 0.375rem;
+$radius-sm: 0.25rem;
+$radius-lg: 0.5rem;
+$radius-xl: 1rem;
+
+$space-xs: 0.25rem;
+$space-sm: 0.5rem;
+$space-md: 1rem;
+$space-lg: 1.5rem;
+$space-xl: 2rem;
+$space-xxl: 3rem;
+
+// ============================================
+// Variáveis SCSS - Transições/Animações
+// ============================================
+$transition: 0.15s ease-in-out;
+$transition-fast: 0.1s ease-in-out;
+$transition-slow: 0.3s ease-in-out;
+$transition-slower: 0.5s ease-in-out;
+
+// ============================================
+// Variáveis SCSS - Breakpoints
+// ============================================
+$mobile: 576px;
+$tablet: 768px;
+$desktop: 992px;
+$large: 1200px;
+$xlarge: 1400px;
+  
+// ============================================
+// Mixins SCSS - Utilitários de Layout
+// ============================================
+@mixin flex($justify: center, $align: center, $direction: row) {
+  display: flex;
+  justify-content: $justify;
+  align-items: $align;
+  flex-direction: $direction;
+}
+
+@mixin flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+// ============================================
+// Mixins SCSS - Componentes
+// ============================================
+@mixin card($padding: $space-lg, $radius: $radius) {
+  background: $white;
+  border: 1px solid $border;
+  border-radius: $radius;
+  padding: $padding;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+@mixin btn($bg-color: $primary, $text-color: $white) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: $radius;
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all $transition;
+  background-color: $bg-color;
+  color: $text-color;
+  text-decoration: none;
+  
+  &:hover:not(:disabled) {
+    filter: brightness(0.9);
+    transform: translateY(-1px);
   }
   
-  // Variáveis SCSS para compatibilidade
-  $primary-color: #007bff;
-  $secondary-color: #6c757d;
-  $success-color: #28a745;
-  $danger-color: #dc3545;
-  $warning-color: #ffc107;
-  $info-color: #17a2b8;
-  
-  // Cores de texto
-  $text-dark: #343a40;
-  $text-muted: #6c757d;
-  $text-light: #ffffff;
-  
-  // Cores de fundo
-  $white: #ffffff;
-  $light: #f8f9fa;
-  $gray-100: #f8f9fa;
-  $gray-200: #e9ecef;
-  $gray-300: #dee2e6;
-  $gray-400: #ced4da;
-  $gray-500: #adb5bd;
-  $gray-600: #6c757d;
-  $gray-700: #495057;
-  $gray-800: #343a40;
-  $gray-900: #212529;
-  
-  // Cores de borda
-  $border-color: #dee2e6;
-  $border-light: #f1f3f4;
-  
-  // Breakpoints
-  $mobile: 576px;
-  $tablet: 768px;
-  $desktop: 992px;
-  $large: 1200px;
-  
-  // Mixins Globais
-  @mixin flex($justify: center, $align: center) {
-    display: flex;
-    justify-content: $justify;
-    align-items: $align;
+  &:active:not(:disabled) {
+    transform: translateY(0);
   }
   
-  @mixin card {
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
+}
+
+@mixin gradient-bg($color1: $accent-red, $color2: $accent-blue, $angle: 135deg) {
+  background: linear-gradient($angle, $color1 0%, $color2 100%);
+}
+
+@mixin shadow-sm {
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+@mixin shadow-md {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+@mixin shadow-lg {
+  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175);
+}
   
-  @mixin btn($color: var(--primary)) {
-    border: none;
-    border-radius: var(--radius);
-    padding: 0.375rem 0.75rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all var(--transition);
-    background-color: $color;
-    color: white;
-    
-    &:hover:not(:disabled) {
-      filter: brightness(0.9);
-    }
-    
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
+// ============================================
+// Mixins SCSS - Responsividade
+// ============================================
+@mixin mobile {
+  @media (max-width: #{$mobile - 1px}) { 
+    @content; 
   }
-  
-  @mixin mobile {
-    @media (max-width: #{$mobile - 1px}) { @content; }
+}
+
+@mixin mobile-up {
+  @media (min-width: #{$mobile}) { 
+    @content; 
   }
-  
-  @mixin tablet {
-    @media (min-width: #{$tablet}) and (max-width: #{$desktop - 1px}) { @content; }
+}
+
+@mixin tablet {
+  @media (min-width: #{$tablet}) and (max-width: #{$desktop - 1px}) { 
+    @content; 
   }
-  
-  @mixin desktop {
-    @media (min-width: #{$desktop}) { @content; }
+}
+
+@mixin tablet-up {
+  @media (min-width: #{$tablet}) { 
+    @content; 
   }
-  
-  // Classes utilitárias
-  .text-center { text-align: center; }
-  .text-muted { color: var(--text-muted); }
-  .text-danger { color: var(--danger); }
-  .text-success { color: var(--success); }
-  
-  .mb-0 { margin-bottom: 0; }
-  .mb-2 { margin-bottom: var(--space-md); }
-  .mb-3 { margin-bottom: var(--space-lg); }
-  
-  .d-flex { display: flex; }
-  .d-none { display: none; }
-  
-  @include mobile {
-    .d-md-none { display: none; }
-    .d-md-block { display: block; }
-  } 
+}
+
+@mixin desktop {
+  @media (min-width: #{$desktop}) { 
+    @content; 
+  }
+}
+
+@mixin desktop-up {
+  @media (min-width: #{$desktop}) { 
+    @content; 
+  }
+}
+
+@mixin large {
+  @media (min-width: #{$large}) { 
+    @content; 
+  }
+}
+
+@mixin xlarge {
+  @media (min-width: #{$xlarge}) { 
+    @content; 
+  }
+}
+
+// ============================================
+// Mixins SCSS - Tipografia
+// ============================================
+@mixin text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@mixin text-clamp($lines: 2) {
+  display: -webkit-box;
+  -webkit-line-clamp: $lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// ============================================
+// Classes Utilitárias (Opcional - usar se necessário)
+// ============================================
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+.text-muted { color: $text-muted; }
+.text-danger { color: $danger; }
+.text-success { color: $success; }
+.text-warning { color: $warning; }
+.text-primary { color: $primary; }
+
+.mb-0 { margin-bottom: 0; }
+.mb-1 { margin-bottom: $space-sm; }
+.mb-2 { margin-bottom: $space-md; }
+.mb-3 { margin-bottom: $space-lg; }
+.mb-4 { margin-bottom: $space-xl; }
+
+.mt-0 { margin-top: 0; }
+.mt-1 { margin-top: $space-sm; }
+.mt-2 { margin-top: $space-md; }
+.mt-3 { margin-top: $space-lg; }
+.mt-4 { margin-top: $space-xl; }
+
+.p-0 { padding: 0; }
+.p-1 { padding: $space-sm; }
+.p-2 { padding: $space-md; }
+.p-3 { padding: $space-lg; }
+.p-4 { padding: $space-xl; }
+
+.d-flex { display: flex; }
+.d-block { display: block; }
+.d-inline { display: inline; }
+.d-inline-block { display: inline-block; }
+.d-none { display: none; }
+
+@include mobile {
+  .d-md-none { display: none; }
+  .d-md-block { display: block; }
+  .d-md-flex { display: flex; }
+} 

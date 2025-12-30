@@ -1,14 +1,12 @@
 <div class="carousel-swipe-container">
-  <!-- Track do carousel -->
   <div class="carousel-swipe-wrapper">
     <div 
+    #carouselTrack
       class="carousel-swipe-track" 
       [class.dragging]="isDragging()"
       [class.transitioning]="isTransitioning()"
-      #carouselTrack
       [style.transform]="trackTransform()">
       
-      <!-- Renderiza todos os itens estendidos (com clones) -->
       @for (item of extendedItems(); track item.id; let i = $index) {
         <div class="carousel-swipe-slide" [attr.data-index]="i">
           <a 
@@ -16,10 +14,8 @@
             [routerLink]="['/news', item.slug]"
             [attr.aria-label]="'Ler notícia: ' + item.title">
             
-            <!-- Container da imagem -->
             <div class="news-card__image-container">
-              <!-- Imagem com NgOptimizedImage para item ativo, lazy para os demais -->
-              @if(i === activeIndex()) {
+              @if(i === currentIndex()) {
                 <img 
                   class="news-card__image" 
                   [ngSrc]="item.imageUrl.medium || item.imageUrl.original"
@@ -34,12 +30,9 @@
                   loading="lazy">
               }
               
-              <!-- Overlay -->
               <div class="news-card__overlay"></div>
               
-              <!-- Conteúdo sobreposto -->
               <div class="news-card__content-overlay">
-                <!-- Tags acima do título -->
                 @if (item.tags.length > 0) {
                   <div class="news-card__tags">
                     @for (tag of item.tags; track $index) {
@@ -51,11 +44,9 @@
                   </div>
                 }
 
-                <!-- Conteúdo -->
                 <div class="news-card__content">
                   <h3 class="news-card__title">{{ item.title }}</h3>
                   
-                  <!-- Metadados -->
                   <div class="news-card__meta">
                     @if (item.author) {
                       <span class="news-card__meta-item news-card__meta-item--author">
@@ -100,7 +91,6 @@
     </div>
   </div>
 
-  <!-- Indicadores de navegação (dots) -->
   <nav class="carousel-swipe-indicators" aria-label="Indicadores do carousel">
     @for (item of news(); track item.id; let i = $index) {
       <button 
@@ -114,7 +104,6 @@
     }
   </nav>
 
-  <!-- Navegação por botões -->
   <div class="carousel-swipe-nav" aria-label="Navegação do carousel">
     <button 
       class="carousel-swipe-nav-btn carousel-swipe-nav-btn--prev"

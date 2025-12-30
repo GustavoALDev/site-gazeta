@@ -1,0 +1,83 @@
+<div class="maintenance-content">
+  <div class="maintenance-warning">
+    <div class="warning-icon">
+      <i class="material-icons">warning</i>
+    </div>
+    <div class="warning-content">
+      <h4>Atenção</h4>
+      <p>Ao ativar a manutenção, o site ficará <strong>indisponível</strong> para todos os usuários. Apenas o painel administrativo continuará acessível.</p>
+    </div>
+  </div>
+
+  <div class="maintenance-toggle-section">
+    <div class="toggle-group">
+      <label class="toggle-label" for="maintenanceToggle">
+        <span class="material-icons">build</span>
+        Modo Manutenção
+      </label>
+      <div class="toggle-container">
+        <input
+          type="checkbox"
+          id="maintenanceToggle"
+          [checked]="isMaintenanceActive()"
+          [disabled]="isLoading() || isSaving()"
+          (change)="onToggleMaintenance($event)"
+          class="toggle-input">
+        <label for="maintenanceToggle" class="toggle-switch">
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="toggle-text">
+          {{ isMaintenanceActive() ? 'Ativo' : 'Inativo' }}
+        </span>
+      </div>
+    </div>
+
+    @if (isMaintenanceActive()) {
+      <div class="maintenance-active-info">
+        <div class="info-icon">
+          <i class="material-icons">info</i>
+        </div>
+        <div class="info-content">
+          <strong>Site em Manutenção</strong>
+          <p>O site está atualmente fechado para manutenção. Os visitantes verão uma página de aviso.</p>
+        </div>
+      </div>
+    }
+
+    @if (isLoading() || isSaving()) {
+      <div class="loading-indicator">
+        <span class="material-icons spinning">sync</span>
+        {{ isSaving() ? 'Salvando...' : 'Carregando...' }}
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Modal de Confirmação -->
+@if (showConfirmModal()) {
+  <div class="modal-overlay" (click)="cancelMaintenanceChange()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <span class="material-icons warning">warning</span>
+        <h3>Confirmar Ativação de Manutenção</h3>
+      </div>
+      
+      <div class="modal-body">
+        <p>Tem certeza que deseja <strong>ativar o modo de manutenção</strong>?</p>
+        <p class="warning-text">O site ficará <strong>indisponível</strong> para todos os usuários. Apenas o painel administrativo continuará acessível.</p>
+      </div>
+      
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" (click)="cancelMaintenanceChange()">
+          <span class="material-icons">close</span>
+          Cancelar
+        </button>
+        <button type="button" class="btn-confirm" (click)="confirmMaintenanceChange()">
+          <span class="material-icons">check</span>
+          Confirmar
+        </button>
+      </div>
+    </div>
+  </div>
+}
+

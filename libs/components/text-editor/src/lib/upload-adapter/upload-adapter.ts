@@ -1,12 +1,10 @@
 export class UploadAdapter {
   private loader: any;
   private apiUrl: string;
-  private postId: number | string;
 
-  constructor(loader: any, apiUrl: string, postId: number | string = 0) {
+  constructor(loader: any, apiUrl: string) {
     this.loader = loader;
     this.apiUrl = apiUrl;
-    this.postId = postId;
   }
 
   upload(): Promise<{ default: string }> {
@@ -23,18 +21,14 @@ export class UploadAdapter {
 
           const formData = new FormData();
           formData.append('file', file);
-          formData.append('postId', String(this.postId));
-          formData.append('emphasis', 'false');
 
           console.log('📦 [CKEditor Upload] FormData preparado:', {
-            postId: this.postId,
-            emphasis: 'false',
-            apiUrl: `${this.apiUrl}/media/upload`
+            apiUrl: `${this.apiUrl}/content-media/upload`
           });
 
           const xhr = new XMLHttpRequest();
           
-          xhr.open('POST', `${this.apiUrl}/media/upload`, true);
+          xhr.open('POST', `${this.apiUrl}/content-media/upload`, true);
           xhr.responseType = 'json';
           
           console.log('🚀 [CKEditor Upload] Requisição aberta, enviando...');
@@ -57,10 +51,9 @@ export class UploadAdapter {
               const response = xhr.response;
               console.log('📥 [CKEditor Upload] Resposta recebida:', response);
               
-              // Ajuste aqui baseado na estrutura de resposta da sua API
-              // A API retorna um objeto MediaResponseDto com imgSize contendo as URLs
-              if (response && response.imgSize && response.imgSize.original) {
-                const imageUrl = response.imgSize.original;
+              // A API retorna um objeto ContentMediaResponseDto com url
+              if (response && response.url) {
+                const imageUrl = response.url;
                 console.log('🎉 [CKEditor Upload] URL da imagem obtida:', imageUrl);
                 console.log('✨ [CKEditor Upload] Upload concluído com sucesso!');
                 resolve({
@@ -68,7 +61,7 @@ export class UploadAdapter {
                 });
               } else {
                 console.error('❌ [CKEditor Upload] Resposta inválida:', response);
-                console.error('❌ [CKEditor Upload] Estrutura esperada: { imgSize: { original: "url" } }');
+                console.error('❌ [CKEditor Upload] Estrutura esperada: { url: "..." }');
                 reject('Resposta inválida do servidor');
               }
             } else {
@@ -95,7 +88,7 @@ export class UploadAdapter {
           });
 
           // Envia a requisição
-          console.log('📡 [CKEditor Upload] Enviando requisição para:', `${this.apiUrl}/media/upload`);
+          console.log('📡 [CKEditor Upload] Enviando requisição para:', `${this.apiUrl}/content-media/upload`);
           xhr.send(formData);
         })
     );
@@ -107,10 +100,9 @@ export class UploadAdapter {
 }
 
 // Plugin factory para registrar o adaptador no CKEditor
-export function createUploadAdapterPlugin(apiUrl: string, postId: number | string = 0) {
+export function createUploadAdapterPlugin(apiUrl: string) {
   console.log('🔌 [CKEditor Plugin] Criando plugin de upload com configurações:', {
-    apiUrl,
-    postId
+    apiUrl
   });
   
   return function UploadAdapterPlugin(editor: any): void {
@@ -119,7 +111,7 @@ export function createUploadAdapterPlugin(apiUrl: string, postId: number | strin
     try {
       editor.plugins.get('FileRepository').createUploadAdapter = (loader: any) => {
         console.log('📸 [CKEditor Plugin] Criando novo adaptador para upload');
-        return new UploadAdapter(loader, apiUrl, postId);
+        return new UploadAdapter(loader, apiUrl);
       };
       console.log('✅ [CKEditor Plugin] Plugin de upload registrado com sucesso!');
     } catch (error) {

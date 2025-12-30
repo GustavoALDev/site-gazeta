@@ -1,131 +1,154 @@
 @use '../../../styles/variables' as vars;
 
 .ads-container {
-  height: 100%;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  background: linear-gradient(136deg, var(--accent-red) 0%, var(--accent-blue) 100%);
-  padding: 1rem;
+  width: 100%;
+  padding: 2rem 1rem;
+  background: linear-gradient(135deg, var(--accent-red) 0%, var(--accent-blue) 100%);
+  min-height: 100vh;
 }
 
 .ads-card {
+  @include vars.card;
+  max-width: 1366px;
+  margin: 0 auto;
   background: white;
   border-radius: 12px;
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.363);
   padding: 2rem;
-  width: 100%;
-  height: 100%;
-  overflow-y: auto;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.363);
   animation: slideUp 0.6s ease-out;
+  position: relative;
 }
 
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.page-header {
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-.page-title {
-  color: var(--accent-blue);
-  font-size: 2rem;
-  font-weight: 700;
-  margin: 0;
-}
-
-// Tabs styling
-.tabs-container {
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-.tabs-header {
+.back-btn {
+  position: absolute;
+  top: 2rem;
+  left: 2rem;
   display: flex;
-  border-bottom: 2px solid var(--border);
-}
-
-.tab-button {
-  flex: 1;
-  padding: 1rem 2rem;
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  font-size: 1rem;
+  align-items: center;
+  gap: 0.5rem;
+  background: white;
+  color: var(--accent-blue);
+  border: 2px solid var(--accent-blue);
+  border-radius: 24px;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.9375rem;
   font-weight: 600;
   cursor: pointer;
   transition: all var(--transition);
-  border-bottom: 3px solid transparent;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  
+  z-index: 100;
+
+  .material-icons {
+    font-size: 20px;
+  }
+
   &:hover {
+    background: var(--accent-blue);
+    color: white;
+    transform: translateX(-4px);
+  }
+}
+
+.ads-header {
+  text-align: center;
+  margin-bottom: 2rem;
+
+  h2 {
     color: var(--accent-blue);
-    background: rgba(10, 128, 196, 0.05);
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
   }
-  
-  &.active {
-    color: var(--accent-blue);
-    border-bottom-color: var(--accent-blue);
-    background: rgba(10, 128, 196, 0.05);
-  }
-  
-  i {
-    font-size: 1.1rem;
+
+  p {
+    color: var(--text-muted);
+    font-size: 1rem;
+    margin: 0;
   }
 }
 
-.tab-content {
-  min-height: 500px;
-}
-
-.tab-pane {
-  padding: 2rem;
-  
-  &:not(.active) {
-    display: none;
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
   }
-  
-  &.active {
-    display: block;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-// Responsive adjustments
-@include vars.mobile {
+// Responsividade
+@media (max-width: 1024px) {
   .ads-container {
-    padding: 0.5rem;
+    padding: 1.5rem 0.75rem;
   }
-  
+
+  .ads-card {
+    padding: 1.5rem;
+  }
+
+  .back-btn {
+    top: 1.5rem;
+    left: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .ads-container {
+    padding: 1rem 0.5rem;
+  }
+
   .ads-card {
     padding: 1rem;
     border-radius: 8px;
   }
-  
-  .page-title {
-    font-size: 1.5rem;
+
+  .back-btn {
+    position: relative;
+    top: 0;
+    left: 0;
+    margin-bottom: 1rem;
+    width: fit-content;
   }
-  
-  .tab-pane {
-    padding: 0.5rem;
+
+  .ads-header {
+    margin-bottom: 1.5rem;
+
+    h2 {
+      font-size: 1.5rem;
+    }
+
+    p {
+      font-size: 0.875rem;
+    }
   }
-  
-  .tabs-header {
-    flex-direction: column;
+}
+
+@media (max-width: 480px) {
+  .ads-container {
+    padding: 0.75rem 0.25rem;
   }
-  
-  .tab-button {
-    border-bottom: 1px solid var(--border);
-    border-right: none;
+
+  .ads-card {
+    padding: 0.875rem;
+  }
+
+  .ads-header {
+    h2 {
+      font-size: 1.25rem;
+    }
+
+    p {
+      font-size: 0.8125rem;
+    }
+  }
+
+  .back-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
     
-    &:last-child {
-      border-bottom: none;
+    .material-icons {
+      font-size: 18px;
     }
   }
 }

@@ -1,0 +1,29 @@
+@use '../../../../../style/variables' as *;
+
+:host {
+  display: block;
+  width: 100%;
+  font-family: $font-family-primary;
+}
+
+.category-section {
+  margin-bottom: 3rem;
+  width: 100%;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+@include tablet {
+  .category-section {
+    margin-bottom: 2rem;
+  }
+}
+
+@include mobile {
+  .category-section {
+    margin-bottom: 1.5rem;
+  }
+}
+

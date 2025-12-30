@@ -1,8 +1,9 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, PLATFORM_ID, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { EMPTY, Observable } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { environment } from '../../core/env/env';
+import { isPlatformBrowser } from '@angular/common';
 
 interface TrackViewData {
   newsId?: number;
@@ -17,6 +18,8 @@ interface TrackViewData {
 })
 export class AnalyticsService {
   private http = inject(HttpClient);
+  private platformId = inject(PLATFORM_ID);
+  private readonly isBrowser = isPlatformBrowser(this.platformId);
   // Analytics está dentro do prefixo /api do backend
   private analyticsUrl = `${environment.apiUrl}/analytics`;
 
@@ -67,7 +70,8 @@ export class AnalyticsService {
   /**
    * Registra visualização de página genérica
    */
-  trackPageView(path: string, sessionId: string): Observable<any> {
+  trackPageView(path: string, sessionId: string): Observable<any> { 
+    if (!this.isBrowser) return EMPTY;
     return this.trackView({
       path,
       sessionId,

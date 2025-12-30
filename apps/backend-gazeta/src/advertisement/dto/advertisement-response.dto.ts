@@ -33,7 +33,7 @@ export class AdvertisementResponseDto {
   @ApiProperty({ 
     description: 'Tamanho do anúncio', 
     example: '728x90',
-    enum: ['728x90', '300x200']
+    enum: ['728x90', '300x250', '160x600', '200x200']
   })
   size: string;
 

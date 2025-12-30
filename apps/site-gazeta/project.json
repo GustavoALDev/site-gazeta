@@ -117,7 +117,8 @@
       },
       "defaultConfiguration": "development",
       "options": {
-        "port": 4000
+        "port": 4000,
+        "hmr":false
       }
     },
     "serve-ssr-production": {

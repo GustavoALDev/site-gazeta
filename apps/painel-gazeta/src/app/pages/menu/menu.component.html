@@ -6,57 +6,60 @@
       <p class="page-subtitle">Crie e organize os itens do menu de navegação do site</p>
     </div>
 
-    <!-- Menu de abas -->
-    <div class="tabs-container">
-      <div class="tabs-header">
-        <button 
-          class="tab-button" 
-          [class.active]="state().activeTab === 'form'"
-          (click)="setActiveTab('form')">
-          <i class="material-icons">{{ isEdit() ? 'edit' : 'add' }}</i>
-          {{ isEdit() ? 'Editar Menu' : 'Criar Menu' }}
-        </button>
-        <button 
-          class="tab-button" 
-          [class.active]="state().activeTab === 'list'"
-          (click)="setActiveTab('list')">
-          <i class="material-icons">list</i>
-          Lista de Menus
-        </button>
+    <!-- Layout: Lista à esquerda, Formulário à direita -->
+    <div class="menu-layout">
+      <!-- Lista de Menus (Esquerda) -->
+      <div class="menu-list-section">
+        @if (isLoading()) {
+          <div class="loading-state">
+            <span class="material-icons spinning">refresh</span>
+            <p>Carregando menus...</p>
+          </div>
+        } @else {
+          <app-menu-list
+            [menus]="menus()"
+            (onEdit)="handleEdit($event)"
+            (onDelete)="handleDelete($event)"
+            (onReorder)="handleReorder($event)"
+            (onSubmenuClick)="openSubmenuModal($event)">
+          </app-menu-list>
+        }
       </div>
 
-      <div class="tab-content">
-        <!-- Aba do Formulário -->
-        @if (state().activeTab === 'form') {
-          <div class="tab-pane active">
-            <app-menu-form
-              [menuToEdit]="state().menuToEdit"
-              [existingMenus]="menus()"
-              (onSave)="handleSave($event)"
-              (onCancel)="handleCancel()">
-            </app-menu-form>
-          </div>
-        }
-
-        <!-- Aba da Lista -->
-        @if (state().activeTab === 'list') {
-          <div class="tab-pane active">
-            @if (isLoading()) {
-              <div class="loading-state">
-                <span class="material-icons spinning">refresh</span>
-                <p>Carregando menus...</p>
-              </div>
-            } @else {
-              <app-menu-list
-                [menus]="menus()"
-                (onEdit)="handleEdit($event)"
-                (onDelete)="handleDelete($event)"
-                (onReorder)="handleReorder($event)">
-              </app-menu-list>
-            }
-          </div>
-        }
+      <!-- Formulário (Direita - Menu Lateral) -->
+      <div class="menu-form-section">
+        <app-menu-form
+          [menuToEdit]="state().menuToEdit"
+          [existingMenus]="menus()"
+          (onSave)="handleSave($event)"
+          (onCancel)="handleCancel()">
+        </app-menu-form>
       </div>
     </div>
   </div>
 </div>
+
+<!-- Modal para Gerenciar Submenu -->
+<modal 
+  [(isOpen)]="isSubmenuModalOpen"
+  (closed)="closeSubmenuModal()">
+  <div class="submenu-modal-content">
+    <div class="submenu-modal-header">
+      <h2>Gerenciar Submenu: {{ selectedSubmenu()?.name }}</h2>
+      <p class="submenu-info">
+        <span class="material-icons">info</span>
+        Adicione itens de menu a este submenu.
+      </p>
+    </div>
+    
+    <div class="submenu-form-wrapper">
+      <app-submenu-form
+        [parentMenu]="selectedSubmenu()!"
+        [existingMenus]="selectedSubmenu()?.children || []"
+        [allMenus]="menus()"
+        (onSave)="handleSubmenuSave()"
+        (onCancel)="closeSubmenuModal()">
+      </app-submenu-form>
+    </div>
+  </div>
+</modal>

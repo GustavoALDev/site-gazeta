@@ -75,11 +75,61 @@ export class AdsFormComponent implements OnInit {
     { value: 'content', label: 'Conteúdo' },
   ];
 
-  readonly sizeOptions: SelectOption[] = [
+  readonly allSizeOptions: SelectOption[] = [
     { value: '728x90', label: '728x90 (Leaderboard)' },
     { value: '300x250', label: '300x250 (Medium Rectangle)' },
     { value: '160x600', label: '160x600 (Banner)' },
+    { value: '200x200', label: '200x200 (Square)' },
   ];
+
+  // Getter para tamanhos disponíveis baseado em placement e position
+  get sizeOptions(): SelectOption[] {
+    const placement = this.adForm?.get('placement')?.value as string;
+    const position = this.adForm?.get('position')?.value as string;
+
+    if (!placement) {
+      return [];
+    }
+
+    // Header = 728x90 apenas topo
+    if (placement === 'header') {
+      return this.allSizeOptions.filter(opt => opt.value === '728x90');
+    }
+
+    // Para home e content, precisa ter position selecionado
+    if (!position) {
+      return [];
+    }
+
+    // Home
+    if (placement === 'home') {
+      if (position === 'top') {
+        // Topo = 728x90 apenas
+        return this.allSizeOptions.filter(opt => opt.value === '728x90');
+      } else if (position === 'center') {
+        // centro 728x90 | 300x250 | 200x200
+        return this.allSizeOptions.filter(opt => 
+          opt.value === '728x90' || opt.value === '300x250' || opt.value === '200x200'
+        );
+      } else if (position === 'bottom') {
+        // bottom 160x600
+        return this.allSizeOptions.filter(opt => opt.value === '160x600');
+      }
+    }
+
+    // Conteúdo
+    if (placement === 'content') {
+      if (position === 'top') {
+        // Topo = 728x90
+        return this.allSizeOptions.filter(opt => opt.value === '728x90');
+      } else if (position === 'bottom') {
+        // bottom = 160x600
+        return this.allSizeOptions.filter(opt => opt.value === '160x600');
+      }
+    }
+
+    return [];
+  }
 
   readonly ALLOWED_IMAGE_TYPES = [
     'image/jpeg',
@@ -127,12 +177,31 @@ export class AdsFormComponent implements OnInit {
     this.adForm.get('placement')?.valueChanges.subscribe((value) => {
       const placement = value as string;
       const positionControl = this.adForm.get('position');
+      const sizeControl = this.adForm.get('size');
       
       if (placement === 'header') {
+        // Define o valor antes de desabilitar
         positionControl?.setValue('top');
+        
+        // Remove o validador required quando for header
+        positionControl?.clearValidators();
+        positionControl?.updateValueAndValidity({ emitEvent: false });
+        
+        // Desabilita o campo
         positionControl?.disable();
+        
+        // Resetar tamanho se não for válido para header
+        const validSizes = this.sizeOptions.map(opt => opt.value);
+        if (sizeControl?.value && !validSizes.includes(sizeControl.value)) {
+          sizeControl.setValue('');
+        }
       } else {
+        // Habilita o campo primeiro
         positionControl?.enable();
+        
+        // Restaura o validador required para outras páginas
+        positionControl?.setValidators([Validators.required]);
+        
         const currentPosition = positionControl?.value as string;
         
         if (placement && (placement === 'home' || placement === 'content')) {
@@ -144,6 +213,26 @@ export class AdsFormComponent implements OnInit {
             positionControl?.setValue('');
           }
         }
+        
+        // Atualiza a validação após restaurar validadores
+        positionControl?.updateValueAndValidity({ emitEvent: false });
+        
+        // Resetar tamanho se não for válido para o novo placement
+        const validSizes = this.sizeOptions.map(opt => opt.value);
+        if (sizeControl?.value && !validSizes.includes(sizeControl.value)) {
+          sizeControl.setValue('');
+        }
+      }
+    });
+
+    // Listener para mudanças de position
+    this.adForm.get('position')?.valueChanges.subscribe(() => {
+      const sizeControl = this.adForm.get('size');
+      const validSizes = this.sizeOptions.map(opt => opt.value);
+      
+      // Resetar tamanho se não for válido para a nova posição
+      if (sizeControl?.value && !validSizes.includes(sizeControl.value)) {
+        sizeControl.setValue('');
       }
     });
   }
@@ -188,8 +277,26 @@ export class AdsFormComponent implements OnInit {
     this.adForm.patchValue(formattedAd);
     
     if (ad.placement === 'header') {
-      this.adForm.get('position')?.disable();
+      const positionControl = this.adForm.get('position');
+      // Garante que o valor está definido
+      positionControl?.setValue('top');
+      // Remove o validador required quando for header
+      positionControl?.clearValidators();
+      positionControl?.updateValueAndValidity({ emitEvent: false });
+      // Desabilita o campo
+      positionControl?.disable();
     }
+
+    // Validar tamanho após carregar os dados
+    setTimeout(() => {
+      const sizeControl = this.adForm.get('size');
+      const validSizes = this.sizeOptions.map(opt => opt.value);
+      
+      // Se o tamanho atual não for válido para a combinação placement/position, resetar
+      if (sizeControl?.value && !validSizes.includes(sizeControl.value)) {
+        sizeControl.setValue('');
+      }
+    }, 0);
   }
 
   triggerFileInput(): void {
@@ -323,6 +430,7 @@ export class AdsFormComponent implements OnInit {
         );
         this.resetForm();
         this.formSubmitted.emit();
+        this.state.update(state => ({ ...state, isSubmitting: false }));
       },
       error: (err) => {
         const errorMessage = err?.error?.message || 'Erro desconhecido ao criar anúncio';
@@ -330,8 +438,6 @@ export class AdsFormComponent implements OnInit {
           'Erro ao criar anúncio',
           errorMessage
         );
-      },
-      complete: () => {
         this.state.update(state => ({ ...state, isSubmitting: false }));
       },
     });
@@ -346,6 +452,7 @@ export class AdsFormComponent implements OnInit {
         );
         this.resetForm();
         this.formSubmitted.emit();
+        this.state.update(state => ({ ...state, isSubmitting: false }));
       },
       error: (err) => {
         const errorMessage = err?.error?.message || 'Erro desconhecido ao atualizar anúncio';
@@ -353,8 +460,6 @@ export class AdsFormComponent implements OnInit {
           'Erro ao atualizar anúncio',
           errorMessage
         );
-      },
-      complete: () => {
         this.state.update(state => ({ ...state, isSubmitting: false }));
       },
     });

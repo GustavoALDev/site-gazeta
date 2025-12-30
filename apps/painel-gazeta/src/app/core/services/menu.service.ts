@@ -19,6 +19,13 @@ export class MenuService {
   }
 
   /**
+   * Criar múltiplos menus do tipo category em uma única requisição
+   */
+  createCategoryMenus(menus: Array<{ name: string; slug: string; order?: number }>, parentId?: number | null): Observable<Menu[]> {
+    return this.http.post<Menu[]>(`${this.apiUrl}/categories/batch`, { menus, parentId });
+  }
+
+  /**
    * Listar todos os menus
    */
   getAll(): Observable<Menu[]> {

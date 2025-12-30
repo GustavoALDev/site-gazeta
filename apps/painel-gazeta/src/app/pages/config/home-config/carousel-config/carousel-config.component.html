@@ -1,0 +1,51 @@
+<div class="carousel-config-content">
+  <div class="form-section">
+    <div class="section-title">
+      <span class="material-icons">view_carousel</span>
+      <h4>Configuração do Carrossel</h4>
+    </div>
+    <p class="section-description">
+      Defina o <strong>limite de notícias em destaque</strong> que serão exibidas no carrossel da página inicial.
+      O valor atual é <strong>{{ featuredNewsLimit() }} notícias</strong>.
+    </p>
+
+    <div class="form-group">
+      <label for="featuredNewsLimit">
+        Limite de Notícias em Destaque
+        <span class="required-indicator">*</span>
+      </label>
+      <div class="input-wrapper">
+        <input
+          type="number"
+          id="featuredNewsLimit"
+          [value]="featuredNewsLimit()"
+          (input)="onLimitChange($event)"
+          [min]="MIN_LIMIT"
+          [max]="MAX_LIMIT"
+          [disabled]="isLoading() || isSaving()"
+          class="number-input">
+        <span class="input-suffix">notícias</span>
+      </div>
+      <small class="input-help">
+        Mínimo: <strong>{{ MIN_LIMIT }}</strong> | Máximo: <strong>{{ MAX_LIMIT }}</strong>
+      </small>
+    </div>
+
+    <div class="form-actions">
+      <button 
+        type="button" 
+        class="btn-primary" 
+        (click)="saveCarouselConfig()"
+        [disabled]="isLoading() || isSaving()">
+        @if (isSaving()) {
+          <span class="material-icons spinning">sync</span>
+          Salvando...
+        } @else {
+          <span class="material-icons">save</span>
+          Salvar Configuração
+        }
+      </button>
+    </div>
+  </div>
+</div>
+

@@ -7,8 +7,20 @@
       <option value="internal">Página Interna</option>
       <option value="external">Link Externo</option>
       <option value="category">Categoria</option>
-      <option value="submenu">Submenu (Dropdown)</option>
+      <option value="submenu">Submenu (Agrupador)</option>
     </select>
+    <small class="type-info">
+      <span class="material-icons">info</span>
+      @if (selectedType() === 'internal') {
+        Link para uma página dentro do site
+      } @else if (selectedType() === 'external') {
+        Link para um site externo
+      } @else if (selectedType() === 'category') {
+        Link para notícias de uma ou mais categorias
+      } @else if (selectedType() === 'submenu') {
+        Item agrupador que contém submenus (sem link próprio)
+      }
+    </small>
   </div>
 
   <!-- Nome do Menu (sempre visível exceto para category) -->
@@ -82,52 +94,24 @@
   <!-- Campos específicos para Category -->
   @if (selectedType() === 'category') {
     <div class="form-group">
-      <label>Categoria</label>
-      <div class="category-selector">
-        <div class="selected-category" (click)="toggleCategoryDropdown()">
-          @if (getSelectedCategory(); as category) {
-            <div class="category-tag">
-              <span class="category-color" [style.background-color]="category.color"></span>
-              <span class="category-name">{{ category.name }}</span>
-              <span class="category-slug">{{ category.slug }}</span>
-            </div>
-          } @else {
-            <button type="button" class="add-category-btn" [class.active]="showCategoryDropdown()">
-              <span class="material-icons">add</span>
-              Selecionar Categoria
-            </button>
-          }
-        </div>
-
-        @if (showCategoryDropdown()) {
-          <div class="category-dropdown">
-            @if (categories().length > 0) {
-              @for (category of categories(); track category.id) {
-                <div class="category-option" (click)="selectCategory(category)">
-                  <div class="category-option-header">
-                    <span class="category-color" [style.background-color]="category.color"></span>
-                    <span class="category-name">{{ category.name }}</span>
-                  </div>
-                  <span class="category-description">{{ category.description }}</span>
-                </div>
-              }
-            } @else {
-              <div class="no-categories">Nenhuma categoria disponível</div>
-            }
-          </div>
-        }
-      </div>
-      @if (categoryIdControl?.invalid && categoryIdControl?.touched) {
-        <small class="error-message">Selecione uma categoria</small>
+      <label>Categorias</label>
+      
+      <app-category-multi-select
+        [selectedCategories]="selectedCategories()"
+        (onCategoriesChange)="onCategoriesChange($event)">
+      </app-category-multi-select>
+      
+      @if (selectedCategories().length > 0) {
+        <small class="success-message">
+          <span class="material-icons">check_circle</span>
+          {{ selectedCategories().length }} categoria(s) selecionada(s)
+        </small>
+      } @else if (menuForm.get('type')?.touched) {
+        <small class="error-message">
+          <span class="material-icons">error</span>
+          Selecione pelo menos uma categoria
+        </small>
       }
-    </div>
-  }
-
-  <!-- Informação sobre Submenu -->
-  @if (selectedType() === 'submenu') {
-    <div class="info-box">
-      <span class="material-icons">info</span>
-      <p>Este menu será um dropdown. Após salvá-lo, você poderá adicionar itens dentro dele na lista de menus.</p>
     </div>
   }
 

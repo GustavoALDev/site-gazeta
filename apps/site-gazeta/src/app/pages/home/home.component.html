@@ -1,3 +1,4 @@
+<lib-header [announcements]="headerAds()" ></lib-header>
 <main>
     <lib-menu [menuItems]="menuItems()" 
         (searchActive)="searchActive.set($event)" 
@@ -11,3 +12,4 @@
     <router-outlet></router-outlet>
    }
 </main>
+<lib-footer></lib-footer>

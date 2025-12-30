@@ -1,0 +1,36 @@
+<div class="volume-control">
+  <button 
+    class="volume-btn"
+    (click)="onMuteClick()"
+    [attr.aria-label]="isMuted() ? 'Ativar som' : 'Desativar som'"
+  >
+    @if (isMuted() || volume() === 0) {
+      <span class="material-icons">volume_off</span>
+    } @else if (volume() < 0.5) {
+      <span class="material-icons">volume_down</span>
+    } @else {
+      <span class="material-icons">volume_up</span>
+    }
+  </button>
+  
+  <div class="volume-slider-container">
+    <div class="volume-slider-wrapper">
+      <div class="volume-slider-background">
+        <div 
+          class="volume-slider-filled" 
+          [style.width.%]="volumePercentage()"
+        ></div>
+      </div>
+      <input
+        type="range"
+        class="volume-slider"
+        [value]="volumePercentage()"
+        min="0"
+        max="100"
+        (input)="onVolumeChange($event)"
+        (click)="$event.stopPropagation()"
+      />
+    </div>
+  </div>
+</div>
+

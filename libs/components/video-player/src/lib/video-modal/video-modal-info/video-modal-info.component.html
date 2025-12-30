@@ -1,0 +1,36 @@
+@if(video(); as videoData) {
+  <div class="video-modal-info">
+    <!-- Cabeçalho com título e logo -->
+    <div class="video-info-header">
+      <h2 class="video-title">{{ videoData.title }}</h2>
+      <div class="video-logo">
+        <img src="img/logo02.webp" alt="Logo do site" />
+      </div>
+    </div>
+
+    <!-- Corpo com descrição -->
+    <div class="video-info-body">
+      @if(videoData.description) {
+        <p class="video-description">{{ videoData.description }}</p>
+      } @else {
+        <p class="video-description no-description">Este vídeo não possui descrição.</p>
+      }
+    </div>
+
+    <!-- Rodapé com botão de ação -->
+    @if(videoData.newsSlug) {
+      <div class="video-info-footer">
+        <a 
+          [href]="'/news/' + videoData.newsSlug" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          class="read-more-btn">
+          <span class="material-icons">article</span>
+          <span>Leia a notícia completa</span>
+          <span class="material-icons">open_in_new</span>
+        </a>
+      </div>
+    }
+  </div>
+}
+

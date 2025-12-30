@@ -1,7 +1,8 @@
-import { Component, input, computed } from '@angular/core';
+import { Component, input, computed, OnInit, inject, signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { NgOptimizedImage } from '@angular/common';
 import { Category, News } from '@site-gazeta/models';
+import { ApiConfigService } from '../config/api.config.service';
 
 interface ProcessedNewsItem {
   id: number;
@@ -30,16 +31,16 @@ const MAX_SECTIONS = 2;
   templateUrl: './news-cluster.component.html',
   styleUrl: './news-cluster.component.scss',
 })
-export class NewsClusterComponent {
+export class NewsClusterComponent implements OnInit{
+  private apiService = inject(ApiConfigService);
   // Inputs
-  news = input.required<News[]>();
-  categories = input.required<Category[]>();
-  constructor(){
-    console.log('viewport')
-  }
+  news = signal<News[]>([]);
+  categories = signal<Category[]>([]);
+  
   // Computed: organiza as seções de categorias com suas notícias processadas
   categorySections = computed<CategorySection[]>(() => {
     const allNews = this.news();
+    console.log(allNews);
     const categories = this.categories();
     
     if (allNews.length === 0 || categories.length === 0) {
@@ -66,6 +67,22 @@ export class NewsClusterComponent {
       })
       .filter(section => section.news.length > 0); // Remove seções vazias
   });
+  ngOnInit(): void {
+    this.getCategories();
+    this.getNews();
+  }
+
+  getCategories(){
+    this.apiService.getCategories().subscribe((categories) => {
+      this.categories.set(categories);
+    });
+  }
+
+  getNews(){
+    this.apiService.getNews().subscribe((news) => {
+      this.news.set(news);
+    });
+  }
 
   // Processa os dados da notícia uma única vez
   private processNewsItem(news: News): ProcessedNewsItem {

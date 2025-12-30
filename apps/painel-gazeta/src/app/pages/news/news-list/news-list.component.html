@@ -1,67 +1,64 @@
 <div class="news-list-container">
-  <div class="news-list-filters">
-    <div class="filter-group">
-      <label for="filter-date">Data de publicação</label>
-      <input id="filter-date" type="date" class="filter-input" placeholder="Data de publicação" 
-        [value]="filterDate()" (input)="setFilterDate($any($event.target).value)" />
-    </div>
-    <div class="filter-group">
-      <label for="filter-order">Ordem</label>
-      <select id="filter-order" class="filter-input" [value]="filterOrder()" (change)="setFilterOrder($any($event.target).value)">
-        <option value="desc">Mais recente</option>
-        <option value="asc">Mais antigo</option>
-      </select>
-    </div>
-    <div class="filter-group">
-      <label for="filter-views">Visualizações</label>
-      <select id="filter-views" class="filter-input" [value]="filterViews()" (change)="setFilterViews($any($event.target).value)">
-        <option value="">Mais vistos</option>
-        <option value="asc">Menos vistos</option>
-        <option value="desc">Mais vistos</option>
-      </select>
-    </div>
-    <div class="filter-group">
-      <label for="filter-category">Categoria</label>
-      <select id="filter-category" class="filter-input" [value]="filterCategory() ?? ''" (change)="setFilterCategory($any($event.target).value)">
-        <option value="">Categoria</option>
-        @for (category of categories(); track category.id) {
-          <option [value]="category.id">{{category.name}}</option>
-        }       
-      </select>
-    </div>
-    <div class="filter-group">
-      <label for="filter-emphasis">Destaque</label>
-      <select id="filter-emphasis" class="filter-input" [value]="filterEmphasis() === null ? '' : filterEmphasis() ? 'true' : 'false'" (change)="setFilterEmphasis($any($event.target).value === '' ? null : $any($event.target).value === 'true')">
-        <option value="">Todas</option>
-        <option value="true">Com destaque</option>
-        <option value="false">Sem destaque</option>
-      </select>
-    </div>
-    <div class="filter-group search-group">
-      <label for="filter-search">Pesquisar</label>
-      <input id="filter-search" type="text" class="filter-input search-input" placeholder="Pesquisar notícia..."
-        [value]="filterSearch()" (input)="setFilterSearch($any($event.target).value)" />
+  <app-news-list-filters
+    [filterDate]="filterDate()"
+    [filterOrder]="filterOrder()"
+    [filterViews]="filterViews()"
+    [filterCategory]="filterCategory()"
+    [filterSearch]="filterSearch()"
+    [filterEmphasis]="filterEmphasis()"
+    (filterDateChange)="setFilterDate($event)"
+    (filterOrderChange)="setFilterOrder($event)"
+    (filterViewsChange)="setFilterViews($event)"
+    (filterCategoryChange)="setFilterCategory($event)"
+    (filterSearchChange)="setFilterSearch($event)"
+    (filterEmphasisChange)="setFilterEmphasis($event)">
+  </app-news-list-filters>
+
+  <div class="news-list-info">
+    <div class="news-count">
+      <span class="count-label">Total de notícias:</span>
+      <span class="count-value">{{ filteredNews().length }}</span>
     </div>
   </div>
 
   <div class="news-list">
+    <div class="news-list-header">
+      <div class="header-cell header-featured"></div>
+      <div class="header-cell header-image"></div>
+      <div class="header-cell header-content">Conteúdo</div>
+      <div class="header-cell header-meta">Metadados</div>
+      <div class="header-cell header-actions">Ações</div>
+    </div>
+    
     @for(news of filteredNews(); track news.id){
-      <div class="news-card">
-        <div class="news-card-img">
-          @for(media of news.mediaNews; track media.id){
-            @if(media.emphasis){
-              <img [src]="media.imgSize?.small" alt="Imagem da notícia" />
-            }
+      <div class="news-row">
+        <div class="news-cell news-featured-cell">
+          @if(news.isEmphasis) {
+            <span class="emphasis-star material-icons" title="Notícia em destaque">star</span>
           }
         </div>
-        <div class="news-card-content">
-          <div class="news-title-wrapper">
-            <h3 class="news-title">{{news.title}}</h3>
-            @if(news.isEmphasis) {
-              <span class="emphasis-star material-icons" title="Notícia em destaque">star</span>
+        
+        <div class="news-cell news-image-cell">
+          <div class="news-card-img">
+            @for(media of news.mediaNews; track media.id){
+              @if(media.emphasis){
+                <img [src]="media.imgSize?.small" alt="Imagem da notícia" />
+              }
+            }
+            @if (hasNoEmphasisImage(news)) {
+              <div class="no-image">Sem imagem</div>
             }
           </div>
+        </div>
+        
+        <div class="news-cell news-content-cell">
+          <div class="news-title-wrapper">
+            <h3 class="news-title">{{news.title}}</h3>
+          </div>
           <p class="news-subtitle">{{news.subtitle}}</p>
+        </div>
+        
+        <div class="news-cell news-meta-cell">
           <div class="news-meta">
             <span class="news-author"><b>Por:</b> {{news.author}}</span>
             <span class="news-date">{{news.published | date:'dd/MM/yyyy - HH:mm'}}</span>
@@ -73,18 +70,29 @@
                   }
                 }
               }
-              <!-- Repita para cada categoria da notícia -->
             </span>
             <span class="news-views">{{news.views}} visualizações</span>
           </div>
+        </div>
+        
+        <div class="news-cell news-actions-cell">
           <div class="news-actions">
-            <button class="btn-primary">Ir para página</button>
-            <button class="btn-secondary" [routerLink]="['/news',news.id]">Editar</button>
-            <button class="btn-danger" (click)="deleteNews(news.id)">Excluir</button>
+            <button class="btn-action btn-view" (click)="openNewsInSite(news.slug)" [attr.aria-label]="'Ir para página da notícia'" title="Ir para página">
+              <span class="material-icons">description</span>
+            </button>
+            <button class="btn-action btn-edit" [routerLink]="['/news',news.id]" [attr.aria-label]="'Editar notícia'" title="Editar">
+              <span class="material-icons">settings</span>
+            </button>
+            <button class="btn-action btn-delete" (click)="deleteNews(news.id)" [attr.aria-label]="'Excluir notícia'" title="Excluir">
+              <span class="material-icons">delete</span>
+            </button>
           </div>
         </div>
       </div>
+    } @empty {
+      <div class="news-empty">
+        <p>Nenhuma notícia encontrada.</p>
+      </div>
     }
-
   </div>
 </div>

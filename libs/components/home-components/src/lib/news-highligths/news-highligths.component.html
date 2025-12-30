@@ -1,14 +1,11 @@
 <section class="top-gazeta">
-  <div class="top-gazeta__header">
-    <h2 class="top-gazeta__title">TOP GAZETA</h2>
-  </div>
-
+ 
   <div class="top-gazeta__grid">
-    @for (newsItem of findNewsByCategory().slice(0, 3); track newsItem.id) {
-      <div class="top-gazeta__category" [attr.data-category]="newsItem.color">
-        <h3 class="category__title">{{ newsItem.name }}</h3>
+    @for (data of $news(); track data) {
+      <div class="top-gazeta__category" [attr.data-category]="data.category.color">
+        <h3 class="category__title">{{ data.category.name }}</h3>
         <ul class="category__list">
-          @for (newsItem of newsItem.news; track newsItem.id; let index = $index) {
+          @for (newsItem of data.news; track newsItem.id; let index = $index) {
             <li class="category__item">
               <span class="item__number">{{ index + 1 }}</span>
               <a [routerLink]="['/news', newsItem.slug]" class="item__link">

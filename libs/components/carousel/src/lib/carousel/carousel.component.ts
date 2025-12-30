@@ -1,5 +1,5 @@
 import { RouterModule } from '@angular/router';
-import { Component, signal, computed, input, ElementRef, ViewChild, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, signal, computed, input, ElementRef, ViewChild, OnInit, OnDestroy,  ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { News } from '@site-gazeta/models';
 
@@ -15,6 +15,7 @@ interface NewsItemWithData extends News {
   imports: [CommonModule, RouterModule, NgOptimizedImage],
   templateUrl: './carousel.component.html',
   styleUrl: './carousel.component.scss',
+  changeDetection:ChangeDetectionStrategy.OnPush
 })
 export class CarouselComponent implements OnInit, OnDestroy {
   @ViewChild('carouselWrapper', { static: false }) carouselWrapper!: ElementRef<HTMLElement>;
@@ -48,7 +49,6 @@ export class CarouselComponent implements OnInit, OnDestroy {
 
   newsItemsWithData = computed(() => {
     const items = this.news();
-    
     return items.map(item => {
       const imageUrl = item.mediaNews?.[0]?.imgSize?.original || '';
       

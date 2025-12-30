@@ -1,20 +1,6 @@
-@if (isLoading()) {
-  <div class="loading-container">
-    <div class="loading-spinner"></div>
-    <p>Carregando notícia...</p>
-  </div>
-} @else if (news()) {
-  <!-- Botão Voltar -->
-  
-  <article class="news-content">
-    <button class="back-button" routerLink="/" aria-label="Voltar para página anterior">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M19 12H5M12 19l-7-7 7-7"/>
-      </svg>
-      <span>Voltar</span>
-    </button>
+@if(news()) {
+<article class="news-content">
 
-    <!-- Mídia em Destaque -->
     @if (emphasisMedia(); as media) {
       <div class="news-hero">
         <div class="hero-image-container">
@@ -35,8 +21,7 @@
         </div>
       </div>
     }
-
-    <!-- Informações da Notícia -->
+    
     <div class="news-container">
       <div class="news-header">
         <h1 class="news-title">{{ news()?.title }}</h1>
@@ -93,29 +78,7 @@
             </div>
           </div>
         }
-
-        <!-- Outras Mídias -->
-        @if (otherMedias() && otherMedias().length > 0) {
-          <div class="news-gallery">
-            <h3 class="section-title">Galeria de fotos</h3>
-            <div class="gallery-grid">
-              @for (media of otherMedias(); track media.id) {
-                <div class="gallery-item">
-                  <img 
-                    [src]="media.imgSize?.small" 
-                    [alt]="'Imagem ' + $index"
-                    class="gallery-image"
-                  >
-                  @if (media.author) {
-                    <div class="gallery-credit">
-                      Foto: {{ media.author }}
-                    </div>
-                  }
-                </div>
-              }
-            </div>
-          </div>
-        }
+        
       </div>
 
       <!-- Rodapé da Notícia -->
@@ -142,15 +105,33 @@
         </div>
       </div>
     </div>
-    <lib-related-news [relatedNews]="relatedNews()"></lib-related-news>
-    <div class="more-news">
-      <h2>Mais notícias</h2>
-      <lib-more-news [moreNews]="moreNews()" [slice]="3" ></lib-more-news>
-    </div>
+    @defer (on viewport) {
+    <lib-related-news [currentNews]="news()!"></lib-related-news>
+    }
+    @placeholder {
+      <div class="loading-container">
+        <div class="loading-spinner"></div>
+      </div>
+    }
+    @defer (on viewport;) {
+      <div class="more-news">
+        <lib-more-news [moreNews]="moreNews()" [slice]="3" ></lib-more-news>
+      </div>
+    }
+    @placeholder {
+      <div class="loading-container">
+        <div class="loading-spinner"></div>
+      </div>
+    }
   </article>
-} @else {
+
+}@else if(error()) {
   <div class="error-container">
-    <h2>Notícia não encontrada</h2>
+    <h2>{{ error() }}</h2>
     <p>Desculpe, não foi possível carregar a notícia solicitada.</p>
+  </div>
+}@else {
+  <div class="loading-container">
+    <div class="loading-spinner"></div>
   </div>
 }

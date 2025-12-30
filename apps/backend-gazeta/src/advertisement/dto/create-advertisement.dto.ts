@@ -56,11 +56,11 @@ export class CreateAdvertisementDto {
   @ApiProperty({ 
     description: 'Tamanho do anúncio', 
     example: '728x90',
-    enum: ['728x90', '300x200']
+    enum: ['728x90', '300x250', '160x600', '200x200']
   })
   @IsNotEmpty({ message: 'Tamanho é obrigatório' })
-  @IsIn(['728x90', '300x200'], {
-    message: 'Tamanho deve ser: 728x90 ou 300x200'
+  @IsIn(['728x90', '300x250', '160x600', '200x200'], {
+    message: 'Tamanho deve ser: 728x90, 300x250, 160x600 ou 200x200'
   })
   size: string;
 

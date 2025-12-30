@@ -47,9 +47,20 @@
             <p>{{ category.description }}</p>
           </div>
           <div class="category-meta">
-            <span class="category-status" [class.active]="category.isActive">
-              {{ category.isActive ? 'Ativa' : 'Inativa' }}
-            </span>
+            <div class="toggle-container-inline">
+              <input
+                type="checkbox"
+                [id]="'toggle-' + category.id"
+                [checked]="category.isActive"
+                (change)="onToggleStatus(category, $event)"
+                class="toggle-input" />
+              <label [for]="'toggle-' + category.id" class="toggle-switch">
+                <span class="toggle-slider"></span>
+              </label>
+              <span class="toggle-text">
+                {{ category.isActive ? 'Ativa' : 'Inativa' }}
+              </span>
+            </div>
             <div class="category-actions">
               <button class="btn-edit" (click)="onEdit(category)">
                 Editar

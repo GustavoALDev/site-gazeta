@@ -5,6 +5,7 @@ import { UpdateMediaDto } from './dto/update-media.dto';
 import { MediaResponseDto } from './dto/media-response.dto';
 import { UploadMediaDto } from './dto/upload-media.dto';
 import { ImageProcessingService, ImageSizes } from './services/image-processing.service';
+import { sanitizeFileName } from '../utils/file-name-sanitizer';
 
 @Injectable()
 export class MediaService {
@@ -20,7 +21,7 @@ export class MediaService {
       data: {
         newsId: createMediaDto.postId,
         emphasis: createMediaDto.emphasis,
-        imgSize: createMediaDto.imgSize || null,
+        imgSize: createMediaDto.imgSize ? JSON.stringify(createMediaDto.imgSize) : null,
         author: createMediaDto.author,
         date: createMediaDto.date,
       },
@@ -30,9 +31,11 @@ export class MediaService {
   }
 
   async createWithUpload(file: any, data: UploadMediaDto, baseUrlFromRequest?: string): Promise<MediaResponseDto> {
-    // Gerar nome único para o arquivo
+    // Sanitizar nome do arquivo antes de adicionar timestamp
+    const sanitizedOriginalName = sanitizeFileName(file.originalname);
+    // Gerar nome único para o arquivo (formato: {timestamp}_{nome_sanitizado})
     const timestamp = Date.now();
-    const filename = `media_${timestamp}_${file.originalname}`;
+    const filename = `${timestamp}_${sanitizedOriginalName}`;
     
     // Processar imagem em diferentes tamanhos
     const imageSizes = await this.imageProcessingService.processImage(file, filename);
@@ -46,7 +49,7 @@ export class MediaService {
       data: {
         newsId: data.postId,
         emphasis: data.emphasis,
-        imgSize: publicUrls as any,
+        imgSize: JSON.stringify(publicUrls), // Converter para JSON string
         author: data.author,
         date: data.date,
       },
@@ -63,10 +66,12 @@ export class MediaService {
       const file = files[i];
       
       try {
-        // Gerar nome único para cada arquivo
+        // Sanitizar nome do arquivo antes de adicionar timestamp e randomId
+        const sanitizedOriginalName = sanitizeFileName(file.originalname);
+        // Gerar nome único para cada arquivo (formato: {timestamp}_{randomId}_{nome_sanitizado})
         const timestamp = Date.now();
         const randomId = Math.random().toString(36).substring(2, 15);
-        const filename = `media_${timestamp}_${randomId}_${file.originalname}`;
+        const filename = `${timestamp}_${randomId}_${sanitizedOriginalName}`;
         
         // Processar imagem em diferentes tamanhos
         const imageSizes = await this.imageProcessingService.processImage(file, filename);
@@ -80,7 +85,7 @@ export class MediaService {
           data: {
             newsId: data.postId,
             emphasis: data.emphasis && i === 0, // Apenas a primeira imagem tem emphasis
-            imgSize: publicUrls as any,
+            imgSize: JSON.stringify(publicUrls), // Converter para JSON string
             author: data.author,
             date: data.date,
           },
@@ -141,7 +146,7 @@ export class MediaService {
       data: {
         newsId: updateMediaDto.postId || existingMedia.newsId,
         emphasis: updateMediaDto.emphasis ?? existingMedia.emphasis,
-        imgSize: updateMediaDto.imgSize || existingMedia.imgSize,
+        imgSize: updateMediaDto.imgSize ? JSON.stringify(updateMediaDto.imgSize) : existingMedia.imgSize,
         author: updateMediaDto.author ?? existingMedia.author,
         date: updateMediaDto.date ?? existingMedia.date,
       },
@@ -156,7 +161,14 @@ export class MediaService {
     // Se existem arquivos de imagem, deletá-los
     if (existingMedia.imgSize) {
       try {
-        await this.imageProcessingService.deleteImageFiles(existingMedia.imgSize as unknown as ImageSizes);
+        // Parse imgSize se for string JSON
+        let imgSize: ImageSizes;
+        if (typeof existingMedia.imgSize === 'string') {
+          imgSize = JSON.parse(existingMedia.imgSize);
+        } else {
+          imgSize = existingMedia.imgSize as ImageSizes;
+        }
+        await this.imageProcessingService.deleteImageFiles(imgSize);
       } catch (error) {
         this.logger.error(`Erro ao deletar arquivos de imagem para mídia ${id}:`, error);
         // Não interrompe a exclusão do registro no banco
@@ -183,11 +195,37 @@ export class MediaService {
   }
 
   private formatResponse(media: any): MediaResponseDto {
+    // Parse imgSize se for string JSON
+    let imgSize = media.imgSize;
+    if (typeof imgSize === 'string' && imgSize) {
+      try {
+        imgSize = JSON.parse(imgSize);
+        // Normalizar URLs (substituir backslashes por forward slashes)
+        if (imgSize && typeof imgSize === 'object') {
+          Object.keys(imgSize).forEach(key => {
+            if (typeof imgSize[key] === 'string') {
+              imgSize[key] = imgSize[key].replace(/\\/g, '/');
+            }
+          });
+        }
+      } catch (error) {
+        this.logger.warn(`Erro ao fazer parse de imgSize para mídia ${media.id}:`, error);
+        imgSize = null;
+      }
+    } else if (imgSize && typeof imgSize === 'object') {
+      // Se já é objeto, normalizar URLs também
+      Object.keys(imgSize).forEach(key => {
+        if (typeof imgSize[key] === 'string') {
+          imgSize[key] = imgSize[key].replace(/\\/g, '/');
+        }
+      });
+    }
+
     return {
       id: media.id,
       postId: media.newsId,
       emphasis: media.emphasis,
-      imgSize: media.imgSize,
+      imgSize: imgSize,
       author: media.author,
       date: media.date,
       createdAt: media.createdAt?.toISOString() || new Date().toISOString(),

@@ -1,4 +1,4 @@
-import { Component, inject, input, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, input, OnDestroy, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DarkModeService } from '@site-gazeta/dark-mode';
 import { Subject, takeUntil } from 'rxjs';
@@ -17,7 +17,25 @@ export class HeaderComponent implements OnInit, OnDestroy {
   darkModeService = inject(DarkModeService);
   destroy$ = new Subject<void>();
   announcements = input<Ads[]>([]); 
+
+  selectedAd = computed(() => {
+    const ads = this.announcements();
+    return ads.length > 0 ? this.selectAdByPriority(ads) : null;
+  });
   
+  private selectAdByPriority(ads: Ads[]): Ads {
+    if (ads.length === 1) return ads[0];
+
+    const weights = ads.map(ad => (ad.priority || 0) + 1);
+    const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
+    
+    let random = Math.random() * totalWeight;
+    
+    return ads.find((_, index) => {
+      random -= weights[index];
+      return random <= 0;
+    }) ?? ads[ads.length - 1];
+  }
   ngOnInit(): void {
     this.darkModeService.isDarkMode$
     .pipe(takeUntil(this.destroy$))

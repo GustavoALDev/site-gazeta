@@ -39,5 +39,24 @@ export class CreateVideoDto {
   @IsOptional()
   @MaxLength(20)
   duration?: string;
+
+  @ApiProperty({
+    description: 'Descrição do vídeo',
+    example: 'Vídeo sobre a usina de Tucuruí',
+    required: false
+  })
+  @IsString()
+  @IsOptional()
+  description?: string;
+
+  @ApiProperty({
+    description: 'Slug da notícia relacionada ao vídeo',
+    example: 'usina-tucurui-01',
+    required: false
+  })
+  @IsString()
+  @IsOptional()
+  @MaxLength(255)
+  newsSlug?: string;
 }
 

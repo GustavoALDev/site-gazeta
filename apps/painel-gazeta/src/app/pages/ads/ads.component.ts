@@ -1,61 +1,59 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AdsListComponent } from './ads-list/ads-list.component';
 import { AdsFormComponent } from './ads-form/ads-form.component';
 import { Ads } from '@site-gazeta/models';
-
-interface AdsComponentState {
-  activeTab: 'form' | 'list';
-  adToEdit: Ads | null;
-}
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
+import { AdsService } from '../../core/services/ads.service';
 
 @Component({
   selector: 'app-ads',
   standalone: true,
-  imports: [CommonModule, AdsListComponent, AdsFormComponent],
+  imports: [CommonModule, AdsFormComponent, RouterModule],
   templateUrl: './ads.component.html',
   styleUrls: ['./ads.component.scss'],
 })
-export class AdsComponent {
-  // Estado do componente usando signals
-  state = signal<AdsComponentState>({
-    activeTab: 'list',
-    adToEdit: null,
-  });
+export class AdsComponent implements OnInit {
+  private activeRoute = inject(ActivatedRoute);
+  private router = inject(Router);
+  private adsService = inject(AdsService);
 
-  // Computed signals
-  isEdit = computed(() => !!this.state().adToEdit);
+  // Signals
+  adToEdit = signal<Ads | null>(null);
+  isEdit = computed(() => !!this.adToEdit());
+  adId: number | null = null;
 
-  setActiveTab(tab: 'form' | 'list'): void {
-    this.state.update(state => ({ 
-      ...state, 
-      activeTab: tab,
-      // Limpa o modo de edição ao trocar para lista OU ao clicar novamente em form (reset)
-      adToEdit: null
-    }));
+  ngOnInit(): void {
+    this.checkEdit();
   }
 
-  setEditAdvertisement(ad: Ads): void {
-    this.state.update(state => ({
-      ...state,
-      activeTab: 'form',
-      adToEdit: ad,
-    }));
+  async checkEdit() {
+    return firstValueFrom(this.activeRoute.params)
+      .then((param) => {
+        const adId = param['id'];
+        if (adId) {
+          this.adId = Number(adId);
+          
+          firstValueFrom(this.adsService.getById(this.adId))
+            .then((ad) => {
+              this.adToEdit.set(ad);
+            })
+            .catch((error) => {
+              console.error('Erro ao carregar anúncio:', error);
+              this.router.navigate(['/adsList']);
+            });
+        }
+      })
+      .catch((error) => {
+        console.error('Erro ao verificar parâmetros:', error);
+      });
   }
 
-  onFormSubmitted(): void {
-    this.state.update(state => ({
-      ...state,
-      activeTab: 'list',
-      adToEdit: null,
-    }));
+  handleSubmit(): void {
+    this.router.navigate(['/adsList']);
   }
 
-  onFormCancelled(): void {
-    this.state.update(state => ({
-      ...state,
-      activeTab: 'list',
-      adToEdit: null,
-    }));
+  handleCancel(): void {
+    this.router.navigate(['/adsList']);
   }
 }

@@ -1,156 +1,186 @@
 <form [formGroup]="uploadForm" (ngSubmit)="submitForm()" class="upload-form">
-  
-  <!-- Campo de Título -->
-  <div class="form-group">
-    <label for="title">
-      <span class="material-icons">title</span>
-      Título do Vídeo *
-    </label>
-    <input 
-      type="text" 
-      id="title" 
-      formControlName="title"
-      placeholder="Digite o título do vídeo"
-      [class.error]="titleControl?.invalid && titleControl?.touched"
-    />
-    @if (titleControl?.invalid && titleControl?.touched) {
-      <small class="error-message">
-        @if (titleControl?.errors?.['required']) {
-          Título é obrigatório
-        }
-        @if (titleControl?.errors?.['minlength']) {
-          Título deve ter no mínimo 3 caracteres
-        }
-      </small>
-    }
-  </div>
-
-  <!-- Upload de Vídeo -->
-  <div class="form-group">
-    <label>
-      <span class="material-icons">video_library</span>
-      Arquivo de Vídeo *
-    </label>
-    
-    @if (!videoPreviewUrl()) {
-      <!-- Área de Drag & Drop -->
-      <div 
-        class="drop-zone"
-        [class.dragging]="isDraggingVideo()"
-        (dragover)="onVideoDragOver($event)"
-        (dragleave)="onVideoDragLeave($event)"
-        (drop)="onVideoDrop($event)"
-      >
-        <span class="material-icons">cloud_upload</span>
-        <p>Arraste o vídeo aqui ou clique para selecionar</p>
-        <small>Formatos: MP4, AVI, MOV, WEBM, MKV (Máx: 500MB)</small>
-        
+  <div class="form-grid">
+    <!-- Coluna Esquerda: Campos do Formulário -->
+    <div class="form-fields">
+      <!-- Campo de Título -->
+      <div class="form-group">
+        <label for="title">
+          <span class="material-icons">title</span>
+          Título do Vídeo *
+        </label>
         <input 
-          type="file" 
-          #videoInput
-          [accept]="acceptedVideoFormats"
-          (change)="onVideoFileSelected($event)"
-          style="display: none;"
+          type="text" 
+          id="title" 
+          formControlName="title"
+          placeholder="Digite o título do vídeo"
+          [class.error]="titleControl?.invalid && titleControl?.touched"
         />
-        
-        <button 
-          type="button" 
-          class="select-btn"
-          (click)="videoInput.click()"
-        >
-          <span class="material-icons">folder_open</span>
-          Selecionar Arquivo
-        </button>
-      </div>
-    } @else {
-      <!-- Preview do Vídeo -->
-      <div class="preview-container">
-        <div class="video-preview">
-          <video [src]="videoPreviewUrl()" controls></video>
-          <button 
-            type="button" 
-            class="remove-btn"
-            (click)="removeVideo()"
-            title="Remover vídeo"
-          >
-            <span class="material-icons">close</span>
-          </button>
-        </div>
-        @if (selectedVideoFile()) {
-          <div class="file-info">
-            <span class="material-icons">movie</span>
-            <div class="file-details">
-              <span class="file-name">{{ selectedVideoFile()!.name }}</span>
-              <span class="file-size">{{ formatFileSize(selectedVideoFile()!.size) }}</span>
-            </div>
-          </div>
+        @if (titleControl?.invalid && titleControl?.touched) {
+          <small class="error-message">
+            @if (titleControl?.errors?.['required']) {
+              Título é obrigatório
+            }
+            @if (titleControl?.errors?.['minlength']) {
+              Título deve ter no mínimo 3 caracteres
+            }
+          </small>
         }
       </div>
-    }
-  </div>
 
-  <!-- Upload de Thumbnail (Opcional) -->
-  <div class="form-group">
-    <label>
-      <span class="material-icons">image</span>
-      Thumbnail (Opcional)
-    </label>
-    
-    @if (!thumbnailPreviewUrl()) {
-      <!-- Área de Drag & Drop -->
-      <div 
-        class="drop-zone thumbnail-zone"
-        [class.dragging]="isDraggingThumbnail()"
-        (dragover)="onThumbnailDragOver($event)"
-        (dragleave)="onThumbnailDragLeave($event)"
-        (drop)="onThumbnailDrop($event)"
-      >
-        <span class="material-icons">add_photo_alternate</span>
-        <p>Arraste a imagem aqui ou clique para selecionar</p>
-        <small>Formatos: JPG, PNG, WEBP (Máx: 5MB)</small>
-        
-        <input 
-          type="file" 
-          #thumbnailInput
-          [accept]="acceptedImageFormats"
-          (change)="onThumbnailFileSelected($event)"
-          style="display: none;"
-        />
-        
-        <button 
-          type="button" 
-          class="select-btn"
-          (click)="thumbnailInput.click()"
-        >
-          <span class="material-icons">folder_open</span>
-          Selecionar Imagem
-        </button>
+      <!-- Campo de Descrição -->
+      <div class="form-group">
+        <label for="description">
+          <span class="material-icons">description</span>
+          Descrição do Vídeo
+        </label>
+        <textarea 
+          id="description" 
+          formControlName="description"
+          placeholder="Digite uma descrição para o vídeo (opcional)"
+          rows="4"
+          class="textarea-field"
+        ></textarea>
       </div>
-    } @else {
-      <!-- Preview da Thumbnail -->
-      <div class="preview-container">
-        <div class="thumbnail-preview">
-          <img [src]="thumbnailPreviewUrl()" [alt]="uploadForm.get('title')?.value || 'Thumbnail'" />
-          <button 
-            type="button" 
-            class="remove-btn"
-            (click)="removeThumbnail()"
-            title="Remover thumbnail"
-          >
-            <span class="material-icons">close</span>
-          </button>
-        </div>
-        @if (selectedThumbnailFile()) {
-          <div class="file-info">
-            <span class="material-icons">image</span>
-            <div class="file-details">
-              <span class="file-name">{{ selectedThumbnailFile()!.name }}</span>
-              <span class="file-size">{{ formatFileSize(selectedThumbnailFile()!.size) }}</span>
-            </div>
+
+      <!-- Campo de Categorias -->
+      <div class="form-group">
+        <label for="categories">
+          <span class="material-icons">category</span>
+          Categorias
+        </label>
+        <div class="category-selector">
+          <div class="selected-categories">
+            @for (category of selectedCategories(); track category.id) {
+              <div class="category-tag">
+                <span>{{ category.name }}</span>
+                <button type="button" class="remove-category" (click)="removeCategory(category.id!)">
+                  <span class="material-icons">close</span>
+                </button>
+              </div>
+            }
+            <button
+              type="button"
+              class="add-category-btn"
+              (click)="toggleCategoryDropdown()"
+              [class.active]="categoryDropdownOpen()">
+              <span class="material-icons">add</span>
+              Adicionar Categoria
+            </button>
           </div>
-        }
+
+          @if (categoryDropdownOpen()) {
+            <div class="category-dropdown">
+              @if (getAvailableCategories().length > 0) {
+                @for (category of getAvailableCategories(); track category.id) {
+                  <div class="category-option"
+                    (click)="selectCategory(category)"
+                    (keyup.enter)="selectCategory(category)"
+                    (keyup.space)="selectCategory(category)"
+                    tabindex="0"
+                    role="button">
+                    <span class="category-name">{{ category.name }}</span>
+                    @if (category.description) {
+                      <small class="category-description">{{ category.description }}</small>
+                    }
+                  </div>
+                }
+              } @else {
+                <div class="no-categories">
+                  <span>Todas as categorias foram selecionadas</span>
+                </div>
+              }
+            </div>
+          }
+        </div>
       </div>
-    }
+
+      <!-- Campo de Tags -->
+      <div class="form-group">
+        <label for="tags">
+          <span class="material-icons">label</span>
+          Tags
+        </label>
+        <div class="tags-container">
+          <div class="tags-list">
+            @for (tag of tags(); track tag) {
+              <div class="tag-item">
+                <span>{{ tag }}</span>
+                <button type="button" class="remove-tag" (click)="removeTag(tag)">
+                  <span class="material-icons">close</span>
+                </button>
+              </div>
+            }
+            @if (!tagInputVisible()) {
+              <button
+                type="button"
+                class="add-tag-btn"
+                (click)="showTagInput()">
+                <span class="material-icons">add</span>
+                Adicionar Tag
+              </button>
+            }
+          </div>
+          @if (tagInputVisible()) {
+            <div class="tag-input-container">
+              <input
+                type="text"
+                class="tag-input"
+                [value]="tagInput()"
+                (input)="tagInput.set($any($event.target).value)"
+                (keydown)="onTagInputKeydown($event)"
+                (blur)="hideTagInput()"
+                placeholder="Digite a tag e pressione Enter"
+                autofocus
+              />
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Campo Featured -->
+      <div class="form-group">
+        <div class="toggle-group">
+          <span class="toggle-label">Vídeo em Destaque</span>
+          @if (featuredControl?.value) {
+            <small class="featured-warning">
+              <span class="material-icons">info</span>
+              Apenas 3 vídeos podem estar em destaque simultaneamente. Se já houver 3 vídeos em destaque, o mais antigo perderá o destaque automaticamente.
+            </small>
+          }
+          <div class="toggle-container">
+            <input
+              type="checkbox"
+              id="featured"
+              formControlName="featured"
+              class="toggle-input">
+            <label for="featured" class="toggle-switch">
+              <span class="toggle-slider"></span>
+            </label>
+            <span class="toggle-text">
+              {{ featuredControl?.value ? 'Sim' : 'Não' }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notícia Relacionada -->
+      <app-video-related-news
+        [selectedNewsSlug]="selectedNewsSlug()"
+        (newsSlugSelected)="onNewsSlugSelected($event)"
+      ></app-video-related-news>
+    </div>
+
+    <!-- Coluna Direita: Previews de Vídeo e Thumbnail -->
+    <div class="form-previews">
+      <app-video-files
+        [videoToEdit]="videoToEdit()"
+        [videoUrl]="videoToEdit()?.url || null"
+        [thumbnailUrl]="videoToEdit()?.thumbnail || null"
+        (videoFileSelected)="onVideoFileSelected($event)"
+        (thumbnailFileSelected)="onThumbnailFileSelected($event)"
+        (thumbnailRemoved)="onThumbnailRemoved()"
+      ></app-video-files>
+    </div>
   </div>
 
   <!-- Barra de Progresso -->

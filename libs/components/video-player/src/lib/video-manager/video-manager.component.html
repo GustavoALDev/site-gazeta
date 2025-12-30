@@ -1,0 +1,33 @@
+@if(videos().length > 0){
+<div class="header">
+    <div class="header-content">
+        <img src="img/logo02.webp" alt="logo" width="180px">
+    </div>
+    <h2>Videos em alta</h2>
+</div>
+<div class="video-manager-container">
+  <div class="video-player-wrapper">
+    @if (currentVideo(); as video) {
+      <lib-video-player
+        [src]="video.url"
+        [thumbnail]="video.thumbnail"
+        [autoplay]="false"
+        [muted]="false"
+      ></lib-video-player>
+    } @else {
+      <div class="video-placeholder">
+        <span class="material-icons">play_circle_outline</span>
+        <p>Selecione um vídeo para reproduzir</p>
+      </div>
+    }
+  </div>
+  
+  <div class="video-list-wrapper">
+    <lib-video-list
+      [videos]="videos()"
+      [currentVideoId]="currentVideo()?.id || null"
+      (onVideoClick)="onVideoSelect($event)"
+    ></lib-video-list>
+  </div>
+</div>
+}

@@ -1,17 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import {
-  CreateDestaqueConfigDto,
-  UpdateDestaqueConfigDto,
-  DestaqueConfigResponseDto,
-  CategoryBasicDto,
-} from './dto/destaque-config.dto';
-import {
-  CreateTopGazetaConfigDto,
-  UpdateTopGazetaConfigDto,
-  TopGazetaConfigResponseDto,
-} from './dto/top-gazeta-config.dto';
-import {
   CreateSectionOrderDto,
   UpdateSectionOrderDto,
   BulkUpdateSectionsDto,
@@ -23,24 +12,59 @@ import {
   UpdateSocialMediaConfigDto,
   SocialMediaConfigResponseDto,
 } from './dto/social-media-config.dto';
+import {
+  CreateMaintenanceConfigDto,
+  UpdateMaintenanceConfigDto,
+  MaintenanceConfigResponseDto,
+} from './dto/maintenance-config.dto';
+import {
+  CreateCarouselConfigDto,
+  UpdateCarouselConfigDto,
+  CarouselConfigResponseDto,
+} from './dto/carousel-config.dto';
+import {
+  CreateTopCategoriesConfigDto,
+  UpdateTopCategoriesConfigDto,
+  TopCategoriesConfigResponseDto,
+  TopCategoriesCombinedResponseDto,
+  TopCategoryType,
+  CategoryBasicDto,
+} from './dto/top-categories-config.dto';
 
 @Injectable()
 export class ConfigSystemService {
   constructor(private prisma: PrismaService) {}
 
-  // =============== DESTAQUE CONFIG ===============
+  // =============== TOP CATEGORIES CONFIG ===============
 
-  async createDestaqueConfig(
-    dto: CreateDestaqueConfigDto,
+  async getTopCategoriesConfig(): Promise<TopCategoriesCombinedResponseDto> {
+    const [primary, secondary] = await Promise.all([
+      this.getTopCategoriesConfigByType(TopCategoryType.PRIMARY),
+      this.getTopCategoriesConfigByType(TopCategoryType.SECONDARY),
+    ]);
+
+    return {
+      primary,
+      secondary,
+    };
+  }
+
+  async createTopCategoriesConfig(
+    dto: CreateTopCategoriesConfigDto,
     userId: number
-  ): Promise<DestaqueConfigResponseDto> {
-    // Verificar se já existe configuração para este usuário
-    const existing = await this.prisma.destaqueConfig.findUnique({
-      where: { createdBy: userId },
+  ): Promise<TopCategoriesConfigResponseDto> {
+    // Verificar se já existe configuração para este tipo e usuário
+    const existing = await this.prisma.topCategoriesConfig.findUnique({
+      where: {
+        type_createdBy: {
+          type: dto.type,
+          createdBy: userId,
+        },
+      },
     });
 
     if (existing) {
-      throw new ConflictException('Configuração de Destaques já existe. Use PATCH para atualizar.');
+      throw new ConflictException(`Configuração de Top Categories ${dto.type} já existe. Use PATCH para atualizar.`);
     }
 
     // Se não é randomMode, validar categorias
@@ -49,8 +73,9 @@ export class ConfigSystemService {
     }
 
     // Criar configuração
-    const config = await this.prisma.destaqueConfig.create({
+    const config = await this.prisma.topCategoriesConfig.create({
       data: {
+        type: dto.type,
         randomMode: dto.randomMode,
         createdBy: userId,
         categories: {
@@ -68,11 +93,14 @@ export class ConfigSystemService {
       },
     });
 
-    return this.formatDestaqueResponse(config);
+    return this.formatTopCategoriesResponse(config);
   }
 
-  async getDestaqueConfig(): Promise<DestaqueConfigResponseDto | null> {
-    const config = await this.prisma.destaqueConfig.findFirst({
+  async getTopCategoriesConfigByType(
+    type: TopCategoryType
+  ): Promise<TopCategoriesConfigResponseDto | null> {
+    const config = await this.prisma.topCategoriesConfig.findFirst({
+      where: { type },
       include: {
         categories: {
           include: {
@@ -86,19 +114,40 @@ export class ConfigSystemService {
       return null;
     }
 
-    return this.formatDestaqueResponse(config);
+    // Se randomMode está ativo, buscar 3 categorias aleatórias
+    if (config.randomMode) {
+      const randomCategories = await this.getRandomCategories(3);
+      return {
+        id: config.id,
+        type: config.type as TopCategoryType,
+        randomMode: config.randomMode,
+        categories: randomCategories.map(cat => this.formatCategoryBasic(cat)),
+        categoryIds: randomCategories.map(cat => cat.id),
+        createdAt: config.createdAt.toISOString(),
+        updatedAt: config.updatedAt.toISOString(),
+        createdBy: config.createdBy,
+      };
+    }
+
+    return this.formatTopCategoriesResponse(config);
   }
 
-  async updateDestaqueConfig(
-    dto: UpdateDestaqueConfigDto,
+  async updateTopCategoriesConfig(
+    type: TopCategoryType,
+    dto: UpdateTopCategoriesConfigDto,
     userId: number
-  ): Promise<DestaqueConfigResponseDto> {
-    const existing = await this.prisma.destaqueConfig.findUnique({
-      where: { createdBy: userId },
+  ): Promise<TopCategoriesConfigResponseDto> {
+    const existing = await this.prisma.topCategoriesConfig.findUnique({
+      where: {
+        type_createdBy: {
+          type,
+          createdBy: userId,
+        },
+      },
     });
 
     if (!existing) {
-      throw new NotFoundException('Configuração de Destaques não encontrada. Use POST para criar.');
+      throw new NotFoundException(`Configuração de Top Categories ${type} não encontrada. Use POST para criar.`);
     }
 
     // Se mudou para randomMode ou mudou as categorias, validar
@@ -108,7 +157,7 @@ export class ConfigSystemService {
     }
 
     // Atualizar configuração
-    const config = await this.prisma.destaqueConfig.update({
+    const config = await this.prisma.topCategoriesConfig.update({
       where: { id: existing.id },
       data: {
         randomMode: dto.randomMode ?? existing.randomMode,
@@ -126,103 +175,7 @@ export class ConfigSystemService {
       },
     });
 
-    return this.formatDestaqueResponse(config);
-  }
-
-  // =============== TOP GAZETA CONFIG ===============
-
-  async createTopGazetaConfig(
-    dto: CreateTopGazetaConfigDto,
-    userId: number
-  ): Promise<TopGazetaConfigResponseDto> {
-    const existing = await this.prisma.topGazetaConfig.findUnique({
-      where: { createdBy: userId },
-    });
-
-    if (existing) {
-      throw new ConflictException('Configuração de Top Gazeta já existe. Use PATCH para atualizar.');
-    }
-
-    if (!dto.randomMode && dto.categoryIds) {
-      await this.validateCategories(dto.categoryIds);
-    }
-
-    const config = await this.prisma.topGazetaConfig.create({
-      data: {
-        randomMode: dto.randomMode,
-        createdBy: userId,
-        categories: {
-          create: !dto.randomMode && dto.categoryIds
-            ? dto.categoryIds.map(catId => ({ categoryId: catId }))
-            : [],
-        },
-      },
-      include: {
-        categories: {
-          include: {
-            category: true,
-          },
-        },
-      },
-    });
-
-    return this.formatTopGazetaResponse(config);
-  }
-
-  async getTopGazetaConfig(): Promise<TopGazetaConfigResponseDto | null> {
-    const config = await this.prisma.topGazetaConfig.findFirst({
-      include: {
-        categories: {
-          include: {
-            category: true,
-          },
-        },
-      },
-    });
-
-    if (!config) {
-      return null;
-    }
-
-    return this.formatTopGazetaResponse(config);
-  }
-
-  async updateTopGazetaConfig(
-    dto: UpdateTopGazetaConfigDto,
-    userId: number
-  ): Promise<TopGazetaConfigResponseDto> {
-    const existing = await this.prisma.topGazetaConfig.findUnique({
-      where: { createdBy: userId },
-    });
-
-    if (!existing) {
-      throw new NotFoundException('Configuração de Top Gazeta não encontrada. Use POST para criar.');
-    }
-
-    const newRandomMode = dto.randomMode ?? existing.randomMode;
-    if (!newRandomMode && dto.categoryIds) {
-      await this.validateCategories(dto.categoryIds);
-    }
-
-    const config = await this.prisma.topGazetaConfig.update({
-      where: { id: existing.id },
-      data: {
-        randomMode: dto.randomMode ?? existing.randomMode,
-        categories: dto.categoryIds ? {
-          deleteMany: {},
-          create: dto.categoryIds.map(catId => ({ categoryId: catId })),
-        } : undefined,
-      },
-      include: {
-        categories: {
-          include: {
-            category: true,
-          },
-        },
-      },
-    });
-
-    return this.formatTopGazetaResponse(config);
+    return this.formatTopCategoriesResponse(config);
   }
 
   // =============== SECTION ORDER CONFIG ===============
@@ -447,6 +400,124 @@ export class ConfigSystemService {
     return this.formatSocialMediaResponse(config);
   }
 
+  // =============== MAINTENANCE CONFIG ===============
+
+  async createMaintenanceConfig(
+    dto: CreateMaintenanceConfigDto,
+    userId: number
+  ): Promise<MaintenanceConfigResponseDto> {
+    // Verificar se já existe uma configuração global
+    const existing = await this.prisma.maintenanceConfig.findFirst({
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (existing) {
+      throw new ConflictException('Configuração de Manutenção já existe. Use PATCH para atualizar.');
+    }
+
+    const config = await this.prisma.maintenanceConfig.create({
+      data: {
+        isActive: dto.isActive,
+        createdBy: userId,
+      },
+    });
+
+    return this.formatMaintenanceResponse(config);
+  }
+
+  async getMaintenanceConfig(): Promise<MaintenanceConfigResponseDto | null> {
+    // Retorna a configuração mais recente (deve haver apenas uma)
+    const config = await this.prisma.maintenanceConfig.findFirst({
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (!config) {
+      return null;
+    }
+
+    return this.formatMaintenanceResponse(config);
+  }
+
+  async updateMaintenanceConfig(
+    dto: UpdateMaintenanceConfigDto,
+    userId: number
+  ): Promise<MaintenanceConfigResponseDto> {
+    // Buscar a configuração global (mais recente)
+    const existing = await this.prisma.maintenanceConfig.findFirst({
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (!existing) {
+      throw new NotFoundException('Configuração de Manutenção não encontrada. Use POST para criar.');
+    }
+
+    const config = await this.prisma.maintenanceConfig.update({
+      where: { id: existing.id },
+      data: { isActive: dto.isActive },
+    });
+
+    return this.formatMaintenanceResponse(config);
+  }
+
+  // =============== CAROUSEL CONFIG ===============
+
+  async createCarouselConfig(
+    dto: CreateCarouselConfigDto,
+    userId: number
+  ): Promise<CarouselConfigResponseDto> {
+    // Verificar se já existe uma configuração global
+    const existing = await this.prisma.carouselConfig.findFirst({
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (existing) {
+      throw new ConflictException('Configuração de Carrossel já existe. Use PATCH para atualizar.');
+    }
+
+    const config = await this.prisma.carouselConfig.create({
+      data: {
+        featuredNewsLimit: dto.featuredNewsLimit,
+        createdBy: userId,
+      },
+    });
+
+    return this.formatCarouselResponse(config);
+  }
+
+  async getCarouselConfig(): Promise<CarouselConfigResponseDto | null> {
+    // Retorna a configuração mais recente (deve haver apenas uma)
+    const config = await this.prisma.carouselConfig.findFirst({
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (!config) {
+      return null;
+    }
+
+    return this.formatCarouselResponse(config);
+  }
+
+  async updateCarouselConfig(
+    dto: UpdateCarouselConfigDto,
+    userId: number
+  ): Promise<CarouselConfigResponseDto> {
+    // Buscar a configuração global (mais recente)
+    const existing = await this.prisma.carouselConfig.findFirst({
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (!existing) {
+      throw new NotFoundException('Configuração de Carrossel não encontrada. Use POST para criar.');
+    }
+
+    const config = await this.prisma.carouselConfig.update({
+      where: { id: existing.id },
+      data: { featuredNewsLimit: dto.featuredNewsLimit },
+    });
+
+    return this.formatCarouselResponse(config);
+  }
+
   // =============== HELPER METHODS ===============
 
   private async validateCategories(categoryIds: number[]): Promise<void> {
@@ -462,21 +533,28 @@ export class ConfigSystemService {
     }
   }
 
-  private formatDestaqueResponse(config: any): DestaqueConfigResponseDto {
-    return {
-      id: config.id,
-      randomMode: config.randomMode,
-      categories: config.categories.map((rel: any) => this.formatCategoryBasic(rel.category)),
-      categoryIds: config.categories.map((rel: any) => rel.category.id),
-      createdAt: config.createdAt.toISOString(),
-      updatedAt: config.updatedAt.toISOString(),
-      createdBy: config.createdBy,
-    };
+  private async getRandomCategories(count: number): Promise<any[]> {
+    // Buscar todas as categorias ativas
+    const allCategories = await this.prisma.category.findMany({
+      where: {
+        isActive: true,
+      },
+    });
+
+    // Se não houver categorias suficientes, retornar todas disponíveis
+    if (allCategories.length <= count) {
+      return allCategories;
+    }
+
+    // Embaralhar e pegar as primeiras 'count' categorias
+    const shuffled = [...allCategories].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, count);
   }
 
-  private formatTopGazetaResponse(config: any): TopGazetaConfigResponseDto {
+  private formatTopCategoriesResponse(config: any): TopCategoriesConfigResponseDto {
     return {
       id: config.id,
+      type: config.type as TopCategoryType,
       randomMode: config.randomMode,
       categories: config.categories.map((rel: any) => this.formatCategoryBasic(rel.category)),
       categoryIds: config.categories.map((rel: any) => rel.category.id),
@@ -522,6 +600,26 @@ export class ConfigSystemService {
       twitter: config.twitter,
       tiktok: config.tiktok,
       whatsapp: config.whatsapp,
+      createdAt: config.createdAt.toISOString(),
+      updatedAt: config.updatedAt.toISOString(),
+      createdBy: config.createdBy,
+    };
+  }
+
+  private formatMaintenanceResponse(config: any): MaintenanceConfigResponseDto {
+    return {
+      id: config.id,
+      isActive: config.isActive,
+      createdAt: config.createdAt.toISOString(),
+      updatedAt: config.updatedAt.toISOString(),
+      createdBy: config.createdBy,
+    };
+  }
+
+  private formatCarouselResponse(config: any): CarouselConfigResponseDto {
+    return {
+      id: config.id,
+      featuredNewsLimit: config.featuredNewsLimit,
       createdAt: config.createdAt.toISOString(),
       updatedAt: config.updatedAt.toISOString(),
       createdBy: config.createdBy,

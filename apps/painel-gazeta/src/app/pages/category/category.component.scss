@@ -17,19 +17,31 @@ $font-size-base: 1rem;
 }
 
 .category-card {
+  display: flex;
+  flex-direction: column;
   background: white;
   border-radius: 12px;
   box-shadow: $box-shadow-default;
   padding: 2rem;
   width: 100%;
   height: 100%;
-  max-height: 720px;
   animation: slideUp 0.6s ease-out;
   .category-form-container-wrapper{
     display: flex;
     flex-direction: row;
+    flex: 1;
+    min-height: 0; // Permite que o flex encolha
+    gap: 1.5rem;
+ 
     .category-form-container, .category-list-container{
       flex: 0 0 50%;
+      min-width: 0; // Permite que encolha
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .category-list-container {
+      overflow: hidden; // Container não deve ter scroll, apenas o conteúdo interno
     }
   }
 }

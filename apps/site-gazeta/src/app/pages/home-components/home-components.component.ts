@@ -1,45 +1,42 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CarouselComponent } from '@site-gazeta/carousel';
-import { CarouselSwipeComponent } from '@site-gazeta/carousel';
 import { NewsCategoryGridComponent } from '@site-gazeta/home-components';
-import { NewsCategorySectionComponent } from '@site-gazeta/home-components';
 import { NewsHighligthsComponent } from '@site-gazeta/home-components';
 import { NewsClusterComponent } from '@site-gazeta/home-components';
-import { VideoPlayerComponent } from '@site-gazeta/video-player';
+  import { VideoManagerComponent } from '@site-gazeta/video-player';
 import { MoreNewsComponent } from '@site-gazeta/more-news';
 import { ApiService } from '../../core/service/api.service';
 import { BreakpointService } from '../../core/service/breakpoint.service';
-import { Ads, Category, Menu, News, SectionOrderConfig, SectionOrderConfigMap, TopGazetaConfig, Video } from '@site-gazeta/models';
-import { firstValueFrom, forkJoin, map, tap } from 'rxjs';
+import { Ads, Category,  Menu, News, HomeData, Video, SectionOrderConfigMap } from '@site-gazeta/models';
+import {  Observable, forkJoin, map, tap } from 'rxjs';
 import { AdsComponent } from '@site-gazeta/ads';
+import { ActivatedRoute } from '@angular/router';
+import { CarouselManagerComponent } from '@site-gazeta/carousel';
+import { LatestNewsComponent, MostViewedComponent } from '@site-gazeta/home-components';
 
 @Component({
   selector: 'app-home-components',
   imports: [
     CommonModule,
-    CarouselComponent,
-    CarouselSwipeComponent,
+    CarouselManagerComponent,
     NewsCategoryGridComponent,
-    NewsCategorySectionComponent,
     NewsHighligthsComponent,
     NewsClusterComponent,
-    VideoPlayerComponent,
+    VideoManagerComponent,
     MoreNewsComponent,
     AdsComponent,
+    LatestNewsComponent,
+    MostViewedComponent,
   ],
   templateUrl: './home-components.component.html',
   styleUrl: './home-components.component.scss',
 })
 export class HomeComponentsComponent implements OnInit {
   private apiService = inject(ApiService);
-
-  protected breakpointService = inject(BreakpointService);
-  get isMobile() {
-    return this.breakpointService.isMobile;
-  }
-
-  protected newsItems = signal<News[]>([]);
+  private route = inject(ActivatedRoute);
+ 
+  
+  protected newsItems = this.apiService.getNews();
   protected categories = signal<Category[]>([]);
   protected videos = signal<Video[]>([]);
   private ads = signal<{top: Ads[], center: Ads[], bottom: Ads[]}>({top: [], center: [], bottom: []});
@@ -47,15 +44,9 @@ export class HomeComponentsComponent implements OnInit {
   menuItems = signal<Menu[]>([]);
   carouselItems = signal<News[]>([]);
   categoryGridNews = signal<{featured: News, secondary: News[], category: Category}[]>([]);
-  topGazeta = signal<TopGazetaConfig | null>(null);
-  homeConfig = this.apiService.getHomeConfigMap().pipe(tap(config => console.log(config)));
+  homeConfig = signal<SectionOrderConfigMap >({});
 
-  // Computed signals para otimização do template
-  protected hasCarouselItems = computed(() => this.carouselItems().length > 0);
-  protected hasCategoryGrid = computed(() => this.categoryGridNews().length > 0);
-  protected hasVideos = computed(() => this.videos().length > 0);
-  protected hasNews = computed(() => this.newsItems().length > 0);
-  protected hasCategories = computed(() => this.categories().length > 0);
+
   
   // Computed para anúncios com validação
   protected topAd = computed(() => this.ads().top.length > 0 ? this.ads().top[0] : null);
@@ -68,64 +59,16 @@ export class HomeComponentsComponent implements OnInit {
   protected firstCategory = computed(() => 
     this.categories().length > 0 ? this.categories()[0] : null
   );
-
-  // Computed para Top Gazeta com validação
-  protected hasTopGazeta = computed(() => 
-    this.topGazeta() !== null && 
-    this.topGazeta()!.categories !== undefined && 
-    this.topGazeta()!.categories.length > 0
-  );
-  constructor() {
-    
-  }
+  
+   
+  homeData = this.route.snapshot.data['data'] as HomeData;
   ngOnInit(): void {
-    
-    this.setCarouselItems();
-    this.getHomeCategoryConfig();
-    this.getNews();
-    this.getCategories();
-    this.getVideos();
     this.getAds();
-    
   }
-
-  getHomeCategoryConfig() {
-    this.apiService.getHomeCategoryConfig().subscribe((config) => {
-      const categories = config.destaque.categories as Category[];
-      this.setCategoryGridItems(categories );
-      this.topGazeta.set(config.topGazeta);
-      console.log(this.topGazeta());
-    });
-  }
-  getNews() {
-    this.apiService.getNews().subscribe((news) => {
-      this.newsItems.set(news);
-    });
-  }
-
-  getCategories() {
-    this.apiService.getActiveCategories().subscribe((categories) => {
-      this.categories.set(categories);
-    });
-  }
-
-  getVideos() {
-    this.apiService.getVideos().subscribe((videos) => {
-      this.videos.set(videos);
-    });
-  }
-
-  setCarouselItems() {
-    this.apiService.getNewsFeatured()
-    .pipe(
-      map(news => news.slice(0, 5))
-    )
-    .subscribe((news) => {
-      this.carouselItems.set(news);
-    });
-  }
-
+  
+  
   getAds() {
+    console.log('getAds');
     this.apiService.getAdsByPlacement('home').subscribe((ads) => {
       this.setAds(ads);
     });
@@ -137,33 +80,7 @@ export class HomeComponentsComponent implements OnInit {
         center: ads.filter(ad => ad.position === 'center'),
         bottom: ads.filter(ad => ad.position === 'bottom'),
       };
-      console.log(groupedAds);
       this.ads.set(groupedAds);
   }
-  setCategoryGridItems(categories: Category[]) {
 
-    forkJoin(
-      categories.map(category =>
-        this.apiService.getNewsForCategory(category.id as number).pipe(
-          map(news=>{return {news:news, category:category}})
-        )
-      )
-    ).subscribe({
-      next: (news) =>{
-        console.log(news);
-        this.categoryGridNews.set(this.categoryGridNewsConfig(news));
-      }
-    });
-  }
-
-  categoryGridNewsConfig(config: {news: News[], category: Category}[]){
-    const categorized = config.map(config=>{
-      return {
-        featured: config.news[0],
-        secondary: config.news.slice(1, 3),
-        category: config.category
-      }
-    })
-    return categorized;
-  }
 }

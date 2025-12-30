@@ -1,9 +1,12 @@
-import { Injectable } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { Injectable, PLATFORM_ID, inject } from '@angular/core';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SessionService {
+  private platformId = inject(PLATFORM_ID);
+  private readonly isBrowser = isPlatformBrowser(this.platformId);
   private readonly SESSION_KEY = 'analytics_session_id';
   private readonly SESSION_DURATION = 30 * 60 * 1000; // 30 minutos
 
@@ -11,6 +14,7 @@ export class SessionService {
    * Obtém ou cria um ID de sessão único
    */
   getSessionId(): string {
+    if (!this.isBrowser) return '';
     const stored = this.getStoredSession();
     
     if (stored && this.isSessionValid(stored.timestamp)) {
@@ -27,6 +31,7 @@ export class SessionService {
    * Recupera sessão armazenada
    */
   private getStoredSession(): { sessionId: string; timestamp: number } | null {
+    if (!this.isBrowser) return null;
     try {
       const data = localStorage.getItem(this.SESSION_KEY);
       return data ? JSON.parse(data) : null;
@@ -39,6 +44,7 @@ export class SessionService {
    * Verifica se sessão ainda é válida
    */
   private isSessionValid(timestamp: number): boolean {
+    if (!this.isBrowser) return false;
     const now = Date.now();
     return (now - timestamp) < this.SESSION_DURATION;
   }
@@ -47,6 +53,7 @@ export class SessionService {
    * Cria nova sessão
    */
   private createNewSession(): string {
+    if (!this.isBrowser) return '';
     const sessionId = this.generateSessionId();
     this.storeSession(sessionId);
     return sessionId;
@@ -56,6 +63,7 @@ export class SessionService {
    * Armazena sessão no localStorage
    */
   private storeSession(sessionId: string): void {
+    if (!this.isBrowser) return;
     const data = {
       sessionId,
       timestamp: Date.now()
@@ -67,6 +75,7 @@ export class SessionService {
    * Atualiza timestamp da sessão existente
    */
   private updateSessionTimestamp(sessionId: string): void {
+    if (!this.isBrowser) return;
     this.storeSession(sessionId);
   }
 
@@ -74,6 +83,7 @@ export class SessionService {
    * Gera ID único de sessão
    */
   private generateSessionId(): string {
+    if (!this.isBrowser) return '';
     const timestamp = Date.now();
     const random = Math.random().toString(36).substring(2, 11);
     return `session-${timestamp}-${random}`;
@@ -83,6 +93,7 @@ export class SessionService {
    * Limpa sessão (útil para logout ou testes)
    */
   clearSession(): void {
+    if (!this.isBrowser) return;
     localStorage.removeItem(this.SESSION_KEY);
   }
 }

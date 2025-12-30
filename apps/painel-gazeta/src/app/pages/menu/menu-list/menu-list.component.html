@@ -69,6 +69,16 @@
 
         <!-- Actions -->
         <div class="menu-actions">
+          @if (item.type === 'submenu') {
+            <button 
+              type="button" 
+              class="action-btn submenu-btn" 
+              (click)="openSubmenuModal(item)"
+              title="Gerenciar submenu"
+            >
+              <span class="material-icons">settings</span>
+            </button>
+          }
           <button 
             type="button" 
             class="action-btn edit-btn" 
@@ -98,11 +108,11 @@
       </div>
       <button 
         type="button" 
-        class="remove-child-btn" 
-        (click)="removeFromSubmenu(child.id!)"
-        title="Remover do submenu"
+        class="delete-child-btn" 
+        (click)="confirmDelete(child)"
+        title="Deletar submenu permanentemente"
       >
-        <span class="material-icons">close</span>
+        <span class="material-icons">delete</span>
       </button>
     </ng-template>
 
@@ -118,8 +128,8 @@
     <!-- Children Empty State -->
     <ng-template #childrenEmptyTemplate>
       <div class="submenu-empty">
-        <span class="material-icons">open_with</span>
-        <p>Arraste itens aqui para adicionar ao submenu</p>
+        <span class="material-icons">info</span>
+        <p>Use o botão de configurações para gerenciar os itens deste submenu</p>
       </div>
     </ng-template>
 
@@ -128,7 +138,7 @@
       @if (menus().length > 0) {
         <div class="drag-tip">
           <span class="material-icons">info</span>
-          <p>Arraste os itens para reordenar. Arraste para dentro de submenus para criar dropdown.</p>
+          <p>Arraste os itens para reordenar. Use o botão de configurações nos submenus para gerenciar seus itens.</p>
         </div>
       }
     </ng-template>
@@ -138,15 +148,23 @@
 </div>
 
 <!-- Modal de Confirmação de Exclusão -->
-@if (showDeleteConfirm()) {
-  <div class="modal-overlay" (click)="cancelDelete()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <span class="material-icons warning">warning</span>
-        <h3>Confirmar Exclusão</h3>
-      </div>
-      
-      <div class="modal-body">
+<modal 
+  [(isOpen)]="showDeleteConfirm"
+  (closed)="cancelDelete()">
+  <div class="delete-modal-content">
+    <div class="modal-header">
+      <span class="material-icons warning">warning</span>
+      <h3>Confirmar Exclusão</h3>
+    </div>
+    
+    <div class="delete-modal-body">
+      @if (menuToDelete()?.parentId) {
+        <p>Tem certeza que deseja <strong>deletar permanentemente</strong> o submenu <strong>"{{ menuToDelete()?.name }}"</strong>?</p>
+        <div class="warning-box">
+          <span class="material-icons">warning</span>
+          <p>Este submenu será <strong>completamente removido</strong> e não voltará para a lista de menus principais.</p>
+        </div>
+      } @else {
         <p>Tem certeza que deseja excluir o menu <strong>"{{ menuToDelete()?.name }}"</strong>?</p>
         @if (menuToDelete()?.type === 'submenu' && menuToDelete()?.children?.length) {
           <div class="warning-box">
@@ -154,19 +172,19 @@
             <p>Este menu possui {{ menuToDelete()?.children?.length }} subitem(ns). Eles também serão excluídos.</p>
           </div>
         }
-        <p class="warning-text">Esta ação não pode ser desfeita.</p>
-      </div>
-      
-      <div class="modal-actions">
-        <button type="button" class="btn-cancel" (click)="cancelDelete()">
-          <span class="material-icons">close</span>
-          Cancelar
-        </button>
-        <button type="button" class="btn-delete" (click)="deleteMenu()">
-          <span class="material-icons">delete_forever</span>
-          Excluir
-        </button>
-      </div>
+      }
+      <p class="warning-text">Esta ação não pode ser desfeita.</p>
+    </div>
+    
+    <div class="modal-actions">
+      <button type="button" class="btn-cancel" (click)="cancelDelete()">
+        <span class="material-icons">close</span>
+        Cancelar
+      </button>
+      <button type="button" class="btn-delete" (click)="deleteMenu()">
+        <span class="material-icons">delete_forever</span>
+        Excluir
+      </button>
     </div>
   </div>
-}
+</modal>

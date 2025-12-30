@@ -1,0 +1,162 @@
+
+:host {
+  font-family: 'Open Sans', sans-serif;
+}
+.video-modal-info {
+  display: flex;
+  flex-direction: column;
+  background: white;
+  max-height: 320px;
+  overflow: hidden;
+}
+
+// Cabeçalho com título e logo
+.video-info-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(135deg, rgba(235, 50, 55, 0.05) 0%, rgba(10, 128, 196, 0.05) 100%);
+  border-bottom: 2px solid rgba(10, 128, 196, 0.1);
+  flex-shrink: 0;
+
+  .video-title {
+    margin: 0;
+    flex: 1;
+    color: #0A80C4;
+    font-size: 1.375rem;
+    font-weight: 500;
+    line-height: 1.3;
+    text-align: left;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    letter-spacing: -0.02em;
+  }
+
+  .video-logo {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    
+    img {
+      max-width: 140px;
+      max-height: 50px;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      opacity: 0.9;
+    }
+  }
+}
+
+// Corpo com descrição
+.video-info-body {
+  flex: 1;
+  padding: 1.25rem 1.5rem;
+  overflow-y: auto;
+  min-height: 0;
+
+  // Estilo customizado da scrollbar
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(10, 128, 196, 0.3);
+    border-radius: 3px;
+    
+    &:hover {
+      background: rgba(10, 128, 196, 0.5);
+    }
+  }
+
+  .video-description {
+    margin: 0;
+    color: #444;
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    text-align: left;
+    word-wrap: break-word;
+    white-space: pre-line;
+  }
+
+  .no-description {
+    color: #999;
+    font-style: italic;
+    text-align: center;
+    padding: 1rem 0;
+  }
+}
+
+// Rodapé com botão de ação
+.video-info-footer {
+  padding: 1rem 1.5rem;
+  background: rgba(0, 0, 0, 0.02);
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  flex-shrink: 0;
+
+  .read-more-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.625rem;
+    width: 100%;
+    padding: 0.875rem 1.5rem;
+    background: linear-gradient(135deg, #EB3237 0%, #0A80C4 100%);
+    color: white;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    border: none;
+    border-radius: 10px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(10, 128, 196, 0.25);
+    position: relative;
+    overflow: hidden;
+
+    // Efeito de brilho ao hover
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .material-icons {
+      font-size: 20px;
+      transition: transform 0.3s ease;
+    }
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(10, 128, 196, 0.35);
+
+      &::before {
+        left: 100%;
+      }
+
+      .material-icons:last-child {
+        transform: translateX(3px);
+      }
+    }
+
+    &:active {
+      transform: translateY(0);
+      box-shadow: 0 4px 12px rgba(10, 128, 196, 0.25);
+    }
+  }
+}
+
+// Importar estilos responsivos
+@import '../styles/responsive';
+

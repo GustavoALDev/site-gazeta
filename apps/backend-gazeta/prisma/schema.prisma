@@ -15,30 +15,30 @@ model User {
   name                 String
   createdAt            DateTime              @default(now()) @map("created_at")
   updatedAt            DateTime              @updatedAt @map("updated_at")
-  news                 News[]
   advertisements       Advertisement[]
-  youtubePlaylist      YoutubePlaylist[]
-  destaqueConfig       DestaqueConfig?
-  topGazetaConfig      TopGazetaConfig?
+  news                 News[]
   sectionOrderConfigs  SectionOrderConfig[]
   socialMediaConfig    SocialMediaConfig?
+  topCategoriesConfigs TopCategoriesConfig[]
   userActivities       UserActivity[]
+  maintenanceConfigs  MaintenanceConfig[]
+  carouselConfigs     CarouselConfig[]
 
   @@map("users")
 }
 
 model Category {
-  id                  Int                   @id @default(autoincrement())
-  name                String                @unique
-  description         String?               @db.Text
-  slug                String                @unique
-  color               String?               @db.VarChar(20)
-  isActive            Boolean               @default(true) @map("is_active")
-  createdAt           DateTime              @default(now()) @map("created_at")
-  updatedAt           DateTime              @updatedAt @map("updated_at")
-  newsCategories      NewsCategory[]
-  destaqueCategories  DestaqueCategoryRelation[]
-  topGazetaCategories TopGazetaCategoryRelation[]
+  id                     Int                             @id @default(autoincrement())
+  name                   String                          @unique
+  description            String?                         @db.Text
+  slug                   String                          @unique
+  isActive               Boolean                         @default(true) @map("is_active")
+  createdAt              DateTime                        @default(now()) @map("created_at")
+  updatedAt              DateTime                        @updatedAt @map("updated_at")
+  color                  String?                         @db.VarChar(20)
+  newsCategories         NewsCategory[]
+  topCategoriesRelations TopCategoriesCategoryRelation[]
+  videoCategories        VideoCategory[]
 
   @@map("categories")
 }
@@ -49,20 +49,21 @@ model News {
   subtitle       String         @db.Text
   content        String         @db.LongText
   author         String         @db.VarChar(200)
-  published      String         @db.VarChar(50) @default("false")
+  published      String         @default("false") @db.VarChar(50)
   views          Int            @default(0)
-  status         String         @db.VarChar(50) @default("ACTIVE")
+  status         String         @default("ACTIVE") @db.VarChar(50)
   validity       String?        @db.VarChar(50)
   slug           String         @unique @db.VarChar(255)
   isEmphasis     Boolean        @default(false) @map("is_emphasis")
   createdAt      DateTime       @default(now()) @map("created_at")
-  updateAt       DateTime       @updatedAt @map("update_at")
   authorId       Int            @map("author_id")
+  updateAt       DateTime       @updatedAt @map("update_at")
   authorUser     User           @relation(fields: [authorId], references: [id])
-  newsCategories NewsCategory[]
-  mediaNews      NewsMedia[]
-  videoNews      NewsVideo[]
-  pageViews      PageView[]
+  newsCategories      NewsCategory[]
+  mediaNews           NewsMedia[]
+  videoNews           NewsVideo[]
+  pageViews           PageView[]
+  contentMedia        NewsContentMedia[]
 
   @@index([authorId], map: "news_author_id_fkey")
   @@map("news")
@@ -71,7 +72,7 @@ model News {
 model NewsMedia {
   id       Int     @id @default(autoincrement())
   emphasis Boolean @default(false)
-  imgSize  Json?   @map("img_size")
+  imgSize  String? @map("img_size") @db.LongText
   author   String? @db.VarChar(200)
   date     String? @db.VarChar(50)
   newsId   Int     @map("news_id")
@@ -106,7 +107,7 @@ model NewsCategory {
 model Media {
   id        Int      @id @default(autoincrement())
   emphasis  Boolean  @default(false)
-  imgSize   Json?    @map("img_size")
+  imgSize   String?  @map("img_size") @db.LongText
   author    String?  @db.VarChar(200)
   date      String?  @db.VarChar(50)
   createdAt DateTime @default(now()) @map("created_at")
@@ -116,218 +117,227 @@ model Media {
 }
 
 model Video {
-  id        Int      @id @default(autoincrement())
-  title     String   @db.VarChar(255)
-  url       String   @db.VarChar(500)
-  thumbnail String?  @db.VarChar(500) // Opcional
-  duration  String?  @db.VarChar(20)  // Formato MM:SS ou HH:MM:SS
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id              Int             @id @default(autoincrement())
+  title           String          @db.VarChar(255)
+  url             String          @db.VarChar(500)
+  thumbnail       String?         @db.VarChar(500)
+  duration        String?         @db.VarChar(20)
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+  featured        Boolean         @default(false)
+  tags            String?         @db.LongText
+  views           Int             @default(0)
+  description     String?         @db.Text
+  newsSlug        String?         @db.VarChar(255)
+  videoCategories VideoCategory[]
 
   @@map("videos")
 }
 
+model VideoCategory {
+  videoId    Int      @map("video_id")
+  categoryId Int      @map("category_id")
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  video      Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@id([videoId, categoryId])
+  @@index([categoryId], map: "video_categories_category_id_fkey")
+  @@map("video_categories")
+}
+
 model Advertisement {
-  id          Int             @id @default(autoincrement())
-  title       String          @db.VarChar(255)
-  description String?         @db.Text
-  imageUrl    String          @db.VarChar(500) @map("image_url")
-  clickUrl    String?         @db.VarChar(500) @map("click_url")
-  position    String          @db.VarChar(100) // top, bottom, sidebar, etc.
-  placement   String          @db.VarChar(50)  // home, news
-  size        String          @default("728x90") @db.VarChar(20)  // 728x90, 300x200
-  isActive    Boolean         @default(true) @map("is_active")
-  priority    Int             @default(0)     // ordem de exibição
-  startDate   DateTime?       @map("start_date")
-  endDate     DateTime?       @map("end_date")
-  createdAt   DateTime        @default(now()) @map("created_at")
-  updatedAt   DateTime        @updatedAt @map("updated_at")
-  createdBy   Int             @map("created_by")
-  creator     User            @relation(fields: [createdBy], references: [id])
+  id          Int       @id @default(autoincrement())
+  title       String    @db.VarChar(255)
+  description String?   @db.Text
+  imageUrl    String    @map("image_url") @db.VarChar(500)
+  clickUrl    String?   @map("click_url") @db.VarChar(500)
+  position    String    @db.VarChar(100)
+  placement   String    @db.VarChar(50)
+  isActive    Boolean   @default(true) @map("is_active")
+  priority    Int       @default(0)
+  startDate   DateTime? @map("start_date")
+  endDate     DateTime? @map("end_date")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  createdBy   Int       @map("created_by")
+  size        String    @default("728x90") @db.VarChar(20)
+  creator     User      @relation(fields: [createdBy], references: [id])
 
   @@index([createdBy], map: "advertisement_created_by_fkey")
   @@index([placement, position, isActive], map: "advertisement_placement_position_active_idx")
   @@map("advertisements")
 }
 
-// ============== CONFIGURAÇÕES ==============
+model TopCategoriesConfig {
+  id         Int                             @id @default(autoincrement())
+  type       String                          @db.VarChar(20)
+  randomMode Boolean                         @default(false) @map("random_mode")
+  createdAt  DateTime                        @default(now()) @map("created_at")
+  updatedAt  DateTime                        @updatedAt @map("updated_at")
+  createdBy  Int                             @map("created_by")
+  categories TopCategoriesCategoryRelation[]
+  creator    User                            @relation(fields: [createdBy], references: [id], map: "top_cat_configs_user_fkey")
 
-// Configuração de Destaques (Categorias em Destaque)
-model DestaqueConfig {
-  id            Int                         @id @default(autoincrement())
-  randomMode    Boolean                     @default(false) @map("random_mode") // modo aleatório ativo
-  createdAt     DateTime                    @default(now()) @map("created_at")
-  updatedAt     DateTime                    @updatedAt @map("updated_at")
-  createdBy     Int                         @unique @map("created_by")
-  creator       User                        @relation(fields: [createdBy], references: [id])
-  categories    DestaqueCategoryRelation[]  // 3 categorias selecionadas (se não randomMode)
-
-  @@map("destaque_configs")
+  @@unique([type, createdBy])
+  @@index([type])
+  @@index([createdBy])
+  @@map("top_categories_configs")
 }
 
-// Relação N para N entre DestaqueConfig e Categories
-model DestaqueCategoryRelation {
-  id                Int              @id @default(autoincrement())
-  destaqueConfigId  Int              @map("destaque_config_id")
-  categoryId        Int              @map("category_id")
-  destaqueConfig    DestaqueConfig   @relation(fields: [destaqueConfigId], references: [id], onDelete: Cascade)
-  category          Category         @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+model TopCategoriesCategoryRelation {
+  id                    Int                 @id @default(autoincrement())
+  topCategoriesConfigId Int                 @map("top_categories_config_id")
+  categoryId            Int                 @map("category_id")
+  category              Category            @relation(fields: [categoryId], references: [id], onDelete: Cascade, map: "top_cat_rel_category_fkey")
+  topCategoriesConfig   TopCategoriesConfig @relation(fields: [topCategoriesConfigId], references: [id], onDelete: Cascade, map: "top_cat_rel_config_fkey")
 
-  @@unique([destaqueConfigId, categoryId])
-  @@index([destaqueConfigId])
-  @@index([categoryId])
-  @@map("destaque_category_relations")
+  @@unique([topCategoriesConfigId, categoryId], map: "top_cat_rel_unique_key")
+  @@index([topCategoriesConfigId], map: "top_cat_rel_config_id_idx")
+  @@index([categoryId], map: "top_cat_rel_category_id_idx")
+  @@map("top_categories_category_relations")
 }
 
-// Configuração de Top Gazeta
-model TopGazetaConfig {
-  id            Int                          @id @default(autoincrement())
-  randomMode    Boolean                      @default(false) @map("random_mode") // modo aleatório ativo
-  createdAt     DateTime                     @default(now()) @map("created_at")
-  updatedAt     DateTime                     @updatedAt @map("updated_at")
-  createdBy     Int                          @unique @map("created_by")
-  creator       User                         @relation(fields: [createdBy], references: [id])
-  categories    TopGazetaCategoryRelation[]  // 3 categorias selecionadas (se não randomMode)
-
-  @@map("top_gazeta_configs")
-}
-
-// Relação N para N entre TopGazetaConfig e Categories
-model TopGazetaCategoryRelation {
-  id                Int              @id @default(autoincrement())
-  topGazetaConfigId Int              @map("top_gazeta_config_id")
-  categoryId        Int              @map("category_id")
-  topGazetaConfig   TopGazetaConfig  @relation(fields: [topGazetaConfigId], references: [id], onDelete: Cascade)
-  category          Category         @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-
-  @@unique([topGazetaConfigId, categoryId])
-  @@index([topGazetaConfigId])
-  @@index([categoryId])
-  @@map("top_gazeta_category_relations")
-}
-
-// Configuração de Ordenação das Seções da Home
 model SectionOrderConfig {
-  id          Int      @id @default(autoincrement())
-  sectionId   String   @db.VarChar(50) @map("section_id")  // carousel, videos, destaques, top-gazeta, cluster
-  name        String   @db.VarChar(100)  // nome da seção
-  title       String   @db.VarChar(200)  // título exibido
-  order       Int                        // ordem de exibição
-  showTitle   Boolean  @default(true) @map("show_title")  // exibir título ou não
-  icon        String?  @db.VarChar(50)   // ícone material icons
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-  createdBy   Int      @map("created_by")
-  creator     User     @relation(fields: [createdBy], references: [id])
+  id        Int      @id @default(autoincrement())
+  sectionId String   @unique @map("section_id") @db.VarChar(50)
+  name      String   @db.VarChar(100)
+  title     String   @db.VarChar(200)
+  order     Int      @unique
+  showTitle Boolean  @default(true) @map("show_title")
+  icon      String?  @db.VarChar(50)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy Int      @map("created_by")
+  creator   User     @relation(fields: [createdBy], references: [id])
 
-  @@unique([sectionId])
-  @@unique([order])
   @@index([order])
+  @@index([createdBy], map: "section_order_configs_created_by_fkey")
   @@map("section_order_configs")
 }
 
-// Configuração de Redes Sociais (JSON básico)
 model SocialMediaConfig {
-  id          Int      @id @default(autoincrement())
-  instagram   String?  @db.VarChar(500)
-  facebook    String?  @db.VarChar(500)
-  youtube     String?  @db.VarChar(500)
-  linkedin    String?  @db.VarChar(500)
-  twitter     String?  @db.VarChar(500)
-  tiktok      String?  @db.VarChar(500)
-  whatsapp    String?  @db.VarChar(50)
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-  createdBy   Int      @unique @map("created_by")
-  creator     User     @relation(fields: [createdBy], references: [id])
+  id        Int      @id @default(autoincrement())
+  instagram String?  @db.VarChar(500)
+  facebook  String?  @db.VarChar(500)
+  youtube   String?  @db.VarChar(500)
+  linkedin  String?  @db.VarChar(500)
+  twitter   String?  @db.VarChar(500)
+  tiktok    String?  @db.VarChar(500)
+  whatsapp  String?  @db.VarChar(50)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy Int      @unique @map("created_by")
+  creator   User     @relation(fields: [createdBy], references: [id])
 
   @@map("social_media_configs")
 }
 
 model Menu {
-  id            Int      @id @default(autoincrement())
-  order         Int?     @map("order")
-  name          String   @db.VarChar(255)
-  type          String   @db.VarChar(50)
-  slug          String?  @db.VarChar(255)
-  routerLink    String?  @db.VarChar(500) @map("router_link")
-  externalLink  String?  @db.VarChar(500) @map("external_link")
-  parentId      Int?     @map("parent_id")
-  isActive      Boolean  @default(true) @map("is_active")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
-  
-  // Relacionamento self-referencial
-  parent        Menu?    @relation("MenuToSubmenu", fields: [parentId], references: [id], onDelete: Cascade)
-  children      Menu[]   @relation("MenuToSubmenu")
+  id           Int      @id @default(autoincrement())
+  order        Int?     @map("order")
+  name         String   @db.VarChar(255)
+  type         String   @db.VarChar(50)
+  slug         String?  @db.VarChar(255)
+  routerLink   String?  @map("router_link") @db.VarChar(500)
+  externalLink String?  @map("external_link") @db.VarChar(500)
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  parentId     Int?     @map("parent_id")
+  parent       Menu?    @relation("MenuToSubmenu", fields: [parentId], references: [id], onDelete: Cascade)
+  children     Menu[]   @relation("MenuToSubmenu")
 
   @@index([order, isActive], map: "menu_order_active_idx")
   @@index([parentId], map: "menu_parent_id_idx")
   @@map("menus")
 }
 
-model YoutubePlaylist {
-  id            Int      @id @default(autoincrement())
-  title         String   @db.VarChar(255)
-  description   String?  @db.Text
-  youtubeUrl    String   @db.VarChar(500) @map("youtube_url")
-  thumbnail     String?  @db.VarChar(500)
-  duration      String?  @db.VarChar(20) // formato HH:MM:SS ou MM:SS
-  videoId       String   @db.VarChar(50) @map("video_id") // ID do vídeo do YouTube
-  displayOrder  Int      @map("display_order") // ordem de exibição
-  isActive      Boolean  @default(true) @map("is_active")
-  isEmphasis    Boolean  @default(false) @map("is_emphasis") // destaque na playlist
-  publishedAt   DateTime? @map("published_at") // data de publicação do vídeo no YouTube
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
-  createdBy     Int      @map("created_by")
-  creator       User     @relation(fields: [createdBy], references: [id])
-
-  @@unique([displayOrder], map: "youtube_playlist_order_unique")
-  @@index([displayOrder, isActive], map: "youtube_playlist_order_active_idx")
-  @@index([createdBy], map: "youtube_playlist_created_by_fkey")
-  @@map("youtube_playlists")
-}
-
-// ============== ANALYTICS MODELS ==============
-
 model PageView {
-  id            Int      @id @default(autoincrement())
-  newsId        Int?     @map("news_id")
-  path          String   @db.VarChar(500) // URL da página visitada
-  userAgent     String?  @db.Text @map("user_agent")
-  ipAddress     String?  @db.VarChar(45) @map("ip_address") // suporta IPv6
-  referer       String?  @db.VarChar(500) // de onde veio
-  sessionId     String?  @db.VarChar(255) @map("session_id") // identificador de sessão
-  duration      Int?     // tempo na página em segundos
-  deviceType    String?  @db.VarChar(20) @map("device_type") // mobile, desktop, tablet
-  browser       String?  @db.VarChar(50) 
-  os            String?  @db.VarChar(50)
-  country       String?  @db.VarChar(100)
-  city          String?  @db.VarChar(100)
-  createdAt     DateTime @default(now()) @map("created_at")
-  news          News?    @relation(fields: [newsId], references: [id], onDelete: SetNull)
+  id         Int      @id @default(autoincrement())
+  newsId     Int?     @map("news_id")
+  path       String   @db.VarChar(500)
+  userAgent  String?  @map("user_agent") @db.Text
+  ipAddress  String?  @map("ip_address") @db.VarChar(45)
+  referer    String?  @db.VarChar(500)
+  sessionId  String?  @map("session_id") @db.VarChar(255)
+  duration   Int?
+  deviceType String?  @map("device_type") @db.VarChar(20)
+  browser    String?  @db.VarChar(50)
+  os         String?  @db.VarChar(50)
+  country    String?  @db.VarChar(100)
+  city       String?  @db.VarChar(100)
+  createdAt  DateTime @default(now()) @map("created_at")
+  news       News?    @relation(fields: [newsId], references: [id])
 
   @@index([newsId], map: "page_views_news_id_fkey")
-  @@index([createdAt], map: "page_views_created_at_idx")
+  @@index([createdAt])
   @@index([path, createdAt], map: "page_views_path_created_idx")
   @@map("page_views")
+}
+
+model ContentMedia {
+  id                Int                 @id @default(autoincrement())
+  url               String              @unique @db.VarChar(500)
+  filePath          String              @db.VarChar(500) @map("file_path")
+  createdAt         DateTime            @default(now()) @map("created_at")
+  newsContentMedia  NewsContentMedia[]
+
+  @@index([url], map: "content_media_url_idx")
+  @@map("content_media")
+}
+
+model NewsContentMedia {
+  id             Int          @id @default(autoincrement())
+  newsId         Int          @map("news_id")
+  contentMediaId Int          @map("content_media_id")
+  news           News         @relation(fields: [newsId], references: [id], onDelete: Cascade)
+  contentMedia   ContentMedia @relation(fields: [contentMediaId], references: [id], onDelete: Cascade)
+
+  @@unique([newsId, contentMediaId], map: "news_content_media_unique")
+  @@index([newsId], map: "news_content_media_news_id_idx")
+  @@index([contentMediaId], map: "news_content_media_content_media_id_idx")
+  @@map("news_content_media")
 }
 
 model UserActivity {
   id          Int      @id @default(autoincrement())
   userId      Int      @map("user_id")
-  action      String   @db.VarChar(100) // login, logout, create_news, edit_news, etc.
-  entityType  String?  @db.VarChar(50) @map("entity_type") // news, category, user, etc.
-  entityId    Int?     @map("entity_id") // ID da entidade afetada
-  description String?  @db.Text // detalhes adicionais
-  ipAddress   String?  @db.VarChar(45) @map("ip_address")
-  userAgent   String?  @db.Text @map("user_agent")
+  action      String   @db.VarChar(100)
+  entityType  String?  @map("entity_type") @db.VarChar(50)
+  entityId    Int?     @map("entity_id")
+  description String?  @db.Text
+  ipAddress   String?  @map("ip_address") @db.VarChar(45)
+  userAgent   String?  @map("user_agent") @db.Text
   createdAt   DateTime @default(now()) @map("created_at")
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId], map: "user_activities_user_id_fkey")
-  @@index([createdAt], map: "user_activities_created_at_idx")
+  @@index([createdAt])
   @@index([action, createdAt], map: "user_activities_action_created_idx")
   @@map("user_activities")
+}
+
+model MaintenanceConfig {
+  id        Int      @id @default(autoincrement())
+  isActive  Boolean  @default(false) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy Int      @map("created_by")
+  creator   User     @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@index([isActive])
+  @@index([createdBy])
+  @@map("maintenance_configs")
+}
+
+model CarouselConfig {
+  id              Int      @id @default(autoincrement())
+  featuredNewsLimit Int    @default(5) @map("featured_news_limit")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  createdBy       Int      @map("created_by")
+  creator         User     @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@index([createdBy])
+  @@map("carousel_configs")
 }

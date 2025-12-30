@@ -1,0 +1,65 @@
+@if(videos().length > 0) {
+<div class="video-latest-section">
+  <div class="section-header">
+    <h2 class="section-title">Últimos Vídeos</h2>
+  </div>
+
+  <div class="video-latest-container">
+    <!-- Primeira linha -->
+    <div class="video-row">
+      @for (video of firstRow(); track video.id) {
+        <div class="video-card" (click)="onVideoClick(video)">
+          <div class="video-card__thumbnail">
+            @if (video.thumbnail) {
+              <img [src]="video.thumbnail" [alt]="video.title" class="video-card__image">
+            } @else {
+              <video
+                [src]="video.url"
+                preload="metadata"
+                class="video-card__video"
+                muted
+              ></video>
+            }
+            <button 
+              class="video-card__play-button"
+              (click)="playVideo(video, $event)"
+              [attr.aria-label]="'Reproduzir ' + video.title">
+              <span class="material-icons">play_arrow</span>
+            </button>
+            <div class="video-card__duration">{{ video.duration }}</div>
+          </div>
+          <h3 class="video-card__title">{{ video.title }}</h3>
+        </div>
+      }
+    </div>
+
+    <!-- Segunda linha -->
+    <div class="video-row">
+      @for (video of secondRow(); track video.id) {
+        <div class="video-card" (click)="onVideoClick(video)">
+          <div class="video-card__thumbnail">
+            @if (video.thumbnail) {
+              <img [src]="video.thumbnail" [alt]="video.title" class="video-card__image">
+            } @else {
+              <video
+                [src]="video.url"
+                preload="metadata"
+                class="video-card__video"
+                muted
+              ></video>
+            }
+            <button 
+              class="video-card__play-button"
+              (click)="playVideo(video, $event)"
+              [attr.aria-label]="'Reproduzir ' + video.title">
+              <span class="material-icons">play_arrow</span>
+            </button>
+            <div class="video-card__duration">{{ video.duration }}</div>
+          </div>
+          <h3 class="video-card__title">{{ video.title }}</h3>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+}

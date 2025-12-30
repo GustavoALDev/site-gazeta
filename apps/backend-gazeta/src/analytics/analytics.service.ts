@@ -18,7 +18,7 @@ export class AnalyticsService {
     data: TrackViewDto,
     userAgent?: string,
     ipAddress?: string
-  ): Promise<void> {
+  ): Promise<{ views?: number }> {
     // Detectar device type, browser, OS a partir do user agent
     const deviceInfo = this.parseUserAgent(userAgent);
 
@@ -37,13 +37,17 @@ export class AnalyticsService {
       },
     });
 
-    // Se for visualização de notícia, incrementar contador
+    // Se for visualização de notícia, incrementar contador e retornar o número atualizado
     if (data.newsId) {
-      await this.prisma.news.update({
+      const updatedNews = await this.prisma.news.update({
         where: { id: data.newsId },
         data: { views: { increment: 1 } },
+        select: { views: true },
       });
+      return { views: updatedNews.views };
     }
+
+    return {};
   }
 
   /**

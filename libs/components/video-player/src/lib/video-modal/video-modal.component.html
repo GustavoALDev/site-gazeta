@@ -1,0 +1,35 @@
+@if (isOpen()) {
+  <div class="video-modal-overlay" 
+       (click)="onBackdropClick($event)"
+       [attr.aria-hidden]="!isOpen()"
+       role="dialog"
+       aria-modal="true">
+    <div class="video-modal-content" 
+         (click)="$event.stopPropagation()">
+      
+      <!-- Botão de fechar -->
+      <button class="video-modal-close" 
+              (click)="onCloseClick()"
+              aria-label="Fechar modal"
+              type="button">
+        <span class="material-icons">close</span>
+      </button>
+      <div class="video-modal-player-container">
+        <div class="video-modal-player">
+          @if(video(); as videoData) {
+            <lib-video-player  [preload]="'none'" [src]="videoData.url" [thumbnail]="videoData.thumbnail"  [controls]="true"></lib-video-player>
+          }
+          @else {
+            <div class="video-placeholder">
+              <span class="material-icons">play_circle_outline</span>
+              <p>Selecione um vídeo para reproduzir</p>
+            </div>
+          }
+        </div>
+
+        <!-- Informações do vídeo -->
+        <lib-video-modal-info [video]="video()" />
+      </div>
+    </div>
+  </div>
+}

@@ -7,11 +7,10 @@ import { Category, News } from '@site-gazeta/models';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { MoreNewsComponent } from '@site-gazeta/more-news';
-import { SideNewsComponent } from '@site-gazeta/side-news';
 
 @Component({
   selector: 'app-news-category',
-  imports: [CommonModule, RouterLink, MoreNewsComponent, SideNewsComponent],
+  imports: [CommonModule, RouterLink, MoreNewsComponent],
   templateUrl: './news-category.component.html',
   styleUrl: './news-category.component.scss',
 })
@@ -23,23 +22,33 @@ export class NewsCategoryComponent implements OnInit {
   protected news = signal<News[]>([]);
   private router = inject(ActivatedRoute);
   
-  // Signal para controlar loading
   protected isLoading = signal<boolean>(true);
   
-  // Computed signals para organizar as notícias no layout
+ 
+  private emphasisNews = computed(() => {
+    return this.news()
+      .filter(news => news.isEmphasis === true)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, 3);
+  });
+
+  
   protected featuredNews = computed(() => {
-    const newsList = this.news();
-    return newsList.length > 0 ? newsList[0] : null;
+    const emphasisList = this.emphasisNews();
+    return emphasisList.length > 0 ? emphasisList[0] : null;
   });
-  
+
+
   protected secondaryNews = computed(() => {
-    const newsList = this.news();
-    return newsList.slice(1, 3);
+    return this.emphasisNews().slice(1, 3);
   });
+
   
-  protected remainingNews = computed(() => {
-    const newsList = this.news();
-    return newsList;
+  protected moreNews = computed(() => {
+    const emphasisIds = this.emphasisNews().map(news => news.id);
+    return this.news()
+      .filter(news => !emphasisIds.includes(news.id))
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   });
 
   ngOnInit(): void {
@@ -72,12 +81,14 @@ export class NewsCategoryComponent implements OnInit {
 
   getNewsForCategory(category: Category) {
     if (category) {
-      this.apiService.getNewsByCategory(category.id as number)
+      // Usa getNewsForCategory que chama o endpoint correto /news/category/:id
+      // Este endpoint suporta o parâmetro 'exclude' via interceptor
+      this.apiService.getNewsForCategory(category.id as number)
         .subscribe((news) => {
           this.news.set(news as News[]);
           setTimeout(() => {
             this.isLoading.set(false);
-          }, 1000);
+          }, 300);
         
         });
     }

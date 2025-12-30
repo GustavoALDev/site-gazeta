@@ -1,0 +1,25 @@
+@if(news() | async; as news) {
+    <div class="latest-news-container">
+    <div class="latest-news-title"> <h2>Últimas Notícias</h2> </div>
+      <div class="latest-news-cards">
+        @for (news of news.slice(0, 4); track news.id) {
+          <div class="news-card" [routerLink]="['/news', news.slug]">
+            <div class="news-card__image-container">
+              <img 
+                [ngSrc]="news.mediaNews[0].imgSize!.medium!" 
+                [alt]="news.title" 
+                class="news-card__image"
+                fill
+                loading="lazy"
+                (error)="onImageError($event)" 
+              />
+            </div>
+            <div class="news-title">{{ news.title }}</div>
+            <div class="subtitle">
+                <p>{{ news.subtitle }}</p>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+    }

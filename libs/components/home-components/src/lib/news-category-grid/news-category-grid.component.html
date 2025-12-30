@@ -1,16 +1,16 @@
+<!-- <div class="top-category-grid__header">
+  <h2 class="top-category-grid__title">#TOP CATEGORIAS</h2>
+</div> -->
 <div class="news-category-grid">
-  @for (categoryData of newsList(); track categoryData.category.id) {
+  @for (categoryData of newsInColumns(); track categoryData.category.id) {
     <div class="category-section" [attr.data-category]="categoryData.category.slug" >
       <!-- Header da Categoria -->
       <div class="category-header" [style.border-bottom-color]="categoryData.category.color">
-        <h2 class="category-title" [style.color]="categoryData.category.color">
+        <h2 class="category-title" [style.color]="categoryData.category.color" [routerLink]="['/category', categoryData.category.slug]">
           {{ categoryData.category.name }}
         </h2>
       </div>
-
-      <!-- Grid de Cards da Categoria -->
       <div class="category-grid">
-        <!-- Card Principal (Featured) -->
         @if (categoryData.featured) {
           <article class="news-card featured-card" 
           [style.--category-color]="categoryData.category.color" [routerLink]="['/news', categoryData.featured.slug]">

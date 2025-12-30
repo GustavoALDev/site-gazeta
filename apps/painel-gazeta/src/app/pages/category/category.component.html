@@ -14,7 +14,7 @@
             </div>
             <div class="category-list-container">
                 <app-category-list [categories]="categories()" (editCategory)="onEditCategory($event)"
-                    (deleteCategory)="onDeleteCategory($event)" />
+                    (deleteCategory)="onDeleteCategory($event)" (toggleStatus)="onToggleStatus($event)" />
             </div>
         </div>
     </div>

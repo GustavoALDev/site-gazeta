@@ -230,7 +230,7 @@ export class CategoryConfigComponent implements OnInit, OnDestroy {
     const currentSelected = this.selectedCategories();
     
     if (currentSelected.length >= this.MAX_CATEGORIES) {
-      alert(`Você pode selecionar no máximo ${this.MAX_CATEGORIES} categorias`);
+      this.alertService.warning('Atenção', `Você pode selecionar no máximo ${this.MAX_CATEGORIES} categorias`);
       return;
     }
 
@@ -321,7 +321,7 @@ export class CategoryConfigComponent implements OnInit, OnDestroy {
     const currentSelected = this.topGazetaCategories();
     
     if (currentSelected.length >= this.MAX_CATEGORIES) {
-      alert(`Você pode selecionar no máximo ${this.MAX_CATEGORIES} categorias`);
+      this.alertService.warning('Atenção', `Você pode selecionar no máximo ${this.MAX_CATEGORIES} categorias`);
       return;
     }
 

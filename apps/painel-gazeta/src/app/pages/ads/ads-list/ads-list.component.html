@@ -1,247 +1,138 @@
 <div class="ads-list-container">
-  <div class="list-header">
-    <h2 class="list-title">Anúncios Cadastrados</h2>
-    <div class="list-actions">
-      <!-- Ordenação -->
-      <div class="sort-controls">
-        <label for="sortSelect">Ordenar por:</label>
-        <div class="sort-buttons">
-          @for (option of sortOptions; track option.field) {
-            <button 
-              type="button"
-              class="btn btn-sort"
-              [class.active]="sortConfig().field === option.field"
-              (click)="onSortChange(option.field)">
-              {{ option.label }}
-              <i class="material-icons">{{ getSortIcon(option.field) }}</i>
-            </button>
-          }
-        </div>
-      </div>
-      
-      <button 
-        class="btn btn-primary" 
-        (click)="loadAdvertisements()"
-        [disabled]="loading()">
-        @if (loading()) {
-          <i class="material-icons spinning">sync</i>
-        } @else {
-          <i class="material-icons">refresh</i>
-        }
-        Atualizar
-      </button>
+  <app-ads-list-filters
+    [filterDate]="filterDate()"
+    [filterOrder]="filterOrder()"
+    [filterPosition]="filterPosition()"
+    [filterPlacement]="filterPlacement()"
+    [filterStatus]="filterStatus()"
+    [filterSearch]="filterSearch()"
+    (filterDateChange)="setFilterDate($event)"
+    (filterOrderChange)="setFilterOrder($event)"
+    (filterPositionChange)="setFilterPosition($event)"
+    (filterPlacementChange)="setFilterPlacement($event)"
+    (filterStatusChange)="setFilterStatus($event)"
+    (filterSearchChange)="setFilterSearch($event)">
+  </app-ads-list-filters>
+
+  <div class="ads-list-info">
+    <div class="ads-count">
+      <span class="count-label">Total de anúncios:</span>
+      <span class="count-value">{{ filteredAdvertisements().length }}</span>
     </div>
   </div>
 
-  <!-- Filtros -->
-  <div class="filters-container">
-    <div class="filters-row">
-      <div class="filter-group">
-        <label for="search">Buscar:</label>
-        <input 
-          type="text" 
-          id="search" 
-          [(ngModel)]="filters.search" 
-          (input)="onFilterChange()"
-          placeholder="Título ou descrição..."
-          class="form-control">
-      </div>
-
-      <div class="filter-group">
-        <label for="position">Posição:</label>
-        <select 
-          id="position" 
-          [(ngModel)]="filters.position" 
-          (change)="onFilterChange()"
-          class="form-control">
-          @for (pos of positions; track pos.value) {
-            <option [value]="pos.value">
-              {{ pos.label }}
-            </option>
+  <div class="ads-list">
+    <div class="ads-list-header">
+      <div class="header-cell header-status"></div>
+      <div class="header-cell header-image"></div>
+      <div class="header-cell header-content">Conteúdo</div>
+      <div class="header-cell header-meta">Metadados</div>
+      <div class="header-cell header-actions">Ações</div>
+    </div>
+    
+    @for(ad of filteredAdvertisements(); track ad.id){
+      <div class="ads-row">
+        <div class="ads-cell ads-status-cell">
+          @if(ad.isActive) {
+            <span class="status-badge status-active" title="Anúncio ativo">
+              <span class="material-icons">check_circle</span>
+            </span>
+          } @else {
+            <span class="status-badge status-inactive" title="Anúncio inativo">
+              <span class="material-icons">cancel</span>
+            </span>
           }
-        </select>
-      </div>
-
-      <div class="filter-group">
-        <label for="placement">Página:</label>
-        <select 
-          id="placement" 
-          [(ngModel)]="filters.placement" 
-          (change)="onFilterChange()"
-          class="form-control">
-          @for (place of placements; track place.value) {
-            <option [value]="place.value">
-              {{ place.label }}
-            </option>
+        </div>
+        
+        <div class="ads-cell ads-image-cell">
+          <div class="ads-card-img">
+            @if (ad.imageUrl) {
+              <img [src]="ad.imageUrl" [alt]="ad.title" />
+            } @else {
+              <div class="no-image">Sem imagem</div>
+            }
+          </div>
+        </div>
+        
+        <div class="ads-cell ads-content-cell">
+          <div class="ads-title-wrapper">
+            <h3 class="ads-title">{{ ad.title }}</h3>
+          </div>
+          @if (ad.description) {
+            <p class="ads-description">{{ ad.description }}</p>
           }
-        </select>
+        </div>
+        
+        <div class="ads-cell ads-meta-cell">
+          <div class="ads-meta">
+            <span class="ads-position">
+              <b>Posição:</b> {{ getPositionLabel(ad.position) }}
+            </span>
+            <span class="ads-placement">
+              <b>Página:</b> {{ getPlacementLabel(ad.placement) }}
+            </span>
+            <span class="ads-priority">
+              <b>Prioridade:</b> {{ ad.priority }}
+            </span>
+            @if (ad.startDate) {
+              <span class="ads-date">
+                <b>Início:</b> {{ ad.startDate | date:'dd/MM/yyyy - HH:mm' }}
+              </span>
+            }
+            @if (ad.endDate) {
+              <span class="ads-date">
+                <b>Fim:</b> {{ ad.endDate | date:'dd/MM/yyyy - HH:mm' }}
+              </span>
+            }
+          </div>
+        </div>
+        
+        <div class="ads-cell ads-actions-cell">
+          <div class="ads-actions">
+            <button class="btn-action btn-toggle" (click)="toggleStatus(ad)" [attr.aria-label]="ad.isActive ? 'Desativar anúncio' : 'Ativar anúncio'" [title]="ad.isActive ? 'Desativar' : 'Ativar'">
+              <span class="material-icons">{{ ad.isActive ? 'pause' : 'play_arrow' }}</span>
+            </button>
+            <button class="btn-action btn-edit" (click)="editAdvertisement(ad)" [attr.aria-label]="'Editar anúncio'" title="Editar">
+              <span class="material-icons">settings</span>
+            </button>
+            <button class="btn-action btn-delete" (click)="confirmDelete(ad)" [attr.aria-label]="'Excluir anúncio'" title="Excluir">
+              <span class="material-icons">delete</span>
+            </button>
+          </div>
+        </div>
       </div>
-
-      <div class="filter-group">
-        <label for="status">Status:</label>
-        <select 
-          id="status" 
-          [(ngModel)]="filters.status" 
-          (change)="onFilterChange()"
-          class="form-control">
-          @for (status of statusOptions; track status.value) {
-            <option [value]="status.value">
-              {{ status.label }}
-            </option>
-          }
-        </select>
+    } @empty {
+      <div class="ads-empty">
+        <p>Nenhum anúncio encontrado.</p>
       </div>
+    }
+  </div>
+</div>
 
-      <div class="filter-actions">
-        <button class="btn btn-secondary" (click)="clearFilters()">
-          <i class="fas fa-times"></i>
-          Limpar
+<!-- Modal de Confirmação de Exclusão -->
+@if (showDeleteConfirm()) {
+  <div class="modal-overlay" (click)="cancelDelete()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <span class="material-icons warning">warning</span>
+        <h3>Confirmar Exclusão</h3>
+      </div>
+      
+      <div class="modal-body">
+        <p>Tem certeza que deseja excluir o anúncio <strong>"{{ adToDelete()?.title }}"</strong>?</p>
+        <p class="warning-text">Esta ação não pode ser desfeita e o anúncio será permanentemente removido.</p>
+      </div>
+      
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" (click)="cancelDelete()">
+          <span class="material-icons">close</span>
+          Cancelar
+        </button>
+        <button type="button" class="btn-delete" (click)="deleteAdvertisement()">
+          <span class="material-icons">delete_forever</span>
+          Excluir
         </button>
       </div>
     </div>
   </div>
-
-  <!-- Informações dos resultados -->
-  @if (!loading()) {
-    <div class="results-info">
-      <p>
-        Mostrando {{ (currentPage - 1) * itemsPerPage + 1 }} - 
-        {{ currentPage * itemsPerPage > totalItems ? totalItems : currentPage * itemsPerPage }} 
-        de {{ totalItems }} anúncios
-        @if (totalItems !== advertisements().length) {
-          <span>
-            (filtrados de {{ advertisements().length }} total)
-          </span>
-        }
-      </p>
-    </div>
-  }
-
-  @if (loading()) {
-    <div class="loading-container">
-      <div class="loading-spinner"></div>
-      <p>Carregando anúncios...</p>
-    </div>
-  }
-
-  @if (!loading() && filteredAdvertisements().length === 0 && advertisements().length === 0) {
-    <div class="empty-state">
-      <i class="material-icons" style="font-size: 3rem;">campaign</i>
-      <h3>Nenhum anúncio encontrado</h3>
-      <p>Comece criando seu primeiro anúncio na aba "Criar Anúncio".</p>
-    </div>
-  }
-
-  @if (!loading() && filteredAdvertisements().length === 0 && advertisements().length > 0) {
-    <div class="empty-state">
-      <i class="material-icons" style="font-size: 3rem;">filter_alt</i>
-      <h3>Nenhum anúncio encontrado com os filtros aplicados</h3>
-      <p>Tente ajustar os filtros ou limpar a busca.</p>
-    </div>
-  }
-
-  @if (!loading() && filteredAdvertisements().length > 0) {
-    <div class="ads-grid">
-      @for (ad of paginatedAdvertisements; track ad.id) {
-        <div class="ad-card">
-          <div class="ad-image">
-            <img [src]="ad.imageUrl" [alt]="ad.title" >
-            <div class="ad-status" [class.active]="ad.isActive" [class.inactive]="!ad.isActive">
-              {{ ad.isActive ? 'Ativo' : 'Inativo' }}
-            </div>
-          </div>
-          
-          <div class="ad-content">
-            <h3 class="ad-title">{{ ad.title }}</h3>
-            @if (ad.description) {
-              <p class="ad-description">{{ ad.description }}</p>
-            }
-            
-            <div class="ad-details">
-              <div class="detail-item">
-                <span class="detail-label">Posição:</span>
-                <span class="detail-value">{{ getPositionLabel(ad.position) }}</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Página:</span>
-                <span class="detail-value">{{ getPlacementLabel(ad.placement) }}</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Prioridade:</span>
-                <span class="detail-value">{{ ad.priority }}</span>
-              </div>
-              @if (ad.startDate) {
-                <div class="detail-item">
-                  <span class="detail-label">Início:</span>
-                  <span class="detail-value">{{ ad.startDate | date:'dd/MM/yyyy HH:mm' }}</span>
-                </div>
-              }
-              @if (ad.endDate) {
-                <div class="detail-item">
-                  <span class="detail-label">Fim:</span>
-                  <span class="detail-value">{{ ad.endDate | date:'dd/MM/yyyy HH:mm' }}</span>
-                </div>
-              }
-            </div>
-            
-            <div class="ad-actions">
-              <button class="btn btn-sm btn-secondary" (click)="editAdvertisement(ad)">
-                <i class="fas fa-edit"></i>
-                Editar
-              </button>
-              <button class="btn btn-sm" 
-                      [class.btn-success]="!ad.isActive" 
-                      [class.btn-warning]="ad.isActive"
-                      (click)="toggleStatus(ad)">
-                <i class="fas" [class.fa-play]="!ad.isActive" [class.fa-pause]="ad.isActive"></i>
-                {{ ad.isActive ? 'Desativar' : 'Ativar' }}
-              </button>
-              <button class="btn btn-sm btn-danger" (click)="deleteAdvertisement(ad.id!)">
-                <i class="fas fa-trash"></i>
-                Excluir
-              </button>
-            </div>
-          </div>
-        </div>
-      }
-    </div>
-  }
-
-  <!-- Paginação -->
-  @if (!loading && totalPages > 1) {
-    <div class="pagination-container">
-    <div class="pagination">
-      <button 
-        class="pagination-btn" 
-        (click)="previousPage()" 
-        [disabled]="currentPage === 1">
-        <i class="fas fa-chevron-left"></i>
-        Anterior
-      </button>
-
-      <div class="pagination-pages">
-        @for (page of pageNumbers; track page) {
-          <button 
-            class="pagination-page" 
-            [class.active]="page === currentPage"
-            (click)="goToPage(page)">
-            {{ page }}
-          </button>
-        }
-      </div>
-
-      <button 
-        class="pagination-btn" 
-        (click)="nextPage()" 
-        [disabled]="currentPage === totalPages">
-        Próximo
-        <i class="fas fa-chevron-right"></i>
-      </button>
-    </div>
-
-    <div class="pagination-info">
-      Página {{ currentPage }} de {{ totalPages }}
-    </div>
-    </div>
-  }
-</div>
+}

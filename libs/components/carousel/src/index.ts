@@ -1,2 +1,1 @@
-export * from './lib/carousel/carousel.component';
-export * from './lib/carousel-swipe/carousel-swipe.component';
+export * from './lib/carousel-manager/carousel-manager.component';

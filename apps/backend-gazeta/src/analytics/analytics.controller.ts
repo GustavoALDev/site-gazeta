@@ -35,15 +35,28 @@ export class AnalyticsController {
     description:
       'Endpoint público para registrar visualizações de páginas e notícias',
   })
-  @ApiResponse({ status: 201, description: 'Visualização registrada' })
+  @ApiResponse({ 
+    status: 201, 
+    description: 'Visualização registrada',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        views: { type: 'number', description: 'Número atualizado de visualizações (apenas para notícias)' }
+      }
+    }
+  })
   async trackView(
     @Body() trackViewDto: TrackViewDto,
     @Req() req: Request,
     @Ip() ip: string
   ) {
     const userAgent = req.headers['user-agent'];
-    await this.analyticsService.trackView(trackViewDto, userAgent, ip);
-    return { message: 'View tracked successfully' };
+    const result = await this.analyticsService.trackView(trackViewDto, userAgent, ip);
+    return { 
+      message: 'View tracked successfully',
+      ...result
+    };
   }
 
   @Get('kpis')

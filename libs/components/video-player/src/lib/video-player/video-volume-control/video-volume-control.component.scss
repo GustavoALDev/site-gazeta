@@ -1,0 +1,205 @@
+@use '../../../../../../style/variables' as *;
+
+// Controle de volume
+.volume-control {
+  @include flex-center;
+  gap: 0.5rem;
+}
+
+.volume-btn {
+  @include flex-center;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+  max-width: 48px;
+  max-height: 48px;
+  padding: 0;
+  background: transparent;
+  @include gradient-bg($primary, $secondary, 135deg);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  color: white;
+  cursor: pointer;
+  transition: all $transition;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-sizing: border-box;
+
+  .material-icons {
+    font-size: 28px;
+  }
+
+  &:hover {
+    background: transparent;
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.volume-slider-container {
+  width: 0;
+  overflow: hidden; // Hidden para esconder o conteúdo quando fechado
+  transition: width $transition-slow, opacity $transition-slow;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.volume-control:hover .volume-slider-container {
+  width: 70px;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.volume-slider-wrapper {
+  position: relative;
+  width: 70px; // Largura fixa para evitar que o handle saia quando fechar
+  min-width: 70px; // Garantir largura mínima
+  height: 6px;
+  padding: 4px 0; // Padding para dar espaço ao handle
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.volume-slider-background {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.volume-slider-filled {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 100%;
+  @include gradient-bg($primary, $secondary, 90deg);
+  border-radius: 2px;
+  transition: width 0.1s linear;
+}
+
+.volume-slider {
+  position: relative;
+  width: 100%;
+  height: 12px; // Altura maior para área de toque
+  background: transparent;
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  z-index: 2;
+
+  &::-webkit-slider-thumb {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    background: white;
+    border: 2px solid transparent;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+    margin-top: -4px; // Centralizar o thumb
+    position: relative;
+    z-index: 3;
+  }
+
+  &::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 4px;
+    background: transparent;
+    border-radius: 2px;
+  }
+
+  &::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    background: white;
+    border: 2px solid transparent;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+    position: relative;
+    z-index: 3;
+  }
+
+  &::-moz-range-track {
+    width: 100%;
+    height: 4px;
+    background: transparent;
+    border-radius: 2px;
+  }
+}
+
+// Responsividade
+@include mobile {
+  .volume-control {
+    gap: 0.25rem;
+
+    &:hover .volume-slider-container {
+      width: 50px;
+      opacity: 1;
+      pointer-events: auto;
+    }
+  }
+
+  .volume-btn {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
+    max-width: 32px;
+    max-height: 32px;
+    border-width: 1.5px;
+    box-sizing: border-box;
+
+    .material-icons {
+      font-size: 20px;
+    }
+  }
+
+  .volume-slider-wrapper {
+    width: 50px; // Largura fixa no mobile também
+    padding: 3px 0; // Padding menor no mobile
+    height: 5px;
+  }
+
+  .volume-slider-background {
+    height: 3px;
+  }
+
+  .volume-slider {
+    height: 10px; // Área de toque menor mas ainda acessível
+
+    &::-webkit-slider-thumb {
+      width: 10px;
+      height: 10px;
+      margin-top: -3.5px;
+    }
+
+    &::-moz-range-thumb {
+      width: 10px;
+      height: 10px;
+    }
+
+    &::-webkit-slider-runnable-track {
+      height: 3px;
+    }
+
+    &::-moz-range-track {
+      height: 3px;
+    }
+  }
+}
+

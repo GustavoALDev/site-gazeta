@@ -1,0 +1,102 @@
+<div class="form-group">
+  <label for="related-news">
+    <span class="material-icons">article</span>
+    Notícia Relacionada
+  </label>
+  
+  <div class="news-selector">
+    @if (selectedNews()) {
+      <!-- Notícia Selecionada -->
+      <div class="selected-news">
+        <div class="news-tag">
+          <span class="material-icons">article</span>
+          <div class="news-info">
+            <span class="news-title">{{ selectedNews()!.title }}</span>
+            <small class="news-slug">{{ selectedNews()!.slug }}</small>
+          </div>
+          <button 
+            type="button" 
+            class="remove-news" 
+            (click)="removeNews()"
+            title="Remover notícia"
+          >
+            <span class="material-icons">close</span>
+          </button>
+        </div>
+      </div>
+    } @else {
+      <!-- Botão para Adicionar Notícia -->
+      <div class="selected-news">
+        <button
+          type="button"
+          class="add-news-btn"
+          (click)="showSearchInput()"
+          [class.active]="dropdownOpen()">
+          <span class="material-icons">add</span>
+          Adicionar Notícia Relacionada
+        </button>
+      </div>
+    }
+
+    <!-- Dropdown com Busca -->
+    @if (dropdownOpen()) {
+      <div class="news-dropdown">
+        <!-- Input de Busca -->
+        <div class="search-input-container">
+          <input
+            type="text"
+            class="search-input"
+            [value]="searchTerm()"
+            (input)="onSearchInput($event)"
+            (keydown)="onSearchKeydown($event)"
+            (blur)="onSearchBlur()"
+            placeholder="Digite para buscar notícias (mínimo 2 caracteres)"
+            autofocus
+          />
+        </div>
+
+        <!-- Resultados da Busca -->
+        @if (isSearching()) {
+          <div class="search-loading">
+            <span class="material-icons spinning">refresh</span>
+            <span>Buscando...</span>
+          </div>
+        } @else if (searchTerm().length > 0 && searchTerm().length < 2) {
+          <div class="search-message">
+            <span>Digite pelo menos 2 caracteres para buscar</span>
+          </div>
+        } @else if (searchResults().length > 0) {
+          <div class="news-results">
+            @for (news of searchResults(); track news.id) {
+              <div 
+                class="news-option"
+                (click)="selectNews(news)"
+                (keyup.enter)="selectNews(news)"
+                (keyup.space)="selectNews(news)"
+                tabindex="0"
+                role="button">
+                <div class="news-option-content">
+                  <span class="news-option-title">{{ news.title }}</span>
+                  @if (news.subtitle) {
+                    <small class="news-option-subtitle">{{ news.subtitle }}</small>
+                  }
+                  <small class="news-option-slug">Slug: {{ news.slug }}</small>
+                </div>
+              </div>
+            }
+          </div>
+        } @else if (searchTerm().length >= 2 && !isSearching()) {
+          <div class="search-message">
+            <span>Nenhuma notícia encontrada</span>
+          </div>
+        } @else {
+          <div class="search-message">
+            <span>Digite para buscar notícias</span>
+          </div>
+        }
+      </div>
+    }
+  </div>
+  
+  <small class="field-hint">Vincule uma notícia ao vídeo para leitura mais aprofundada</small>
+</div>

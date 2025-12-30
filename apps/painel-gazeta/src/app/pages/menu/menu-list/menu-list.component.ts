@@ -4,22 +4,26 @@ import { DragDropModule, CdkDragHandle } from '@angular/cdk/drag-drop';
 import { DragAndDropComponent, DraggableListConfig } from '@site-gazeta/drag-and-drop';
 import { MenuService } from '../../../core/services/menu.service';
 import { Menu } from '@site-gazeta/models';
+import { AlertService } from '@site-gazeta/alert';
+import { ModalComponent } from '@site-gazeta/modal';
 
 @Component({
   selector: 'app-menu-list',
   standalone: true,
-  imports: [CommonModule, DragDropModule, DragAndDropComponent, CdkDragHandle],
+  imports: [CommonModule, DragDropModule, DragAndDropComponent, CdkDragHandle, ModalComponent],
   templateUrl: './menu-list.component.html',
   styleUrl: './menu-list.component.scss',
 })
 export class MenuListComponent {
   private menuService = inject(MenuService);
+  private alertService = inject(AlertService);
 
   // Inputs & Outputs
   menus = input.required<Menu[]>();
   onEdit = output<Menu>();
   onDelete = output<number>();
   onReorder = output<Menu[]>();
+  onSubmenuClick = output<Menu>();
 
   // Signals
   isReordering = signal(false);
@@ -31,16 +35,9 @@ export class MenuListComponent {
     getItemId: (item: Menu) => item.id!,
     getItemOrder: (item: Menu) => item.order || 1,
     isItemExpandable: (item: Menu) => item.type === 'submenu',
-    canDropInParent: (dragged: Menu, parent: Menu) => {
-      // Validações específicas
-      if (dragged.type === 'submenu') return false;
-      if (dragged.id === parent.id) return false;
-      if (dragged.parentId === parent.id) return false;
-      return true;
-    },
+    canDropInParent: () => false, // Desabilitado: não permite mais drop em submenus
     onReorder: (items: Menu[]) => this.saveOrder(items),
-    onMoveToParent: (draggedId: number | string, parentId: number | string) => 
-      this.moveToSubmenu(draggedId as number, parentId as number),
+    onMoveToParent: () => {}, // Desabilitado
     onRemoveFromParent: (childId: number | string) => 
       this.removeFromSubmenu(childId as number),
   };
@@ -111,12 +108,18 @@ export class MenuListComponent {
 
     this.menuService.delete(menu.id).subscribe({
       next: () => {
+        const isSubmenu = menu.parentId !== null && menu.parentId !== undefined;
+        const message = isSubmenu 
+          ? 'Submenu deletado permanentemente!' 
+          : 'Menu deletado com sucesso!';
+        
+        this.alertService.success('Sucesso', message);
         this.onDelete.emit(menu.id!);
         this.cancelDelete();
-        
       },
       error: (err) => {
         console.error('Erro ao deletar menu:', err);
+        this.alertService.error('Erro', 'Erro ao deletar menu. Tente novamente.');
         this.cancelDelete();
       }
     });
@@ -154,6 +157,12 @@ export class MenuListComponent {
         return `${menu.children?.length || 0} item(ns)`;
       default:
         return '-';
+    }
+  }
+
+  openSubmenuModal(menu: Menu): void {
+    if (menu.type === 'submenu') {
+      this.onSubmenuClick.emit(menu);
     }
   }
 }

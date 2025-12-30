@@ -1,0 +1,303 @@
+@use '../../../../../styles/variables' as vars;
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text);
+    font-weight: 600;
+    font-size: 0.875rem;
+
+    .material-icons {
+      font-size: 20px;
+      color: var(--accent-blue);
+    }
+  }
+
+  .field-hint {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+}
+
+// News Selector
+.news-selector {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  .selected-news {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .news-tag {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, rgba(235, 50, 55, 0.1) 0%, rgba(10, 128, 196, 0.1) 100%);
+    color: var(--accent-blue);
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius);
+    font-size: 0.875rem;
+    font-weight: 600;
+    border: 1px solid rgba(10, 128, 196, 0.2);
+    animation: slideIn 0.3s ease-out;
+    flex: 1;
+    min-width: 0;
+
+    .material-icons {
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .news-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      min-width: 0;
+
+      .news-title {
+        font-weight: 600;
+        color: var(--text);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .news-slug {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+
+    .remove-news {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border: none;
+      background: rgba(235, 50, 55, 0.1);
+      color: var(--accent-red);
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all var(--transition);
+      flex-shrink: 0;
+
+      &:hover {
+        background: var(--accent-red);
+        color: white;
+        transform: scale(1.1);
+      }
+
+      .material-icons {
+        font-size: 16px;
+      }
+    }
+  }
+
+  .add-news-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border: 2px dashed rgba(10, 128, 196, 0.3);
+    background: transparent;
+    color: var(--accent-blue);
+    border-radius: var(--radius);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition);
+
+    &:hover, &.active {
+      border-color: var(--accent-blue);
+      background: rgba(10, 128, 196, 0.05);
+      color: var(--accent-blue);
+    }
+
+    .material-icons {
+      font-size: 18px;
+    }
+  }
+
+  .news-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 2px solid rgba(10, 128, 196, 0.2);
+    border-radius: var(--radius);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    max-height: 400px;
+    overflow-y: auto;
+    margin-top: 0.25rem;
+    animation: dropdownSlide 0.3s ease-out;
+
+    .search-trigger {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      transition: all var(--transition);
+      color: var(--text-muted);
+
+      &:hover {
+        background: rgba(10, 128, 196, 0.05);
+        color: var(--accent-blue);
+      }
+
+      .material-icons {
+        font-size: 20px;
+      }
+    }
+
+    .search-input-container {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+
+      .search-input {
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        border: 2px solid var(--border);
+        border-radius: var(--radius);
+        font-size: 0.875rem;
+        transition: all var(--transition);
+        box-sizing: border-box;
+
+        &:focus {
+          outline: none;
+          border-color: var(--accent-blue);
+          box-shadow: 0 0 0 3px rgba(10, 128, 196, 0.1);
+        }
+
+        &::placeholder {
+          color: var(--text-muted);
+        }
+      }
+    }
+
+    .search-loading,
+    .search-message {
+      padding: 1.5rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+
+      .material-icons {
+        font-size: 20px;
+      }
+    }
+
+    .news-results {
+      max-height: 300px;
+      overflow-y: auto;
+
+      .news-option {
+        padding: 0.75rem 1rem;
+        cursor: pointer;
+        transition: all var(--transition);
+        border-bottom: 1px solid var(--border);
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        &:hover {
+          background: rgba(10, 128, 196, 0.05);
+        }
+
+        .news-option-content {
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+
+          .news-option-title {
+            font-weight: 600;
+            color: var(--text);
+            font-size: 0.875rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+
+          .news-option-subtitle {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+
+          .news-option-slug {
+            color: var(--accent-blue);
+            font-size: 0.7rem;
+            font-weight: 500;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+        }
+      }
+    }
+  }
+}
+
+@keyframes dropdownSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+

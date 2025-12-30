@@ -1,51 +1,60 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MenuFormComponent } from './menu-form/menu-form.component';
+import { SubmenuFormComponent } from './submenu-form/submenu-form.component';
 import { MenuListComponent } from './menu-list/menu-list.component';
 import { MenuService } from '../../core/services/menu.service';
 import { Menu } from '@site-gazeta/models';
+import { ModalComponent } from '@site-gazeta/modal';
 
 interface MenuComponentState {
-  activeTab: 'form' | 'list';
   menuToEdit: Menu | null;
+  selectedSubmenu: Menu | null;
 }
 
 @Component({
   selector: 'app-menu',
   standalone: true,
-  imports: [CommonModule, MenuFormComponent, MenuListComponent],
+  imports: [CommonModule, MenuFormComponent, SubmenuFormComponent, MenuListComponent, ModalComponent],
   templateUrl: './menu.component.html',
   styleUrl: './menu.component.scss',
 })
 export class MenuComponent implements OnInit {
   private menuService = inject(MenuService);
-
   // Estado do componente usando signals
   state = signal<MenuComponentState>({
-    activeTab: 'list',
     menuToEdit: null,
+    selectedSubmenu: null,
   });
 
   // Signals para dados
   menus = signal<Menu[]>([]);
   isLoading = signal(false);
-
+  isSubmenuModalOpen = signal(false);
+  
   // Computed signals
   isEdit = computed(() => !!this.state().menuToEdit);
+  selectedSubmenu = computed(() => this.state().selectedSubmenu);
 
   ngOnInit(): void {
     this.loadMenus();
   }
 
-  setActiveTab(tab: 'form' | 'list'): void {
-    this.state.update(state => ({ 
-      ...state, 
-      activeTab: tab,
-      // Limpa o modo de edição ao trocar para lista OU ao clicar novamente em form (reset)
-      menuToEdit: null
+  openSubmenuModal(submenu: Menu): void {
+    this.state.update(state => ({
+      ...state,
+      selectedSubmenu: submenu
     }));
+    this.isSubmenuModalOpen.set(true);
   }
 
+  closeSubmenuModal(): void {
+    this.isSubmenuModalOpen.set(false);
+    this.state.update(state => ({
+      ...state,
+      selectedSubmenu: null
+    }));
+  }
   loadMenus(): void {
     this.isLoading.set(true);
     this.menuService.getAll().subscribe({
@@ -65,7 +74,6 @@ export class MenuComponent implements OnInit {
     this.loadMenus();
     this.state.update(state => ({
       ...state,
-      activeTab: 'list',
       menuToEdit: null,
     }));
   }
@@ -73,7 +81,6 @@ export class MenuComponent implements OnInit {
   handleEdit(menu: Menu): void {
     this.state.update(state => ({
       ...state,
-      activeTab: 'form',
       menuToEdit: menu,
     }));
   }
@@ -98,8 +105,14 @@ export class MenuComponent implements OnInit {
   handleCancel(): void {
     this.state.update(state => ({
       ...state,
-      activeTab: 'list',
       menuToEdit: null,
     }));
+  }
+
+  handleSubmenuSave(): void {
+    // Recarregar menus para atualizar a lista
+    this.loadMenus();
+    // Não fechar o modal automaticamente para permitir adicionar mais itens
+    // this.closeSubmenuModal();
   }
 }

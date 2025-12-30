@@ -119,31 +119,6 @@ async function main() {
   }
   console.log('');
 
-  // 7. Seed de playlist do YouTube
-  console.log('🎥 Criando playlist do YouTube de exemplo...');
-  const existingPlaylist = await prisma.youtubePlaylist.findFirst({
-    where: { displayOrder: 1 }
-  });
-
-  if (!existingPlaylist) {
-    await prisma.youtubePlaylist.create({
-      data: {
-        title: 'Vídeo de Apresentação',
-        description: 'Conheça o Portal Gazeta',
-        youtubeUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        videoId: 'dQw4w9WgXcQ',
-        displayOrder: 1,
-        isActive: true,
-        isEmphasis: true,
-        createdBy: user.id,
-      }
-    });
-    console.log(`✅ Playlist criada`);
-  } else {
-    console.log(`⚠️  Playlist já existe`);
-  }
-  console.log('');
-
   console.log('🎉 Seed concluído com sucesso!');
 }
 

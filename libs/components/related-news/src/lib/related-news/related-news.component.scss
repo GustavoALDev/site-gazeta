@@ -1,57 +1,56 @@
+@use '../../../../../style/variables' as *;
+
 .related-news-container {
   width: 100%;
-  margin: 2rem 0;
-  font-family: 'Open Sans', sans-serif;
+  margin: $space-xl 0;
+  font-family: $font-family-primary;
 
   .section-title {
-    font-size: 1.5rem;
+    font-size: 1.7rem;
     font-weight: 600;
-    color: #0a80c4;
-    margin-bottom: 1.5rem;
-    text-align: center;
-    border-bottom: 1px solid #eb3237;
-   
+    text-transform: uppercase;
+    color: $secondary;
+    margin-bottom: $space-lg;
+    border-bottom: 2px solid $primary;
+    padding-bottom: $space-sm;
+    width: max-content;
   }
 
-  .cards-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
-    max-width: 1200px;
-    margin: 0 auto;
+  .cards-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-lg;
 
-    @media (min-width: 768px) {
-      grid-template-columns: repeat(3, 1fr);
+    @include mobile {
+      flex-direction: column;
+      gap: $space-md;
+      padding: 0 $space-sm;
     }
   }
 
   .news-card {
-    position: relative;
-    border-radius: 12px;
+    flex: 1;
+    min-width: 280px;
+    max-width: 350px;
+    border-radius: $radius-lg;
     overflow: hidden;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
+    @include shadow-md;
+    transition: all $transition-slow;
     cursor: pointer;
-    background: #fff;
+    background: $white;
+    display: flex;
+    flex-direction: column;
 
     &:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      transform: translateY(-4px);
+      @include shadow-lg;
 
       .news-title {
-        text-decoration: underline;
-        text-decoration-color: #007bff;
-        text-decoration-thickness: 2px;
-        text-underline-offset: 4px;
+        color: $primary;
       }
 
-      .card-overlay {
-        background: linear-gradient(
-          to top,
-          rgba(0, 0, 0, 0.8) 0%,
-          rgba(0, 0, 0, 0.4) 50%,
-          rgba(0, 0, 0, 0.1) 100%
-        );
+      .card-image img {
+        transform: scale(1.05);
       }
     }
 
@@ -60,82 +59,74 @@
       width: 100%;
       height: 200px;
       overflow: hidden;
+      background-color: $gray-200;
 
       img {
         width: 100%;
         height: 100%;
         object-fit: cover;
-        transition: transform 0.3s ease;
+        transition: transform $transition-slow;
       }
 
       .placeholder-image {
         width: 100%;
         height: 100%;
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #666;
-        font-size: 0.9rem;
+        @include flex-center;
+        @include gradient-bg($gray-200, $gray-300, 135deg);
+        color: $gray-600;
+        font-size: 0.875rem;
         font-weight: 500;
-      }
-
-      &:hover img {
-        transform: scale(1.05);
       }
     }
 
-    .card-overlay {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: linear-gradient(
-        to top,
-        rgba(0, 0, 0, 0.7) 0%,
-        rgba(0, 0, 0, 0.3) 50%,
-        transparent 100%
-      );
-      padding: 1.5rem 1rem 1rem;
-      transition: all 0.3s ease;
+    .card-content {
+      padding: $space-md;
+      display: flex;
+      flex-direction: column;
+      gap: $space-xs;
+      flex: 1;
 
       .news-title {
-        color: #fff;
+        color: $text-dark;
         font-size: 1rem;
         font-weight: 600;
         line-height: 1.4;
         margin: 0;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-        transition: all 0.3s ease;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        transition: color $transition;
+        @include text-clamp(2);
+      }
+
+      .news-subtitle {
+        color: $text-muted;
+        font-size: 0.875rem;
+        font-weight: 400;
+        line-height: 1.5;
+        margin: 0;
+        @include text-clamp(2);
       }
     }
   }
 }
 
-// Responsividade para dispositivos móveis
-@media (max-width: 767px) {
+// Responsividade
+@include mobile {
   .related-news-container {
-    .cards-grid {
-      grid-template-columns: 1fr;
-      gap: 1rem;
-      padding: 0 0.5rem;
-    }
-
     .news-card {
+      max-width: 100%;
+      
       .card-image {
         height: 180px;
       }
 
-      .card-overlay {
-        padding: 1rem 0.75rem 0.75rem;
+      .card-content {
+        padding: $space-sm;
 
         .news-title {
-          font-size: 0.9rem;
+          font-size: 0.9375rem;
+        }
+
+        .news-subtitle {
+          font-size: 0.8125rem;
         }
       }
     }

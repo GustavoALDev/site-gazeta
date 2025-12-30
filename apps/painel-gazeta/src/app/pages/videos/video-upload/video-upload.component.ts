@@ -1,19 +1,25 @@
-import { Component, inject, signal, effect, input, output } from '@angular/core';
+import { Component, inject, signal, effect, input, output, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { VideoService } from '../../../core/services/video.service';
-import { Video } from '@site-gazeta/models';
+import { Video, Category } from '@site-gazeta/models';
+import { CategoryService } from '../../../core/services/category.service';
+import { VideoFilesComponent } from './video-files/video-files.component';
+import { VideoRelatedNewsComponent } from './video-related-news/video-related-news.component';
+import { AlertService } from '@site-gazeta/alert';
 
 @Component({
   selector: 'app-video-upload',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, VideoFilesComponent, VideoRelatedNewsComponent],
   templateUrl: './video-upload.component.html',
   styleUrl: './video-upload.component.scss',
 })
-export class VideoUploadComponent {
+export class VideoUploadComponent implements OnInit {
   private fb = inject(FormBuilder);
   private videoService = inject(VideoService);
+  private categoryService = inject(CategoryService);
+  private alertService = inject(AlertService);
 
   // Inputs & Outputs
   videoToEdit = input<Video | null>(null);
@@ -24,18 +30,21 @@ export class VideoUploadComponent {
   uploadForm!: FormGroup;
   selectedVideoFile = signal<File | null>(null);
   selectedThumbnailFile = signal<File | null>(null);
-  videoPreviewUrl = signal<string | null>(null);
-  thumbnailPreviewUrl = signal<string | null>(null);
   isUploading = signal(false);
   uploadProgress = signal(0);
-  isDraggingVideo = signal(false);
-  isDraggingThumbnail = signal(false);
+  removeThumbnailFlag = signal<boolean>(false); // Flag para remover thumbnail
+  selectedNewsSlug = signal<string | null>(null); // Slug da notícia selecionada
 
-  // Formatos aceitos
-  readonly acceptedVideoFormats = '.mp4,.avi,.mov,.webm,.mkv';
-  readonly acceptedImageFormats = '.jpg,.jpeg,.png,.webp';
-  readonly maxVideoSize = 500 * 1024 * 1024; // 500MB
-  readonly maxImageSize = 5 * 1024 * 1024; // 5MB
+  // Categorias
+  availableCategories = signal<Category[]>([]);
+  selectedCategories = signal<Category[]>([]);
+  categoryDropdownOpen = signal<boolean>(false);
+
+  // Tags
+  tags = signal<string[]>([]);
+  tagInput = signal<string>('');
+  tagInputVisible = signal<boolean>(false);
+
 
   constructor() {
     this.initForm();
@@ -49,138 +58,143 @@ export class VideoUploadComponent {
     });
   }
 
+  ngOnInit(): void {
+    this.loadCategories();
+  }
+
   private initForm(): void {
     this.uploadForm = this.fb.group({
       title: ['', [Validators.required, Validators.minLength(3)]],
+      categoryId: [[] as number[]],
+      featured: [false],
+      tags: [[] as string[]],
+      description: [''],
+    });
+  }
+
+  loadCategories(): void {
+    this.categoryService.getActive().subscribe({
+      next: (categories) => {
+        this.availableCategories.set(categories);
+      },
+      error: (err) => {
+        console.error('Erro ao carregar categorias:', err);
+      }
     });
   }
 
   private loadVideoForEdit(video: Video): void {
     this.uploadForm.patchValue({
-      title: video.title
+      title: video.title,
+      featured: video.featured || false,
+      tags: video.tags || [],
+      categoryId: video.categories?.map(cat => cat.id) || [],
+      description: video.description || ''
     });
 
-    // Carregar thumbnail existente
-    if (video.thumbnail) {
-      this.thumbnailPreviewUrl.set(video.thumbnail);
+    // Carregar categorias selecionadas
+    if (video.categories && video.categories.length > 0) {
+      this.selectedCategories.set(video.categories);
     }
 
-    // Carregar URL do vídeo existente
-    if (video.url) {
-      this.videoPreviewUrl.set(video.url);
+    // Carregar tags
+    if (video.tags && video.tags.length > 0) {
+      this.tags.set(video.tags);
     }
-  }
 
-  // Drag & Drop - Video
-  onVideoDragOver(event: DragEvent): void {
-    event.preventDefault();
-    this.isDraggingVideo.set(true);
-  }
+    // Resetar flag de remoção
+    this.removeThumbnailFlag.set(false);
 
-  onVideoDragLeave(event: DragEvent): void {
-    event.preventDefault();
-    this.isDraggingVideo.set(false);
-  }
-
-  onVideoDrop(event: DragEvent): void {
-    event.preventDefault();
-    this.isDraggingVideo.set(false);
-
-    const files = event.dataTransfer?.files;
-    if (files && files.length > 0) {
-      this.handleVideoFile(files[0]);
+    // Carregar slug da notícia relacionada
+    if (video.newsSlug) {
+      this.selectedNewsSlug.set(video.newsSlug);
     }
   }
 
-  onVideoFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      this.handleVideoFile(input.files[0]);
+  // Métodos para Categorias
+  toggleCategoryDropdown(): void {
+    this.categoryDropdownOpen.update(open => !open);
+  }
+
+  selectCategory(category: Category): void {
+    const current = this.selectedCategories();
+    if (!current.find(c => c.id === category.id)) {
+      this.selectedCategories.set([...current, category]);
+      this.updateFormCategories([...current, category]);
+    }
+    this.categoryDropdownOpen.set(false);
+  }
+
+  removeCategory(categoryId: number): void {
+    const newSelected = this.selectedCategories().filter(c => c.id !== categoryId);
+    this.selectedCategories.set(newSelected);
+    this.updateFormCategories(newSelected);
+  }
+
+  private updateFormCategories(categories: Category[]): void {
+    const categoryIds = categories.map(cat => cat.id as number);
+    this.uploadForm.patchValue({ categoryId: categoryIds });
+  }
+
+  getAvailableCategories(): Category[] {
+    const selectedIds = this.selectedCategories().map(cat => cat.id);
+    return this.availableCategories().filter(cat => !selectedIds.includes(cat.id));
+  }
+
+  // Métodos para Tags
+  showTagInput(): void {
+    this.tagInputVisible.set(true);
+  }
+
+  hideTagInput(): void {
+    this.tagInputVisible.set(false);
+    this.tagInput.set('');
+  }
+
+  addTag(): void {
+    const tagValue = this.tagInput().trim();
+    if (tagValue && !this.tags().includes(tagValue)) {
+      const newTags = [...this.tags(), tagValue];
+      this.tags.set(newTags);
+      this.uploadForm.patchValue({ tags: newTags });
+      this.tagInput.set('');
+      this.hideTagInput();
     }
   }
 
-  private handleVideoFile(file: File): void {
-    // Validar tipo
-    if (!file.type.startsWith('video/')) {
-      alert('Por favor, selecione um arquivo de vídeo válido.');
-      return;
-    }
+  removeTag(tag: string): void {
+    const newTags = this.tags().filter(t => t !== tag);
+    this.tags.set(newTags);
+    this.uploadForm.patchValue({ tags: newTags });
+  }
 
-    // Validar tamanho
-    if (file.size > this.maxVideoSize) {
-      alert(`O vídeo deve ter no máximo ${this.maxVideoSize / (1024 * 1024)}MB.`);
-      return;
+  onTagInputKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      this.addTag();
+    } else if (event.key === 'Escape') {
+      this.hideTagInput();
     }
+  }
 
+  // Handlers para eventos do componente filho video-files
+  onVideoFileSelected(file: File | null): void {
     this.selectedVideoFile.set(file);
-
-    // Criar preview
-    const url = URL.createObjectURL(file);
-    this.videoPreviewUrl.set(url);
   }
 
-  removeVideo(): void {
-    if (this.videoPreviewUrl()) {
-      URL.revokeObjectURL(this.videoPreviewUrl()!);
-    }
-    this.selectedVideoFile.set(null);
-    this.videoPreviewUrl.set(null);
-  }
-
-  // Drag & Drop - Thumbnail
-  onThumbnailDragOver(event: DragEvent): void {
-    event.preventDefault();
-    this.isDraggingThumbnail.set(true);
-  }
-
-  onThumbnailDragLeave(event: DragEvent): void {
-    event.preventDefault();
-    this.isDraggingThumbnail.set(false);
-  }
-
-  onThumbnailDrop(event: DragEvent): void {
-    event.preventDefault();
-    this.isDraggingThumbnail.set(false);
-
-    const files = event.dataTransfer?.files;
-    if (files && files.length > 0) {
-      this.handleThumbnailFile(files[0]);
-    }
-  }
-
-  onThumbnailFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      this.handleThumbnailFile(input.files[0]);
-    }
-  }
-
-  private handleThumbnailFile(file: File): void {
-    // Validar tipo
-    if (!file.type.startsWith('image/')) {
-      alert('Por favor, selecione uma imagem válida.');
-      return;
-    }
-
-    // Validar tamanho
-    if (file.size > this.maxImageSize) {
-      alert(`A imagem deve ter no máximo ${this.maxImageSize / (1024 * 1024)}MB.`);
-      return;
-    }
-
+  onThumbnailFileSelected(file: File | null): void {
     this.selectedThumbnailFile.set(file);
-
-    // Criar preview
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      this.thumbnailPreviewUrl.set(e.target?.result as string);
-    };
-    reader.readAsDataURL(file);
+    // Limpar flag de remoção se novo arquivo foi selecionado
+    if (file) {
+      this.removeThumbnailFlag.set(false);
+    }
   }
 
-  removeThumbnail(): void {
-    this.selectedThumbnailFile.set(null);
-    this.thumbnailPreviewUrl.set(null);
+  onThumbnailRemoved(): void {
+    // Se estamos editando e havia uma thumbnail, marcar para remover
+    if (this.videoToEdit() && this.videoToEdit()!.thumbnail) {
+      this.removeThumbnailFlag.set(true);
+    }
   }
 
   submitForm(): void {
@@ -204,6 +218,38 @@ export class VideoUploadComponent {
     // Criar FormData
     const formData = new FormData();
     formData.append('title', this.uploadForm.get('title')?.value);
+    
+    // Adicionar categorias
+    const categoryIds = this.uploadForm.get('categoryId')?.value || [];
+    if (categoryIds.length > 0) {
+      categoryIds.forEach((id: number) => {
+        formData.append('categoryId', id.toString());
+      });
+    }
+
+    // Adicionar featured
+    const featured = this.uploadForm.get('featured')?.value || false;
+    formData.append('featured', featured.toString());
+
+    // Adicionar tags
+    const tags = this.uploadForm.get('tags')?.value || [];
+    if (tags.length > 0) {
+      tags.forEach((tag: string) => {
+        formData.append('tags', tag);
+      });
+    }
+
+    // Adicionar description
+    const description = this.uploadForm.get('description')?.value;
+    if (description) {
+      formData.append('description', description);
+    }
+
+    // Adicionar newsSlug
+    const newsSlug = this.selectedNewsSlug();
+    if (newsSlug) {
+      formData.append('newsSlug', newsSlug);
+    }
 
     if (this.selectedVideoFile()) {
       formData.append('video', this.selectedVideoFile()!);
@@ -211,6 +257,11 @@ export class VideoUploadComponent {
 
     if (this.selectedThumbnailFile()) {
       formData.append('thumbnail', this.selectedThumbnailFile()!);
+    }
+
+    // Se estamos editando e a thumbnail foi removida, adicionar flag
+    if (videoToEdit && this.removeThumbnailFlag()) {
+      formData.append('removeThumbnail', 'true');
     }
 
     // Simular progresso (você pode implementar progresso real com HttpClient)
@@ -239,15 +290,26 @@ export class VideoUploadComponent {
         this.isUploading.set(false);
         this.uploadProgress.set(0);
         console.error('Erro ao fazer upload do vídeo:', err);
-        alert('Erro ao fazer upload do vídeo. Tente novamente.');
+        this.alertService.error('Erro', 'Erro ao fazer upload do vídeo. Tente novamente.');
       }
     });
   }
 
   resetForm(): void {
     this.uploadForm.reset();
-    this.removeVideo();
-    this.removeThumbnail();
+    this.selectedVideoFile.set(null);
+    this.selectedThumbnailFile.set(null);
+    this.selectedCategories.set([]);
+    this.tags.set([]);
+    this.tagInput.set('');
+    this.tagInputVisible.set(false);
+    this.categoryDropdownOpen.set(false);
+    this.removeThumbnailFlag.set(false);
+    this.selectedNewsSlug.set(null);
+  }
+
+  onNewsSlugSelected(slug: string | null): void {
+    this.selectedNewsSlug.set(slug);
   }
 
   cancel(): void {
@@ -257,6 +319,7 @@ export class VideoUploadComponent {
 
   // Getters para validação
   get titleControl() { return this.uploadForm.get('title'); }
+  get featuredControl() { return this.uploadForm.get('featured'); }
 
   get isFormValid(): boolean {
     // Título deve estar válido
@@ -271,14 +334,5 @@ export class VideoUploadComponent {
 
     // Ao editar, vídeo não é obrigatório (já existe)
     return true;
-  }
-
-  // Formatação de tamanho de arquivo
-  formatFileSize(bytes: number): string {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
   }
 }

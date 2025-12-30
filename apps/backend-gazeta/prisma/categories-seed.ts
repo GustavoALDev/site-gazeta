@@ -1,61 +1,142 @@
 async function seedCategories(prisma) {
+  // Função para gerar slug a partir do nome
+  function generateSlug(name: string): string {
+    return name
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+      .replace(/[^a-z0-9]+/g, '-') // Substitui caracteres especiais por hífen
+      .replace(/^-+|-+$/g, ''); // Remove hífens do início e fim
+  }
+
   const categories = [
     {
-      name: 'Tecnologia',
-      description: 'Notícias sobre tecnologia, inovação, startups e mundo digital',
-      slug: 'tecnologia'
-    },
-    {
       name: 'Política',
-      description: 'Notícias e análises sobre o cenário político nacional e internacional',
-      slug: 'politica'
-    },
-    {
-      name: 'Esportes',
-      description: 'Cobertura esportiva completa: futebol, olimpíadas e outros esportes',
-      slug: 'esportes'
+      color: '#D62828',
+      description: 'Acompanhe decisões do governo, eleições, debates e tudo que molda o cenário político do país e do mundo.'
     },
     {
       name: 'Economia',
-      description: 'Notícias sobre economia, mercado financeiro e negócios',
-      slug: 'economia'
+      color: '#4361EE',
+      description: 'Notícias sobre mercado financeiro, inflação, empregos, investimentos e tendências econômicas.'
     },
     {
-      name: 'Saúde',
-      description: 'Informações sobre saúde, medicina e bem-estar',
-      slug: 'saude'
+      name: 'Mundo',
+      color: '#2A9D8F',
+      description: 'Os acontecimentos mais relevantes do planeta: diplomacia, conflitos, cultura global e grandes eventos.'
+    },
+    {
+      name: 'Brasil / Nacional',
+      color: '#264653',
+      description: 'Os fatos mais importantes do país: sociedade, governo, educação, segurança e cotidiano nacional.'
+    },
+    {
+      name: 'Tecnologia',
+      color: '#3A0CA3',
+      description: 'Novidades sobre inovação, IA, startups, gadgets, softwares e o futuro digital.'
+    },
+    {
+      name: 'Esportes',
+      color: '#F77F00',
+      description: 'Resultados, competições, atletas, análises e tudo que movimenta o universo esportivo.'
+    },
+    {
+      name: 'Entretenimento',
+      color: '#E63946',
+      description: 'Filmes, séries, música, celebridades, cultura pop e os temas que mais repercutem no entretenimento.'
     },
     {
       name: 'Cultura',
-      description: 'Arte, música, cinema, literatura e eventos culturais',
-      slug: 'cultura'
+      color: '#9D4EDD',
+      description: 'Literatura, artes, teatro, patrimônio cultural e movimentos culturais em destaque.'
+    },
+    {
+      name: 'Saúde',
+      color: '#2EC4B6',
+      description: 'Bem-estar, medicina, pesquisas, prevenção e temas que impactam a qualidade de vida.'
+    },
+    {
+      name: 'Ciência',
+      color: '#7209B7',
+      description: 'Descobertas, espaço, biodiversidade e avanços da pesquisa científica mundial.'
     },
     {
       name: 'Educação',
-      description: 'Notícias sobre educação, ensino e desenvolvimento acadêmico',
-      slug: 'educacao'
+      color: '#118AB2',
+      description: 'Notícias sobre escolas, universidades, ensino, políticas educacionais e tendências na área.'
+    },
+    {
+      name: 'Negócios',
+      color: '#1D3557',
+      description: 'Inovação corporativa, startups, gestão, investimentos e movimentações empresariais.'
+    },
+    {
+      name: 'Justiça / Polícia',
+      color: '#6C757D',
+      description: 'Casos policiais, julgamentos, investigações e atualizações do sistema de justiça.'
+    },
+    {
+      name: 'Meio Ambiente',
+      color: '#2A9D00',
+      description: 'Mudanças climáticas, preservação, energia limpa, sustentabilidade e biodiversidade.'
+    },
+    {
+      name: 'Agricultura / Agro',
+      color: '#8D99AE',
+      description: 'Safras, tecnologias agrícolas, pecuária, mercado agro e tendências do campo.'
+    },
+    {
+      name: 'Carros / Motor',
+      color: '#495057',
+      description: 'Lançamentos automotivos, testes, mobilidade, mercado de carros e inovações do setor.'
+    },
+    {
+      name: 'Opinião',
+      color: '#5F0F40',
+      description: 'Artigos, colunas, análises e comentários especializados sobre temas em alta.'
     }
   ];
 
   console.log('🌱 Iniciando seed das categorias...');
 
   for (const category of categories) {
+    const slug = generateSlug(category.name);
+    
     const existingCategory = await prisma.category.findFirst({
       where: {
         OR: [
           { name: category.name },
-          { slug: category.slug }
+          { slug: slug }
         ]
       }
     });
 
     if (!existingCategory) {
       await prisma.category.create({
-        data: category
+        data: {
+          name: category.name,
+          slug: slug,
+          description: category.description,
+          color: category.color,
+          isActive: true
+        }
       });
-      console.log(`✅ Categoria '${category.name}' criada`);
+      console.log(`✅ Categoria '${category.name}' criada com slug '${slug}'`);
     } else {
-      console.log(`⚠️  Categoria '${category.name}' já existe`);
+      // Atualiza a categoria existente se necessário
+      if (existingCategory.name === category.name) {
+        await prisma.category.update({
+          where: { id: existingCategory.id },
+          data: {
+            description: category.description,
+            color: category.color,
+            isActive: true
+          }
+        });
+        console.log(`🔄 Categoria '${category.name}' atualizada`);
+      } else {
+        console.log(`⚠️  Categoria '${category.name}' já existe com slug diferente`);
+      }
     }
   }
 

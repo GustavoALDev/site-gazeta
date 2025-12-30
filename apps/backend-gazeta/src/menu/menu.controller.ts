@@ -28,6 +28,7 @@ import { UpdateMenuDto } from './dto/update-menu.dto';
 import { MenuResponseDto } from './dto/menu-response.dto';
 import { ReorderMenuDto } from './dto/reorder-menu.dto';
 import { MenuExamplesDto } from './dto/menu-examples.dto';
+import { CreateCategoryMenusDto } from './dto/create-category-menus.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('Menu')
@@ -35,6 +36,95 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 @Controller('menu')
 export class MenuController {
   constructor(private readonly menuService: MenuService) {}
+
+  @Post('categories/batch')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ 
+    summary: 'Criar múltiplos menus do tipo category', 
+    description: `Endpoint para criar múltiplos menus do tipo category em uma única requisição. 
+    
+**Validações:**
+- Todos os menus devem ter 'name' e 'slug'
+- Todos os menus serão criados como tipo 'category'
+- A ordem será calculada automaticamente se não fornecida
+- Todos os menus serão criados em uma transação (tudo ou nada)
+
+**Observações:**
+- Se parentId for fornecido, todos os menus serão criados como submenus do menu pai
+- A ordem será sequencial a partir da última ordem disponível` 
+  })
+  @ApiResponse({ 
+    status: 201, 
+    description: 'Menus criados com sucesso', 
+    type: [MenuResponseDto] 
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'Dados inválidos - campos obrigatórios ausentes',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: 'Todos os menus devem ter name e slug',
+        error: 'Bad Request'
+      }
+    }
+  })
+  @ApiResponse({ status: 401, description: 'Token inválido ou não fornecido' })
+  @ApiResponse({ 
+    status: 409, 
+    description: 'Conflito de dados - ordem duplicada',
+    schema: {
+      example: {
+        statusCode: 409,
+        message: 'Já existe um menu com a ordem 1',
+        error: 'Conflict'
+      }
+    }
+  })
+  @ApiBody({
+    type: CreateCategoryMenusDto,
+    description: 'Array de menus do tipo category a serem criados',
+    examples: {
+      multipleCategories: {
+        summary: 'Criar múltiplas categorias',
+        description: 'Exemplo criando 3 menus de categoria',
+        value: {
+          menus: [
+            { name: 'Tecnologia', slug: 'tecnologia' },
+            { name: 'Esportes', slug: 'esportes' },
+            { name: 'Política', slug: 'politica' }
+          ]
+        }
+      },
+      withOrder: {
+        summary: 'Criar categorias com ordem específica',
+        description: 'Exemplo criando categorias com ordem definida',
+        value: {
+          menus: [
+            { name: 'Tecnologia', slug: 'tecnologia', order: 1 },
+            { name: 'Esportes', slug: 'esportes', order: 2 }
+          ]
+        }
+      }
+    }
+  })
+  async createCategoryMenus(
+    @Body() createCategoryMenusDto: CreateCategoryMenusDto
+  ): Promise<MenuResponseDto[]> {
+    try {
+      return await this.menuService.createCategoryMenus(createCategoryMenusDto, createCategoryMenusDto.parentId);
+    } catch (error) {
+      if (error instanceof ConflictException) {
+        throw error;
+      }
+      throw new HttpException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Erro no servidor, tente novamente mais tarde',
+        error: 'Internal Server Error'
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
 
   @Post()
   @UseGuards(JwtAuthGuard)

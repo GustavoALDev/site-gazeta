@@ -1,9 +1,13 @@
 @use '../../../../styles/variables' as vars;
-
+:host{
+  display: flex;
+  width: 100%;
+}
 .menu-form {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  width: 100%;
 }
 
 .form-group {
@@ -47,13 +51,25 @@
   small {
     color: var(--text-muted);
     font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+
+    .material-icons {
+      font-size: 16px;
+    }
 
     &.error-message {
       color: var(--accent-red);
       font-weight: 500;
     }
 
-    &.order-info {
+    &.success-message {
+      color: var(--success);
+      font-weight: 500;
+    }
+
+    &.order-info, &.type-info {
       display: flex;
       align-items: center;
       gap: 0.25rem;
@@ -63,6 +79,12 @@
       .material-icons {
         font-size: 14px;
       }
+    }
+
+    &.type-info {
+      margin-top: 0.5rem;
+      font-size: 0.813rem;
+      opacity: 0.9;
     }
   }
 }
@@ -211,6 +233,34 @@
       font-style: italic;
       font-size: 0.875rem;
     }
+
+    .category-option {
+      &.selected {
+        background: rgba(10, 128, 196, 0.1);
+        border-left: 3px solid var(--accent-blue);
+        
+        .category-option-header {
+          .category-name {
+            color: var(--accent-blue);
+            font-weight: 700;
+          }
+        }
+      }
+
+      .check-icon {
+        font-size: 20px;
+        color: var(--accent-blue);
+        margin-right: 0.25rem;
+        transition: all var(--transition);
+      }
+
+      &:hover {
+        .check-icon {
+          transform: scale(1.1);
+        }
+      }
+    }
+
   }
 }
 
@@ -342,4 +392,5 @@
     max-height: 200px;
   }
 }
+
 

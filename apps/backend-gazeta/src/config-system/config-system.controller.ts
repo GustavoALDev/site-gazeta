@@ -13,16 +13,6 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagg
 import { ConfigSystemService } from './config-system.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import {
-  CreateDestaqueConfigDto,
-  UpdateDestaqueConfigDto,
-  DestaqueConfigResponseDto,
-} from './dto/destaque-config.dto';
-import {
-  CreateTopGazetaConfigDto,
-  UpdateTopGazetaConfigDto,
-  TopGazetaConfigResponseDto,
-} from './dto/top-gazeta-config.dto';
-import {
   CreateSectionOrderDto,
   UpdateSectionOrderDto,
   BulkUpdateSectionsDto,
@@ -34,132 +24,137 @@ import {
   UpdateSocialMediaConfigDto,
   SocialMediaConfigResponseDto,
 } from './dto/social-media-config.dto';
+import {
+  CreateMaintenanceConfigDto,
+  UpdateMaintenanceConfigDto,
+  MaintenanceConfigResponseDto,
+} from './dto/maintenance-config.dto';
+import {
+  CreateCarouselConfigDto,
+  UpdateCarouselConfigDto,
+  CarouselConfigResponseDto,
+} from './dto/carousel-config.dto';
+import {
+  CreateTopCategoriesConfigDto,
+  UpdateTopCategoriesConfigDto,
+  TopCategoriesConfigResponseDto,
+  TopCategoriesCombinedResponseDto,
+  TopCategoryType,
+} from './dto/top-categories-config.dto';
 
 @ApiTags('Configurações do Sistema')
 @Controller('config')
 export class ConfigSystemController {
   constructor(private readonly configService: ConfigSystemService) {}
 
-  // =============== DESTAQUE CONFIG ===============
+  // =============== TOP CATEGORIES CONFIG ===============
 
-  @Post('destaques')
+  @Get('top-categories')
+  @ApiOperation({ 
+    summary: 'Obter configurações de Top Categories',
+    description: 'Retorna as configurações de categorias primárias e secundárias em um único endpoint.'
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Configurações encontradas', 
+    type: TopCategoriesCombinedResponseDto 
+  })
+  async getTopCategoriesConfig(): Promise<TopCategoriesCombinedResponseDto> {
+    return this.configService.getTopCategoriesConfig();
+  }
+
+  @Post('top-categories-primary')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ 
-    summary: 'Criar configuração de Destaques',
-    description: 'Cria a configuração de categorias para a seção de Destaques. Só pode existir uma por usuário.'
+    summary: 'Criar configuração de Top Categories Primary',
+    description: 'Cria a configuração de categorias primárias. Só pode existir uma por usuário.'
   })
   @ApiBearerAuth()
   @ApiResponse({ 
     status: 201, 
     description: 'Configuração criada com sucesso', 
-    type: DestaqueConfigResponseDto 
+    type: TopCategoriesConfigResponseDto 
   })
   @ApiResponse({ status: 400, description: 'Dados inválidos' })
   @ApiResponse({ status: 401, description: 'Não autorizado' })
   @ApiResponse({ status: 409, description: 'Configuração já existe' })
-  async createDestaqueConfig(
-    @Body() dto: CreateDestaqueConfigDto,
+  async createTopCategoriesPrimary(
+    @Body() dto: Omit<CreateTopCategoriesConfigDto, 'type'>,
     @Request() req: any,
-  ): Promise<DestaqueConfigResponseDto> {
-    return this.configService.createDestaqueConfig(dto, req.user.id);
+  ): Promise<TopCategoriesConfigResponseDto> {
+    return this.configService.createTopCategoriesConfig(
+      { ...dto, type: TopCategoryType.PRIMARY },
+      req.user.id
+    );
   }
 
-  @Get('destaques')
-  @ApiOperation({ 
-    summary: 'Obter configuração de Destaques',
-    description: 'Retorna a configuração atual de categorias para Destaques'
-  })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Configuração encontrada', 
-    type: DestaqueConfigResponseDto 
-  })
-  @ApiResponse({ status: 404, description: 'Configuração não encontrada' })
-  async getDestaqueConfig(): Promise<DestaqueConfigResponseDto | null> {
-    return this.configService.getDestaqueConfig();
-  }
-
-  @Patch('destaques')
+  @Patch('top-categories-primary')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ 
-    summary: 'Atualizar configuração de Destaques',
-    description: 'Atualiza a configuração de categorias para Destaques'
+    summary: 'Atualizar configuração de Top Categories Primary',
+    description: 'Atualiza a configuração de categorias primárias'
   })
   @ApiBearerAuth()
   @ApiResponse({ 
     status: 200, 
     description: 'Configuração atualizada', 
-    type: DestaqueConfigResponseDto 
+    type: TopCategoriesConfigResponseDto 
   })
   @ApiResponse({ status: 400, description: 'Dados inválidos' })
   @ApiResponse({ status: 401, description: 'Não autorizado' })
   @ApiResponse({ status: 404, description: 'Configuração não encontrada' })
-  async updateDestaqueConfig(
-    @Body() dto: UpdateDestaqueConfigDto,
+  async updateTopCategoriesPrimary(
+    @Body() dto: UpdateTopCategoriesConfigDto,
     @Request() req: any,
-  ): Promise<DestaqueConfigResponseDto> {
-    return this.configService.updateDestaqueConfig(dto, req.user.id);
+  ): Promise<TopCategoriesConfigResponseDto> {
+    return this.configService.updateTopCategoriesConfig(TopCategoryType.PRIMARY, dto, req.user.id);
   }
 
-  // =============== TOP GAZETA CONFIG ===============
-
-  @Post('top-gazeta')
+  @Post('top-categories-secondary')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ 
-    summary: 'Criar configuração do Top Gazeta',
-    description: 'Cria a configuração de categorias para a seção Top Gazeta. Só pode existir uma por usuário.'
+    summary: 'Criar configuração de Top Categories Secondary',
+    description: 'Cria a configuração de categorias secundárias. Só pode existir uma por usuário.'
   })
   @ApiBearerAuth()
   @ApiResponse({ 
     status: 201, 
     description: 'Configuração criada com sucesso', 
-    type: TopGazetaConfigResponseDto 
+    type: TopCategoriesConfigResponseDto 
   })
   @ApiResponse({ status: 400, description: 'Dados inválidos' })
   @ApiResponse({ status: 401, description: 'Não autorizado' })
   @ApiResponse({ status: 409, description: 'Configuração já existe' })
-  async createTopGazetaConfig(
-    @Body() dto: CreateTopGazetaConfigDto,
+  async createTopCategoriesSecondary(
+    @Body() dto: Omit<CreateTopCategoriesConfigDto, 'type'>,
     @Request() req: any,
-  ): Promise<TopGazetaConfigResponseDto> {
-    return this.configService.createTopGazetaConfig(dto, req.user.id);
+  ): Promise<TopCategoriesConfigResponseDto> {
+    return this.configService.createTopCategoriesConfig(
+      { ...dto, type: TopCategoryType.SECONDARY },
+      req.user.id
+    );
   }
 
-  @Get('top-gazeta')
-  @ApiOperation({ 
-    summary: 'Obter configuração do Top Gazeta',
-    description: 'Retorna a configuração atual de categorias para Top Gazeta'
-  })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Configuração encontrada', 
-    type: TopGazetaConfigResponseDto 
-  })
-  @ApiResponse({ status: 404, description: 'Configuração não encontrada' })
-  async getTopGazetaConfig(): Promise<TopGazetaConfigResponseDto | null> {
-    return this.configService.getTopGazetaConfig();
-  }
-
-  @Patch('top-gazeta')
+  @Patch('top-categories-secondary')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ 
-    summary: 'Atualizar configuração do Top Gazeta',
-    description: 'Atualiza a configuração de categorias para Top Gazeta'
+    summary: 'Atualizar configuração de Top Categories Secondary',
+    description: 'Atualiza a configuração de categorias secundárias'
   })
   @ApiBearerAuth()
   @ApiResponse({ 
     status: 200, 
     description: 'Configuração atualizada', 
-    type: TopGazetaConfigResponseDto 
+    type: TopCategoriesConfigResponseDto 
   })
   @ApiResponse({ status: 400, description: 'Dados inválidos' })
   @ApiResponse({ status: 401, description: 'Não autorizado' })
   @ApiResponse({ status: 404, description: 'Configuração não encontrada' })
-  async updateTopGazetaConfig(
-    @Body() dto: UpdateTopGazetaConfigDto,
+  async updateTopCategoriesSecondary(
+    @Body() dto: UpdateTopCategoriesConfigDto,
     @Request() req: any,
-  ): Promise<TopGazetaConfigResponseDto> {
-    return this.configService.updateTopGazetaConfig(dto, req.user.id);
+  ): Promise<TopCategoriesConfigResponseDto> {
+    return this.configService.updateTopCategoriesConfig(TopCategoryType.SECONDARY, dto, req.user.id);
   }
 
   // =============== SECTION ORDER CONFIG ===============
@@ -383,6 +378,128 @@ export class ConfigSystemController {
     @Request() req: any,
   ): Promise<SocialMediaConfigResponseDto> {
     return this.configService.updateSocialMediaConfig(dto, req.user.id);
+  }
+
+  // =============== MAINTENANCE CONFIG ===============
+
+  @Post('maintenance')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ 
+    summary: 'Criar configuração de Manutenção',
+    description: 'Cria a configuração global de manutenção do site. Só pode existir uma configuração no sistema.'
+  })
+  @ApiBearerAuth()
+  @ApiResponse({ 
+    status: 201, 
+    description: 'Configuração criada com sucesso', 
+    type: MaintenanceConfigResponseDto 
+  })
+  @ApiResponse({ status: 400, description: 'Dados inválidos' })
+  @ApiResponse({ status: 401, description: 'Não autorizado' })
+  @ApiResponse({ status: 409, description: 'Configuração já existe' })
+  async createMaintenanceConfig(
+    @Body() dto: CreateMaintenanceConfigDto,
+    @Request() req: any,
+  ): Promise<MaintenanceConfigResponseDto> {
+    return this.configService.createMaintenanceConfig(dto, req.user.id);
+  }
+
+  @Get('maintenance')
+  @ApiOperation({ 
+    summary: 'Obter configuração de Manutenção',
+    description: 'Retorna a configuração atual de manutenção do site'
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Configuração encontrada', 
+    type: MaintenanceConfigResponseDto 
+  })
+  @ApiResponse({ status: 404, description: 'Configuração não encontrada' })
+  async getMaintenanceConfig(): Promise<MaintenanceConfigResponseDto | null> {
+    return this.configService.getMaintenanceConfig();
+  }
+
+  @Patch('maintenance')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ 
+    summary: 'Atualizar configuração de Manutenção',
+    description: 'Atualiza a configuração de manutenção do site'
+  })
+  @ApiBearerAuth()
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Configuração atualizada', 
+    type: MaintenanceConfigResponseDto 
+  })
+  @ApiResponse({ status: 400, description: 'Dados inválidos' })
+  @ApiResponse({ status: 401, description: 'Não autorizado' })
+  @ApiResponse({ status: 404, description: 'Configuração não encontrada' })
+  async updateMaintenanceConfig(
+    @Body() dto: UpdateMaintenanceConfigDto,
+    @Request() req: any,
+  ): Promise<MaintenanceConfigResponseDto> {
+    return this.configService.updateMaintenanceConfig(dto, req.user.id);
+  }
+
+  // =============== CAROUSEL CONFIG ===============
+
+  @Post('carousel')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ 
+    summary: 'Criar configuração de Carrossel',
+    description: 'Cria a configuração global do carrossel. Só pode existir uma configuração no sistema.'
+  })
+  @ApiBearerAuth()
+  @ApiResponse({ 
+    status: 201, 
+    description: 'Configuração criada com sucesso', 
+    type: CarouselConfigResponseDto 
+  })
+  @ApiResponse({ status: 400, description: 'Dados inválidos' })
+  @ApiResponse({ status: 401, description: 'Não autorizado' })
+  @ApiResponse({ status: 409, description: 'Configuração já existe' })
+  async createCarouselConfig(
+    @Body() dto: CreateCarouselConfigDto,
+    @Request() req: any,
+  ): Promise<CarouselConfigResponseDto> {
+    return this.configService.createCarouselConfig(dto, req.user.id);
+  }
+
+  @Get('carousel')
+  @ApiOperation({ 
+    summary: 'Obter configuração de Carrossel',
+    description: 'Retorna a configuração atual do carrossel'
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Configuração encontrada', 
+    type: CarouselConfigResponseDto 
+  })
+  @ApiResponse({ status: 404, description: 'Configuração não encontrada' })
+  async getCarouselConfig(): Promise<CarouselConfigResponseDto | null> {
+    return this.configService.getCarouselConfig();
+  }
+
+  @Patch('carousel')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ 
+    summary: 'Atualizar configuração de Carrossel',
+    description: 'Atualiza a configuração do carrossel'
+  })
+  @ApiBearerAuth()
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Configuração atualizada', 
+    type: CarouselConfigResponseDto 
+  })
+  @ApiResponse({ status: 400, description: 'Dados inválidos' })
+  @ApiResponse({ status: 401, description: 'Não autorizado' })
+  @ApiResponse({ status: 404, description: 'Configuração não encontrada' })
+  async updateCarouselConfig(
+    @Body() dto: UpdateCarouselConfigDto,
+    @Request() req: any,
+  ): Promise<CarouselConfigResponseDto> {
+    return this.configService.updateCarouselConfig(dto, req.user.id);
   }
 }
 

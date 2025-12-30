@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { Category, News, Video, Menu, Ads, DestaqueConfig, TopGazetaConfig, SectionOrderConfig, SectionOrderConfigMap } from '@site-gazeta/models';
+import { Category, News, Video, Menu, Ads, TopCategoriesConfig,SectionOrderConfig, SectionOrderConfigMap } from '@site-gazeta/models';
 import { BehaviorSubject, firstValueFrom, forkJoin, map, Observable } from 'rxjs';
 import { environment } from '../env/env';
 import { HttpClient } from '@angular/common/http';
@@ -7,7 +7,6 @@ import { HttpClient } from '@angular/common/http';
   providedIn: 'root'
 })
 export class ApiService {
-  $newsFeatured = new BehaviorSubject<News[]>([]);
   private apiUrl = environment.apiUrl;
   private http = inject(HttpClient);
   constructor() { }
@@ -27,23 +26,7 @@ export class ApiService {
     return this.http.get<SectionOrderConfigMap>(`${this.apiUrl}/config/sections-map`);
   }
   
-  getHomeCategoryConfig(){
-    return forkJoin([
-      this.http.get<DestaqueConfig>(`${this.apiUrl}/config/destaques`),
-      this.http.get<TopGazetaConfig>(`${this.apiUrl}/config/top-gazeta`),
-    ])
-    .pipe(
-      map(([destaque, topGazeta]) => {
-        return {
-          destaque,
-          topGazeta,
-        }
-      })
-    )
-  }
-  getVideos(){
-    return this.http.get<Video[]>(`${this.apiUrl}/videos`);
-  }
+  
 
   getVideosById(id: number) {
     return this.http.get<Video>(`${this.apiUrl}/videos/${id}`);
@@ -100,22 +83,12 @@ export class ApiService {
   }
 
   getRelatedNews(categoryId: number[], newsId: number): Observable<News[]> {
-    return this.http.get<News[]>(`${this.apiUrl}/news`).pipe(
-      map((news) => news.filter((news) =>{
-        return news.categoryId.some(id => categoryId.includes(id)) && news.id !== newsId
-      })) 
-    )
-  };
-
-  getNewsFeatured() {
-    if(this.$newsFeatured.getValue().length <= 0) {
-      firstValueFrom(this.http.get<News[]>(`${this.apiUrl}/news/featured`))
-      .then(news => {
-        this.$newsFeatured.next(news)
-      });
-    } 
-    return this.$newsFeatured.asObservable();
+    // Usa o endpoint correto /news/related-news/:id
+    // Este endpoint não suporta exclude (notícias relacionadas devem mostrar todas)
+    return this.http.get<News[]>(`${this.apiUrl}/news/related-news/${newsId}`);
   }
+
+  
 
   getNewsForCategory(categoryId: number): Observable<News[]> {
     return this.http.get<News[]>(`${this.apiUrl}/news/category/${categoryId}`);

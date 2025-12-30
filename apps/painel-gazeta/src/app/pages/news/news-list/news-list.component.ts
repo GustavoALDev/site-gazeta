@@ -5,11 +5,13 @@ import { Category, News } from '@site-gazeta/models';
 import { CommonModule } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
 import { RouterModule } from '@angular/router';
+import { AlertService } from '@site-gazeta/alert';
+import { NewsListFiltersComponent } from './news-list-filters/news-list-filters.component';
 
 
 @Component({
   selector: 'app-news-list',
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, NewsListFiltersComponent],
   templateUrl: './news-list.component.html',
   styleUrl: './news-list.component.scss',
 })
@@ -17,13 +19,14 @@ export class NewsListComponent implements OnInit {
 
   private newsService = inject(NewsService);
   private categoryService = inject(CategoryService);
+  private alertService = inject(AlertService);
   news = signal<News[]>([]);
   categories = signal<Category[]>([])
   newsEmitter = output<News>()
 
 
   filterDate = signal<string>('');
-  filterOrder = signal<'desc' | 'asc'>('desc');
+  filterOrder = signal<'desc' | 'asc' | null>(null);
   filterViews = signal<'asc' | 'desc' | ''>('');
   filterCategory = signal<number | null>(null);
   filterSearch = signal<string>('');
@@ -53,19 +56,20 @@ export class NewsListComponent implements OnInit {
         n.author?.toLowerCase().includes(search)
       );
     }
-    // Filtro por visualizações
-    if (this.filterViews()) {
-      filtered = [...filtered].sort((a, b) => {
-        if (this.filterViews() === 'asc') return a.views - b.views;
-        else return b.views - a.views;
-      });
-    }
-    // Ordenação por data
+    // Ordenação por data (primeiro, se aplicável)
     if (this.filterOrder()) {
       filtered = [...filtered].sort((a, b) => {
-        const dateA = new Date(a.published).getTime();
-        const dateB = new Date(b.published).getTime();
+        const dateA = new Date(a.published || 0).getTime();
+        const dateB = new Date(b.published || 0).getTime();
         return this.filterOrder() === 'desc' ? dateB - dateA : dateA - dateB;
+      });
+    }
+    // Filtro por visualizações (aplicado após ordenação por data)
+    if (this.filterViews()) {
+      filtered = [...filtered].sort((a, b) => {
+        const viewsA = a.views || 0;
+        const viewsB = b.views || 0;
+        return this.filterViews() === 'asc' ? viewsA - viewsB : viewsB - viewsA;
       });
     }
     return filtered;
@@ -73,7 +77,7 @@ export class NewsListComponent implements OnInit {
 
   ngOnInit(): void {
     this.getNews();
-    this.getCategories()
+    this.getCategories();
 
   }
 
@@ -102,9 +106,12 @@ export class NewsListComponent implements OnInit {
     });
   };
 
-  openNews(){
-    //editar quando o front estiver pronto
-    return
+  openNewsInSite(slug: string) {
+    // Abre a notícia no site público em nova aba
+    // Assumindo que o site está na mesma origem, ajuste conforme necessário
+    const siteUrl = window.location.origin.replace(':4201', ':4200') || 'http://localhost:4200';
+    const newsUrl = `${siteUrl}/news/${slug}`;
+    window.open(newsUrl, '_blank');
   };
 
   editNews(news:News){
@@ -116,7 +123,7 @@ export class NewsListComponent implements OnInit {
       firstValueFrom(this.newsService.delete(idNews))
       .then((sucess)=>{
         console.log(sucess)
-        alert(sucess.message)
+        this.alertService.success('Sucesso', sucess.message)
         //chama a api novamente para atualizar a lista
         this.getNews()
       })
@@ -130,11 +137,19 @@ export class NewsListComponent implements OnInit {
 
   // Métodos para atualizar filtros
   setFilterDate(date: string) { this.filterDate.set(date); }
-  setFilterOrder(order: 'desc' | 'asc') { this.filterOrder.set(order); }
+  setFilterOrder(order: 'desc' | 'asc' | null) { this.filterOrder.set(order); }
   setFilterViews(views: 'asc' | 'desc' | '') { this.filterViews.set(views); }
-  setFilterCategory(categoryId: string) {
-    this.filterCategory.set(categoryId ? Number(categoryId) : null);
+  setFilterCategory(categoryId: number | null) {
+    this.filterCategory.set(categoryId);
   }
   setFilterSearch(search: string) { this.filterSearch.set(search); }
   setFilterEmphasis(isEmphasis: boolean | null) { this.filterEmphasis.set(isEmphasis); }
+
+  // Helper para verificar se não tem imagem com emphasis
+  hasNoEmphasisImage(news: News): boolean {
+    if (!news.mediaNews || news.mediaNews.length === 0) {
+      return true;
+    }
+    return !news.mediaNews.some(m => m.emphasis);
+  }
 }

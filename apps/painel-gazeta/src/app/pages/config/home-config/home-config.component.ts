@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CategoryConfigComponent } from './category-config/category-config.component';
-import { OrderSectionComponent } from './order-section/order-section.component';
+import { CarouselConfigComponent } from './carousel-config/carousel-config.component';
 
 @Component({
   selector: 'app-home-config',
-  imports: [CommonModule, CategoryConfigComponent, OrderSectionComponent],
+  imports: [CommonModule, CategoryConfigComponent, CarouselConfigComponent],
   templateUrl: './home-config.component.html',
   styleUrl: './home-config.component.scss',
 })

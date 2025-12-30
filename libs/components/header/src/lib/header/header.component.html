@@ -3,8 +3,8 @@
         <div class="logo" routerLink="/">
             <img src="img/logo02.webp" alt="logo">
         </div>
-        @if(announcements().length > 0) {
-            <lib-ads [announcements]="announcements()[0]"></lib-ads>
+        @if(selectedAd()) {
+            <lib-ads [announcements]="selectedAd()!"></lib-ads>
         }
         <div class="dark_mode">
             <button 

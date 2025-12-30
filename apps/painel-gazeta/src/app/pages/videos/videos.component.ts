@@ -1,92 +1,59 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { VideoUploadComponent } from './video-upload/video-upload.component';
-import { VideoListComponent } from './video-list/video-list.component';
 import { VideoService } from '../../core/services/video.service';
 import { Video } from '@site-gazeta/models';
-
-interface VideosComponentState {
-  activeTab: 'upload' | 'list';
-  videoToEdit: Video | null;
-}
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-videos',
   standalone: true,
-  imports: [CommonModule, VideoUploadComponent, VideoListComponent],
+  imports: [CommonModule, VideoUploadComponent, RouterModule],
   templateUrl: './videos.component.html',
   styleUrl: './videos.component.scss',
 })
 export class VideosComponent implements OnInit {
   private videoService = inject(VideoService);
+  private activeRoute = inject(ActivatedRoute);
+  private router = inject(Router);
 
-  // Estado do componente usando signals
-  state = signal<VideosComponentState>({
-    activeTab: 'list',
-    videoToEdit: null,
-  });
-
-  // Signals para dados
-  videos = signal<Video[]>([]);
-  isLoading = signal(false);
-
-  // Computed signals
-  isEdit = computed(() => !!this.state().videoToEdit);
+  // Signals
+  videoToEdit = signal<Video | null>(null);
+  isEdit = computed(() => !!this.videoToEdit());
+  videoId: number | null = null;
 
   ngOnInit(): void {
-    this.loadVideos();
+    this.checkEdit();
   }
 
-  setActiveTab(tab: 'upload' | 'list'): void {
-    this.state.update(state => ({ 
-      ...state, 
-      activeTab: tab,
-      // Limpa o modo de edição ao trocar para lista OU ao clicar novamente em upload (reset)
-      videoToEdit: null
-    }));
-  }
-
-  loadVideos(): void {
-    this.isLoading.set(true);
-    this.videoService.getAll().subscribe({
-      next: (videos) => {
-        this.videos.set(videos);
-        console.log('videos', this.videos());
-        this.isLoading.set(false);
-      },
-      error: (err) => {
-        console.error('Erro ao carregar vídeos:', err);
-        this.isLoading.set(false);
-      }
-    });
+  async checkEdit() {
+    return firstValueFrom(this.activeRoute.params)
+      .then((param) => {
+        const videoId = param['id'];
+        if (videoId) {
+          this.videoId = Number(videoId);
+          
+          firstValueFrom(this.videoService.getById(this.videoId))
+            .then((video) => {
+              this.videoToEdit.set(video);
+            })
+            .catch((error) => {
+              console.error('Erro ao carregar vídeo:', error);
+              this.router.navigate(['/videosList']);
+            });
+        }
+      })
+      .catch((error) => {
+        console.error('Erro ao verificar parâmetros:', error);
+      });
   }
 
   handleSave(video: Video): void {
-    this.loadVideos();
-    this.state.update(state => ({
-      ...state,
-      activeTab: 'list',
-      videoToEdit: null,
-    }));
-  }
-
-  handleEdit(video: Video): void {
-    this.state.update(state => ({
-      ...state,
-      activeTab: 'upload',
-      videoToEdit: video,
-    }));
-  }
-
-  handleDelete(videoId: number): void {
-    this.videos.update(videos => videos.filter(v => v.id !== videoId));
+    this.router.navigate(['/videosList']);
   }
 
   handleCancel(): void {
-    this.state.update(state => ({
-      ...state,
-      activeTab: 'list',
-      videoToEdit: null,
-    }));
+    this.router.navigate(['/videosList']);
   }
 }

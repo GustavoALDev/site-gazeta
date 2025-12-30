@@ -166,22 +166,37 @@ export class CategoriesService {
       throw new ConflictException('Não é possível deletar esta categoria pois ela está sendo usada em notícias. Remova a categoria das notícias primeiro.');
     }
 
-    // Verificar se a categoria está sendo usada em configurações (Destaques ou Top Gazeta)
-    const destaqueConfigCount = await this.prisma.destaqueCategoryRelation.count({
+    // Verificar se a categoria está sendo usada em configurações de Top Categories
+    const topCategoriesConfigCount = await this.prisma.topCategoriesCategoryRelation.count({
       where: { categoryId: id }
     });
 
-    const topGazetaConfigCount = await this.prisma.topGazetaCategoryRelation.count({
-      where: { categoryId: id }
-    });
-
-    if (destaqueConfigCount > 0 || topGazetaConfigCount > 0) {
-      throw new ConflictException('Não é possível deletar esta categoria pois ela está sendo usada em configurações (Destaques ou Top Gazeta). Remova a categoria das configurações primeiro.');
+    if (topCategoriesConfigCount > 0) {
+      throw new ConflictException('Não é possível deletar esta categoria pois ela está sendo usada em configurações de Top Categories. Remova a categoria das configurações primeiro.');
     }
 
     // Deleção permanente
     await this.prisma.category.delete({
       where: { id }
     });
+  }
+
+  async toggleActive(id: number): Promise<CategoryResponseDto> {
+    const category = await this.prisma.category.findUnique({
+      where: { id }
+    });
+
+    if (!category) {
+      throw new NotFoundException('Categoria não encontrada');
+    }
+
+    const updatedCategory = await this.prisma.category.update({
+      where: { id },
+      data: {
+        isActive: !category.isActive
+      }
+    });
+
+    return updatedCategory;
   }
 } 

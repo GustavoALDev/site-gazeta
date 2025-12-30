@@ -1,0 +1,60 @@
+<div class="video-list-container">
+ 
+  <div class="video-list-scroll">
+    @for (video of videos().slice(0,5); track video.id; let index = $index) {
+      <div 
+        class="video-item"
+        (click)="handleVideoClick($event, video)"
+        [class.active]="isActiveVideo(video.id)"
+      >
+      <div class="index-video">{{ index + 1 }}</div>
+        <div class="video-item-thumbnail">
+          @if (shouldShowImage(video)) {
+            <img 
+              [src]="video.thumbnail" 
+              [alt]="video.title"
+              (error)="onImageError(video)"
+            />
+          } @else if (shouldShowVideoThumbnail(video)) {
+            <video 
+              [src]="video.url"
+              preload="metadata"
+              muted
+              playsinline
+            ></video>
+          }
+          <div class="video-item-overlay">
+            <span class="material-icons">play_circle_outline</span>
+            <span class="video-duration">{{ video.duration || '--:--' }}</span>
+          </div>
+          @if (shouldShowPlaceholder(video)) {
+            <div class="video-item-placeholder">
+              <span class="material-icons">video_library</span>
+            </div>
+          }
+          @if (isActiveVideo(video.id)) {
+            <div class="video-watching-badge">
+              Assistindo
+            </div>
+          }
+        </div>
+        
+        <div class="video-item-info">
+          <h4 class="video-item-title">{{ video.title }}</h4>
+          <div class="video-item-meta">
+            @if (video.categories && video.categories.length > 0) {
+              @for (category of video.categories.slice(0, 3); track category.id) {
+                <span class="video-category">{{ category.name }}</span>
+              }
+            }
+          </div>
+        </div>
+      </div>
+    } @empty {
+      <div class="video-list-empty">
+        <span class="material-icons">video_library</span>
+        <p>Nenhum vídeo disponível</p>
+      </div>
+    }
+  </div>
+</div>

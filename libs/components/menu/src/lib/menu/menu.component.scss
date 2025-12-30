@@ -129,7 +129,7 @@ $font-stack: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica N
               .submenu-link {
                 display: block;
                 padding: 12px 20px;
-                color: vars.$text-dark;
+                color: vars.$secondary;
                 text-decoration: none;
                 font-weight: 400;
                 font-size: 15px;
@@ -270,34 +270,7 @@ $font-stack: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica N
   }
 }
 
-// Dark mode
-::ng-deep .dark-mode .menu {
-  background: $dark-gradient;
 
-  .menu-link {
-    color: #e8e8e8;
-
-    &:hover {
-      background-color: rgba(255, 255, 255, 0.2);
-      color: #ffffff;
-    }
-  }
-
-  .has-submenu .submenu-dropdown {
-    background: vars.$gray-800;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-
-    .submenu-link {
-      color: vars.$gray-200;
-
-      &:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-        border-left-color: #74b9ff;
-        color: vars.$white;
-      }
-    }
-  }
-}
 
 // Responsive - Tablet
 @media (max-width: 768px) {

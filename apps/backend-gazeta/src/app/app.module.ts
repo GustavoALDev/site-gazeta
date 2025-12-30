@@ -11,9 +11,9 @@ import { NewsVideoModule } from '../news-video/news-video.module';
 import { AdvertisementModule } from '../advertisement/advertisement.module';
 import { ConfigSystemModule } from '../config-system/config-system.module';
 import { MenuModule } from '../menu/menu.module';
-import { YoutubePlaylistModule } from '../youtube-playlist/youtube-playlist.module';
 import { VideoModule } from '../video/video.module';
 import { AnalyticsModule } from '../analytics/analytics.module';
+import { ContentMediaModule } from '../content-media/content-media.module';
 
 @Module({
   imports: [
@@ -30,9 +30,9 @@ import { AnalyticsModule } from '../analytics/analytics.module';
     AdvertisementModule,
     ConfigSystemModule,
     MenuModule,
-    YoutubePlaylistModule,
     VideoModule,
-    AnalyticsModule
+    AnalyticsModule,
+    ContentMediaModule
   ],
   controllers: [AppController],
   providers: [AppService],

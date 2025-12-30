@@ -1,0 +1,61 @@
+// Galeria de fotos
+.news-gallery {
+  margin-top: 3rem;
+  
+  .section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #d32f2f;
+  }
+  
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    
+    .gallery-item {
+      position: relative;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #f5f5f5;
+      
+      &:hover {
+        .gallery-image {
+          transform: scale(1.05);
+        }
+      }
+      
+      .gallery-image {
+        width: 100%;
+        height: 250px;
+        object-fit: cover;
+        display: block;
+        transition: transform 0.3s ease;
+      }
+      
+      .gallery-credit {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+        padding: 2rem 0.75rem 0.5rem;
+        color: #fff;
+        font-size: 0.75rem;
+      }
+    }
+  }
+}
+
+// Responsividade
+@media (max-width: 768px) {
+  .news-gallery {
+    .gallery-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+

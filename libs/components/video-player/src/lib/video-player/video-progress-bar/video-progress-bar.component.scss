@@ -1,0 +1,124 @@
+@use '../../../../../../style/variables' as *;
+
+// Barra de progresso
+.progress-bar-container {
+  position: relative;
+  width: 100%;
+  height: 8px;
+  margin-bottom: 1rem;
+  cursor: pointer;
+  padding: 6px 0; // Aumentado para dar espaço ao handle
+
+  &:hover {
+    .progress-bar-background {
+      height: 10px;
+    }
+
+    .progress-bar-handle {
+      opacity: 1;
+    }
+  }
+}
+
+.progress-bar-background {
+  position: relative;
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  overflow: visible; // Mudado de hidden para visible para não cortar o handle
+  transition: height $transition;
+}
+
+.progress-bar-buffered {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  transition: width 0.1s linear;
+  overflow: hidden; // Overflow hidden apenas nas barras internas
+}
+
+.progress-bar-filled {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  @include gradient-bg($primary, $secondary, 90deg);
+  border-radius: 6px;
+  transition: width 0.1s linear;
+  overflow: hidden; // Overflow hidden apenas nas barras internas
+}
+
+.progress-bar-handle {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  transform: translate(-50%, -50%);
+  @include gradient-bg($primary, $secondary, 135deg);
+  border: 2px solid white;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  transition: opacity $transition;
+  pointer-events: none;
+  z-index: 5; // Z-index maior para ficar acima de tudo
+}
+
+.progress-bar-hover {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.8);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.hover-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 8px;
+  padding: 4px 8px;
+  @include gradient-bg($primary, $secondary, 135deg);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: $radius;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+// Responsividade
+@include mobile {
+  .progress-bar-container {
+    height: 6px;
+    margin-bottom: 0.5rem;
+    padding: 4px 0; // Padding para não cortar o handle
+
+    &:hover {
+      .progress-bar-background {
+        height: 8px;
+      }
+    }
+  }
+
+  .progress-bar-background {
+    height: 4px;
+    border-radius: 4px;
+    overflow: visible; // Não cortar o handle no mobile também
+  }
+
+  .progress-bar-handle {
+    width: 12px;
+    height: 12px;
+    z-index: 5; // Garantir que fique acima
+  }
+}
+

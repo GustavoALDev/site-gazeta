@@ -33,10 +33,10 @@ export class VideoService {
   }
 
   /**
-   * Atualizar vídeo
+   * Atualizar vídeo (com FormData - suporta arquivos)
    */
   update(id: number, body: FormData): Observable<Video> {
-    return this.http.patch<Video>(`${this.apiUrl}/${id}`, body);
+    return this.http.patch<Video>(`${this.apiUrl}/${id}/upload`, body);
   }
 
   /**

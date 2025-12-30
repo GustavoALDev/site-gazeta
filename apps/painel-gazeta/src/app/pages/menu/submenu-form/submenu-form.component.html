@@ -1,0 +1,133 @@
+<form [formGroup]="menuForm" (ngSubmit)="submitForm($event)" class="submenu-form" novalidate>
+  
+  <!-- Tipo de Menu -->
+  <div class="form-group">
+    <label for="type">Tipo de Submenu</label>
+    <select id="type" formControlName="type" class="form-control">
+      <option value="internal">Página Interna</option>
+      <option value="external">Link Externo</option>
+      <option value="category">Categoria</option>
+    </select>
+    <small class="type-info">
+      <span class="material-icons">info</span>
+      @if (selectedType() === 'internal') {
+        Link para uma página dentro do site
+      } @else if (selectedType() === 'external') {
+        Link para um site externo
+      } @else if (selectedType() === 'category') {
+        Link para notícias de uma ou mais categorias
+      }
+    </small>
+  </div>
+
+  <!-- Nome do Menu (sempre visível exceto para category) -->
+  @if (selectedType() !== 'category') {
+    <div class="form-group">
+      <label for="name">Nome do Menu</label>
+      <input 
+        type="text" 
+        id="name" 
+        formControlName="name"
+        placeholder="Digite o nome do menu"
+        [class.error]="nameControl?.invalid && nameControl?.touched"
+      />
+      @if (nameControl?.invalid && nameControl?.touched) {
+        <small class="error-message">
+          @if (nameControl?.errors?.['required']) {
+            Nome é obrigatório
+          }
+          @if (nameControl?.errors?.['minlength']) {
+            Nome deve ter no mínimo 2 caracteres
+          }
+        </small>
+      }
+    </div>
+  }
+
+  <!-- Campos específicos para Internal -->
+  @if (selectedType() === 'internal') {
+    <div class="form-group">
+      <label for="routerLink">Rota Interna</label>
+      <select 
+        id="routerLink" 
+        formControlName="routerLink"
+        [class.error]="routerLinkControl?.invalid && routerLinkControl?.touched"
+      >
+        <option value="">Selecione uma rota</option>
+        @for (route of internalRoutes; track route.path) {
+          <option [value]="route.path">{{ route.label }} ({{ route.path }})</option>
+        }
+      </select>
+      @if (routerLinkControl?.invalid && routerLinkControl?.touched) {
+        <small class="error-message">Selecione uma rota interna</small>
+      }
+    </div>
+  }
+
+  <!-- Campos específicos para External Link -->
+  @if (selectedType() === 'external') {
+    <div class="form-group">
+      <label for="externalLink">URL do Link Externo</label>
+      <input 
+        type="url" 
+        id="externalLink" 
+        formControlName="externalLink"
+        placeholder="https://exemplo.com"
+        [class.error]="externalLinkControl?.invalid && externalLinkControl?.touched"
+      />
+      @if (externalLinkControl?.invalid && externalLinkControl?.touched) {
+        <small class="error-message">
+          @if (externalLinkControl?.errors?.['required']) {
+            URL é obrigatória
+          }
+          @if (externalLinkControl?.errors?.['pattern']) {
+            URL inválida (deve começar com http:// ou https://)
+          }
+        </small>
+      }
+    </div>
+  }
+
+  <!-- Campos específicos para Category -->
+  @if (selectedType() === 'category') {
+    <div class="form-group">
+      <label>Categorias</label>
+      
+      <app-category-multi-select
+        [selectedCategories]="selectedCategories()"
+        (onCategoriesChange)="onCategoriesChange($event)">
+      </app-category-multi-select>
+      
+      @if (selectedCategories().length > 0) {
+        <small class="success-message">
+          <span class="material-icons">check_circle</span>
+          {{ selectedCategories().length }} categoria(s) selecionada(s)
+        </small>
+      } @else if (menuForm.get('type')?.touched) {
+        <small class="error-message">
+          <span class="material-icons">error</span>
+          Selecione pelo menos uma categoria
+        </small>
+      }
+    </div>
+  }
+
+  <!-- Botões de Ação -->
+  <div class="form-actions">
+    <button type="submit" class="btn-primary" [disabled]="isLoading()">
+      @if (isLoading()) {
+        <span class="material-icons spinning">refresh</span>
+        Salvando...
+      } @else {
+        <span class="material-icons">save</span>
+        Criar Menu
+      }
+    </button>
+    <button type="button" class="btn-secondary" (click)="cancel()" [disabled]="isLoading()">
+      <span class="material-icons">close</span>
+      Cancelar
+    </button>
+  </div>
+
+</form>
+

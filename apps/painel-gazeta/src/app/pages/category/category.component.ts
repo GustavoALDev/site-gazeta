@@ -5,6 +5,7 @@ import { CategoryFormComponent } from './category-form/category-form.component';
 import { CategoryListComponent } from './category-list/category-list.component';
 import { CategoryService } from '../../core/services/category.service';
 import { firstValueFrom } from 'rxjs';
+import { AlertService } from '@site-gazeta/alert';
 
 @Component({
   selector: 'app-category',
@@ -16,6 +17,7 @@ export class CategoryComponent implements OnInit {
   categories = signal<Category[]>([]);
   editingCategory = signal<Category | null>(null);
   categoryService = inject(CategoryService);
+  private alertService = inject(AlertService);
   
   // Computed property to get all used colors
   usedColors = computed(() => {
@@ -28,6 +30,8 @@ export class CategoryComponent implements OnInit {
       this.categories.update((categories) =>
         categories.map((c) => (c.id === categoryData.id ? categoryData : c))
       );
+      // Resetar edição após atualizar
+      this.editingCategory.set(null);
     } else {
       this.categories.update((categories) => [...categories, categoryData]);
     }
@@ -47,7 +51,7 @@ export class CategoryComponent implements OnInit {
     if (category.isActive === false) {
       return firstValueFrom(this.categoryService.delete(category.id as number))
         .then((res) => {
-          alert('Categoria excluída com sucesso!');
+          this.alertService.success('Sucesso', 'Categoria excluída com sucesso!');
 
           this.categories.update((categories) =>
             categories.filter((c) => c.id !== category.id)
@@ -57,11 +61,29 @@ export class CategoryComponent implements OnInit {
           throw err;
         });
     }
-    return alert('A categoria não pode ser excluída porque está ativa!');
+    this.alertService.warning('Atenção', 'A categoria não pode ser excluída porque está ativa!');
+    return;
 
   }
 
   onCancelEdit() {
     this.editingCategory.set(null);
+  }
+
+  onToggleStatus(category: Category) {
+    // Usar o endpoint PATCH de atualização, modificando apenas o isActive
+    firstValueFrom(this.categoryService.update(category.id as number, { isActive: !category.isActive }))
+      .then((updatedCategory) => {
+        this.alertService.success('Sucesso', `Categoria ${updatedCategory.isActive ? 'ativada' : 'desativada'} com sucesso!`);
+        
+        // Atualizar a categoria na lista local
+        this.categories.update((categories) =>
+          categories.map((c) => (c.id === category.id ? updatedCategory : c))
+        );
+      })
+      .catch((err) => {
+        this.alertService.error('Erro', 'Não foi possível alterar o status da categoria. Tente novamente.');
+        console.error('Erro ao alterar status da categoria:', err);
+      });
   }
 }

@@ -1,0 +1,10 @@
+@if( $limitedNews | async; as news) { 
+  @if(news.length > 0){
+  <div class="carousel-container-desktop">
+    <lib-carousel [news]="news"></lib-carousel>
+  </div>
+  <div class="carousel-container-mobile">
+    <lib-carousel-swipe [news]="news"></lib-carousel-swipe>
+  </div>
+  } 
+}

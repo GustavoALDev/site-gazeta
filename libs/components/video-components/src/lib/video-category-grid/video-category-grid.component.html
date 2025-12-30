@@ -1,0 +1,11 @@
+@if (videosByCategory().length > 0) {
+  @for (item of videosByCategory(); track item.category.id) {
+    <div class="category-section">
+      <lib-video-carousel 
+        [videos]="item.videos"
+        [categoryName]="item.category.name"
+        (currentVideo)="onVideoSelected($event)">
+      </lib-video-carousel>
+    </div>
+  }
+}

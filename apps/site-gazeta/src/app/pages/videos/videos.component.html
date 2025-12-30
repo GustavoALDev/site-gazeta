@@ -1,1 +1,16 @@
-<p>videos works!</p>
+@if(currentVideo(); as video) {
+<lib-video-modal #videoModal [video]="video"></lib-video-modal>
+}
+<section class="videos-page">
+    <lib-video-featured 
+      (currentVideo)="receiveCurrentVideo($event, videoModal)"
+      (videosLoaded)="onFeaturedVideosLoaded($event)">
+    </lib-video-featured>
+    <lib-video-latest 
+      (currentVideo)="receiveCurrentVideo($event, videoModal)"
+      (excludedVideoIds)="onLatestVideosLoaded($event)">
+    </lib-video-latest>
+    <lib-video-category-grid 
+      [excludeIds]="excludedVideoIds()">
+    </lib-video-category-grid>
+</section>

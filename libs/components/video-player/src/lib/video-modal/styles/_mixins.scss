@@ -1,0 +1,46 @@
+// Mixins para breakpoints e utilitários
+
+// Breakpoints
+@mixin mobile-portrait {
+  @media (max-width: 768px) and (orientation: portrait) {
+    @content;
+  }
+}
+
+@mixin mobile-landscape {
+  @media (max-width: 768px) and (orientation: landscape) {
+    @content;
+  }
+}
+
+@mixin mobile-small-portrait {
+  @media (max-width: 480px) and (orientation: portrait) {
+    @content;
+  }
+}
+
+@mixin mobile-small-landscape {
+  @media (max-width: 480px) and (orientation: landscape) {
+    @content;
+  }
+}
+
+// Safe area utilities
+@mixin safe-area-top($default: 0) {
+  padding-top: calc(#{$default} + env(safe-area-inset-top, 0px));
+}
+
+@mixin safe-area-bottom($default: 0) {
+  padding-bottom: calc(#{$default} + env(safe-area-inset-bottom, 0px));
+}
+
+@mixin safe-area-both($top: 0, $bottom: 0) {
+  @include safe-area-top($top);
+  @include safe-area-bottom($bottom);
+}
+
+// Viewport height com safe area
+@function vh-with-safe($base: 100vh, $top: 0, $bottom: 0) {
+  @return calc(#{$base} - #{$top} - #{$bottom} - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+}
+

@@ -1,5 +1,4 @@
 <div class="carousel-container">
-  <!-- Botão Previous -->
   <button 
     class="carousel-nav carousel-nav--prev"
     (click)="goToPrevious()"
@@ -18,7 +17,6 @@
           <!-- Container da imagem -->
           <div class="news-card__image-container">
             <!-- Imagem -->
-             @if(i === centerItemIndex()){
               <img 
               class="news-card__image" 
               [ngSrc]="item.imageUrl"
@@ -26,10 +24,6 @@
               fill
               priority
               >
-             }@else {
-              <img [src]="item.imageUrl" alt="item.title" loading="lazy">
-             }
-            
             
             <!-- Overlay -->
             <div class="news-card__overlay"></div>

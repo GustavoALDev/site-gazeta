@@ -15,6 +15,7 @@ import { FormsModule } from '@angular/forms';
 import { NewsMedia, NewsVideo } from '@site-gazeta/models';
 import { NewsService } from '../../../core/services/news.service';
 import { firstValueFrom } from 'rxjs';
+import { AlertService } from '@site-gazeta/alert';
 
 interface MediaItem {
   type: 'photo' | 'video';
@@ -44,6 +45,8 @@ interface MediaItem {
   styleUrl: './news-midia.component.scss',
 })
 export class NewsMidiaComponent implements OnInit {
+  private alertService = inject(AlertService);
+  
   @ViewChild('photoInput') photoInput!: ElementRef<HTMLInputElement>;
   //medias da noticia para edição
   newsMedia = input<NewsMedia[]>();
@@ -107,7 +110,7 @@ export class NewsMidiaComponent implements OnInit {
 
       this.previewMidias.update((midias) => [...midias, newVideo]);
     } else if (videoUrl) {
-      alert('Por favor, insira uma URL válida do YouTube.');
+      this.alertService.warning('Atenção', 'Por favor, insira uma URL válida do YouTube.');
     }
   }
 

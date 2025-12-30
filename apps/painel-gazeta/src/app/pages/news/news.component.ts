@@ -10,11 +10,12 @@ import {
 import { NewsMidiaComponent } from './news-midia/news-midia.component';
 import { NewsMedia, NewsVideo, Category, News } from '@site-gazeta/models';
 import { FormValidatorComponent, FormValidatorService } from '@site-gazeta/form-validator';
-import { concatMap,  first,  firstValueFrom,  from, Subject,   takeUntil, toArray } from 'rxjs';
+import { concatMap,  first,  firstValueFrom,  from, Subject,   takeUntil, toArray, tap } from 'rxjs';
 import { NewsService } from '../../core/services/news.service';
 import { CategoryService } from '../../core/services/category.service';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { environment } from '../../core/env/env';
+import { AlertService } from '@site-gazeta/alert';
 
 @Component({
   selector: 'app-news',
@@ -36,7 +37,8 @@ export class NewsComponent implements OnInit, OnDestroy {
   formValidator = inject(FormValidatorService);
   newsService = inject(NewsService);
   categoryService = inject(CategoryService);
-  activeRouter = inject(ActivatedRoute)
+  activeRouter = inject(ActivatedRoute);
+  private alertService = inject(AlertService);
   apiUrl = environment.apiUrl;
   activeTab: 'info' | 'content' | 'media' = 'info';
   sidebarOpen = signal<boolean>(true);
@@ -49,6 +51,8 @@ export class NewsComponent implements OnInit, OnDestroy {
   isEdit = signal<boolean>(false)
   newsId:number |null = null
   exportEditNewsMedia = signal<{newsMedia:NewsMedia[], newsVideos:NewsVideo[]}| null>(null)
+  isUploadingMedia = signal<boolean>(false)
+  mediaUploadProgress = signal<{ current: number; total: number }>({ current: 0, total: 0 })
   form = this.fb.group({
     categoryId: [[] as number[], [Validators.required]],
     title: ['', [Validators.required]],
@@ -159,6 +163,8 @@ export class NewsComponent implements OnInit, OnDestroy {
       this.newsService.update(this.newsId as number,newsData as News)
     .subscribe({
       next: (res) => {
+        // Atualizar newsId imediatamente para evitar deletar imagens no OnDestroy
+        this.newsId = res.id;
 
         const newsMedia = formValue.newsMidia as NewsMedia[]
         const midias:FormData[] = []
@@ -179,26 +185,44 @@ export class NewsComponent implements OnInit, OnDestroy {
         })
 
 
-        from(midias)
-        .pipe(
-          concatMap(midia => this.newsService.uploadMedia(midia)), // uma por vez
-          toArray() // junta os resultados em um array
-        )
-        .subscribe({
+        if (midias.length > 0) {
+          this.isUploadingMedia.set(true);
+          this.mediaUploadProgress.set({ current: 0, total: midias.length });
+
+          from(midias)
+          .pipe(
+            concatMap((midia, index) => {
+              return this.newsService.uploadMedia(midia).pipe(
+                // Atualizar progresso após cada upload
+                tap(() => {
+                  this.mediaUploadProgress.set({ current: index + 1, total: midias.length });
+                })
+              );
+            }),
+            toArray() // junta os resultados em um array
+          )
+          .subscribe({
           next: (res) => {
             console.log(res);
-            alert('Notícia editada com sucesso!');
+            this.isUploadingMedia.set(false);
+            this.alertService.success('Sucesso', 'Notícia editada com sucesso!');
             this.onReset();
             this.checkEdit();
           },
-          error: (err) => {
-            alert('Erro ao salvar midia de notícia!');
-            throw err;
-          }
-        });
+            error: (err) => {
+              this.isUploadingMedia.set(false);
+              this.alertService.error('Erro', 'Erro ao salvar mídia de notícia!');
+              throw err;
+            }
+          });
+        } else {
+          this.alertService.success('Sucesso', 'Notícia editada com sucesso!');
+          this.onReset();
+          this.checkEdit();
+        }
       },
       error: (err) => {
-        alert('Erro ao editar notícia!');
+        this.alertService.error('Erro', 'Erro ao editar notícia!');
         throw err;
       }
     });
@@ -206,6 +230,9 @@ export class NewsComponent implements OnInit, OnDestroy {
       this.newsService.create(newsData as News)
     .subscribe({
       next: (res) => {
+        // Atualizar newsId imediatamente para evitar deletar imagens no OnDestroy
+        this.newsId = res.id;
+
         const newsMedia = formValue.newsMidia as NewsMedia[]
         const midias:FormData[] = []
         newsMedia.forEach((media) => {
@@ -218,26 +245,44 @@ export class NewsComponent implements OnInit, OnDestroy {
           midias.push(formMidia);
         })
 
-        from(midias)
-        .pipe(
-          concatMap(midia => this.newsService.uploadMedia(midia)), // uma por vez
-          toArray() // junta os resultados em um array
-        )
-        .subscribe({
-          next: (res) => {
-            console.log(res);
-            alert('Notícia criada com sucesso!');
-            this.onReset();
-            this.newsMidiaComponent?.resetMedia();
-          },
-          error: (err) => {
-            alert('Erro ao salvar midia de notícia!');
-            throw err;
-          }
-        });
+        if (midias.length > 0) {
+          this.isUploadingMedia.set(true);
+          this.mediaUploadProgress.set({ current: 0, total: midias.length });
+
+          from(midias)
+          .pipe(
+            concatMap((midia, index) => {
+              return this.newsService.uploadMedia(midia).pipe(
+                // Atualizar progresso após cada upload
+                tap(() => {
+                  this.mediaUploadProgress.set({ current: index + 1, total: midias.length });
+                })
+              );
+            }),
+            toArray() // junta os resultados em um array
+          )
+          .subscribe({
+            next: (res) => {
+              console.log(res);
+              this.isUploadingMedia.set(false);
+              this.alertService.success('Sucesso', 'Notícia criada com sucesso!');
+              this.onReset();
+              this.newsMidiaComponent?.resetMedia();
+            },
+            error: (err) => {
+              this.isUploadingMedia.set(false);
+              this.alertService.error('Erro', 'Erro ao salvar mídia de notícia!');
+              throw err;
+            }
+          });
+        } else {
+          this.alertService.success('Sucesso', 'Notícia criada com sucesso!');
+          this.onReset();
+          this.newsMidiaComponent?.resetMedia();
+        }
       },
       error: (err) => {
-        alert('Erro ao criar notícia!');
+        this.alertService.error('Erro', 'Erro ao criar notícia!');
         throw err;
       }
     });

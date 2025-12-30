@@ -27,9 +27,9 @@ export class MediaResponseDto {
   @ApiProperty({ 
     description: 'Tamanhos da imagem', 
     required: false,
-    type: [MediaSizeResponseDto]
+    type: MediaSizeResponseDto
   })
-  imgSize?: MediaSizeResponseDto[];
+  imgSize?: MediaSizeResponseDto;
 
   @ApiProperty({ description: 'Autor da mídia', example: 'João Fotógrafo', required: false })
   author?: string;

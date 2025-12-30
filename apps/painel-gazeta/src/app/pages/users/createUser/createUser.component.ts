@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { AlertService } from '@site-gazeta/alert';
 
 @Component({
   selector: 'app-create-user',
@@ -11,6 +12,7 @@ import { CommonModule } from '@angular/common';
 })
 export class CreateUserComponent {
   private fb = inject(FormBuilder).nonNullable;
+  private alertService = inject(AlertService);
   
   editingUser: any = null;
 
@@ -47,7 +49,7 @@ export class CreateUserComponent {
       this.userForm.reset();
       
       // Aqui você poderia emitir um evento para atualizar a lista
-      alert('Usuário criado com sucesso!');
+      this.alertService.success('Sucesso', 'Usuário criado com sucesso!');
     }
   }
 

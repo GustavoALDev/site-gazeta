@@ -1,6 +1,9 @@
-@if (moreNews().length > 0) {
+@if (newsChecked()!.length > 0) {
     <div class="remaining-news-grid">
-      @for (newsItem of moreNews().slice(0, showNews()? showNews() : moreNews().length); track newsItem.id) {
+      <div class="header">
+        <h2>{{ title() }}</h2>
+      </div>
+      @for (newsItem of newsChecked()!.slice(0, showNews()? showNews() : newsChecked()!.length); track newsItem.id) {
         <article class="news-item" [routerLink]="['/news', newsItem.slug]" >
           <div class="news-image" [style.background-color]="category()?.color" >
             @if (newsItem.mediaNews && newsItem.mediaNews.length > 0) {
@@ -24,7 +27,7 @@
         </article>
         
       }
-      @if (slice() > 0 && showNews() < moreNews().length) {
+      @if (slice() > 0 && showNews() < newsChecked()!.length) {
         <div class="show-more-news-container">
           <button class="show-more-news" (click)="showMoreNews()">Ver mais</button>
         </div>

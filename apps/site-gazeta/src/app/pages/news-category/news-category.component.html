@@ -5,9 +5,14 @@
   </div>
 } @else {
   <section class="news-category-container">
-     
-      <div class="category-name" [style.border-color]="category()!.color">
+      <div class="category-header">
+        <div class="category-name" [style.border-color]="category()!.color">
           <h2 [style.color]="category()!.color">{{ category()!.name }}</h2>
+          <div class="category-decoration" [style.background]="category()!.color"></div>
+        </div>
+        <div class="category-description">
+          <p [style.color]="category()!.color">{{ category()!.description }}</p>
+        </div>
       </div>
     @if (news().length > 0) {
     <div class="news-grid" >
@@ -27,7 +32,7 @@
               </div>
             }
             <div class="news-title-overlay">
-              <h2 class="news-title" >{{ featuredNews()!.title }}</h2>
+              <h2 class="news-title" [style.color]="category()!.color" >{{ featuredNews()!.title }}</h2>
             </div>
           </div>
         </article>
@@ -50,7 +55,7 @@
                 </div>
               }
               <div class="news-title-overlay">
-                <h3 class="news-title" >{{ newsItem.title }}</h3>
+                <h3 class="news-title" [style.color]="category()!.color" >{{ newsItem.title }}</h3>
               </div>
             </div>
           </article>
@@ -59,10 +64,7 @@
     </div>
     <div class="more-news">
       <div class="more-news-container">
-      <lib-more-news [moreNews]="remainingNews()" [slice]="3"></lib-more-news>
-      </div>
-      <div class="side-news-container">
-      <lib-side-news [newsList]="remainingNews()" [category]="category()!"></lib-side-news>
+      <lib-more-news [moreNews]="moreNews()" [title]="'Veja também'" [category]="category()!" [slice]="3"></lib-more-news>
       </div>
     </div>
     } @else {

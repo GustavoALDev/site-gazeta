@@ -251,4 +251,34 @@ export class CategoriesController {
       }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
+  @Patch(':id/toggle-active')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ 
+    summary: 'Ativar/Desativar categoria', 
+    description: 'Endpoint para alternar o status ativo/inativo de uma categoria' 
+  })
+  @ApiParam({ name: 'id', description: 'ID da categoria', type: 'number' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Status da categoria alterado com sucesso',
+    type: CategoryResponseDto
+  })
+  @ApiResponse({ status: 401, description: 'Token inválido ou não fornecido' })
+  @ApiResponse({ status: 404, description: 'Categoria não encontrada' })
+  async toggleActive(@Param('id', ParseIntPipe) id: number): Promise<CategoryResponseDto> {
+    try {
+      return await this.categoriesService.toggleActive(id);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new HttpException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Erro no servidor, tente novamente mais tarde',
+        error: 'Internal Server Error'
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
 } 

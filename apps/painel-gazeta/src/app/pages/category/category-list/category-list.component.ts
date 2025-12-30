@@ -14,6 +14,7 @@ export class CategoryListComponent {
   
   editCategory = output<Category>();
   deleteCategory = output<Category>();
+  toggleStatus = output<Category>();
 
 
   searchTerm = signal('');
@@ -79,6 +80,11 @@ export class CategoryListComponent {
     if (confirm(`Tem certeza que deseja excluir a categoria "${category.name}"?`)) {
       this.deleteCategory.emit(category);
     }
+  }
+
+  onToggleStatus(category: Category, event: Event) {
+    event.stopPropagation();
+    this.toggleStatus.emit(category);
   }
 
   private normalizeText(text: string): string {

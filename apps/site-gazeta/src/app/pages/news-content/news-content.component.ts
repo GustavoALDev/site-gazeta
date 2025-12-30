@@ -8,9 +8,10 @@ import { SessionService } from '../../core/service/session.service';
 import { RouterModule } from '@angular/router';
 import { RelatedNewsComponent } from '@site-gazeta/related-news';
 import { MoreNewsComponent } from '@site-gazeta/more-news';
+import { GalleryComponent } from './gallery/gallery.component';
 @Component({
   selector: 'app-news-content',
-  imports: [CommonModule, RouterModule, RelatedNewsComponent, MoreNewsComponent],
+  imports: [CommonModule, RouterModule, RelatedNewsComponent, MoreNewsComponent, GalleryComponent],
   templateUrl: './news-content.component.html',
   styleUrl: './news-content.component.scss'
 })
@@ -21,6 +22,7 @@ export class NewsContentComponent implements OnInit, OnDestroy {
   analyticsService = inject(AnalyticsService);
   sessionService = inject(SessionService);
   news = signal<News | null>(null);
+  error = signal<string | null>(null);
   isLoading = signal<boolean>(true);
   relatedNews = signal<News[]>([]);
   moreNews = signal<News[]>([]);
@@ -63,17 +65,22 @@ export class NewsContentComponent implements OnInit, OnDestroy {
       
       if (slug) {
         this.apiService.getNewsBySlug(slug)
-          .subscribe((news: News | undefined) => {
-            if (news) {
-              this.news.set(news);
-              this.getRelatedNews();
-              this.goToTop();
-              console.log(news);
+          .subscribe({
+            next: (news: News | undefined) => {
+              if (news) {
+                this.news.set(news);
+                this.trackInitialView(news);
+                this.getRelatedNews();
+                this.goToTop();
+              }
+            },
+            error: (err) => {
+              console.error('Error fetching news:', err);
+              this.error.set("Notícia não encontrada");
+            },
+            complete: () => {
               this.isLoading.set(false);
-              
-              // Rastrear visualização inicial
-              this.trackInitialView(news);
-            } 
+            }
           });            
       } 
       
@@ -86,8 +93,10 @@ export class NewsContentComponent implements OnInit, OnDestroy {
       behavior: 'smooth'
     });
   }
+
   getRelatedNews() {
-    this.apiService.getRelatedNews(this.news()!.categoryId, this.news()?.id as number)
+    // Agora só precisa passar o newsId, o backend busca as categorias
+    this.apiService.getRelatedNews([], this.news()?.id as number)
       .subscribe((news: News[]) => {
         this.relatedNews.set(news);
         console.log(news);
@@ -103,9 +112,7 @@ export class NewsContentComponent implements OnInit, OnDestroy {
       });
   }
 
-  /**
-   * Rastreia visualização inicial da notícia
-   */
+
   private trackInitialView(news: News): void {
     if (this.hasTrackedInitialView) return;
     
@@ -114,9 +121,18 @@ export class NewsContentComponent implements OnInit, OnDestroy {
       news.slug,
       this.sessionId
     ).subscribe({
-      next: () => {
+      next: (response: any) => {
         console.log('✅ View tracked:', news.slug);
         this.hasTrackedInitialView = true;
+        
+        // Atualizar o número de visualizações em tempo real se retornado pelo backend
+        if (response?.views !== undefined && this.news()) {
+          const currentNews = this.news()!;
+          this.news.set({
+            ...currentNews,
+            views: response.views
+          });
+        }
       },
       error: (err) => {
         console.warn('⚠️ Failed to track view:', err);
@@ -124,9 +140,7 @@ export class NewsContentComponent implements OnInit, OnDestroy {
     });
   }
 
-  /**
-   * Rastreia duração da visualização ao sair da página
-   */
+ 
   ngOnDestroy(): void {
     const currentNews = this.news();
     if (!currentNews || !this.hasTrackedInitialView) return;
