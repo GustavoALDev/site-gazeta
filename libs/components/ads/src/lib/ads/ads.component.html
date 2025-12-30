@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 @if(announcements()) { 
   @if(size() === '728x90') {
     <div class="announcement large">
@@ -17,3 +18,22 @@
     </div>
   }
 } 
+=======
+@if(announcements()) { @if(size() === '728x90') {
+<div class="announcement large">
+  <img [src]="announcements()!.imageUrl" alt="announcement" />
+</div>
+} @else if(size() === '300x200') {
+<div class="announcement small">
+  <img [src]="announcements()!.imageUrl" alt="announcement" />
+</div>
+} @else if(size() === '160x160') {
+<div class="announcement lateral">
+  <img [src]="announcements()!.imageUrl" alt="announcement" />
+</div>
+} @else if(size() === '160x600') {
+<div class="announcement sidebar">
+  <img [src]="announcements()!.imageUrl" alt="announcement" />
+</div>
+} }
+>>>>>>> b5f2738636de535f6ccfc333327d5ae48f987cb9

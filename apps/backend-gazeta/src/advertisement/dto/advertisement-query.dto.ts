@@ -18,12 +18,12 @@ export class AdvertisementQueryDto {
   @ApiProperty({ 
     description: 'Posição do anúncio na página', 
     example: 'top',
-    enum: ['top', 'bottom', 'sidebar', 'header', 'footer', 'content'],
+    enum: ['top', 'bottom', 'sidebar', 'header', 'footer', 'content', 'lateral'],
     required: false
   })
   @IsOptional()
-  @IsIn(['top', 'bottom', 'sidebar', 'header', 'footer', 'content'], {
-    message: 'Posição deve ser: top, bottom, sidebar, header, footer ou content'
+  @IsIn(['top', 'bottom', 'sidebar', 'header', 'footer', 'content', 'lateral'], {
+    message: 'Posição deve ser: top, bottom, sidebar, header, footer, content ou lateral'
   })
   position?: string;
 

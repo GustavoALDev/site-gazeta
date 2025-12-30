@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 import { isPlatformBrowser } from '@angular/common';
 import { Injectable, PLATFORM_ID, inject } from '@angular/core';
+=======
+import { Injectable, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+>>>>>>> b5f2738636de535f6ccfc333327d5ae48f987cb9
 
 @Injectable({
   providedIn: 'root'
@@ -9,12 +14,28 @@ export class SessionService {
   private readonly isBrowser = isPlatformBrowser(this.platformId);
   private readonly SESSION_KEY = 'analytics_session_id';
   private readonly SESSION_DURATION = 30 * 60 * 1000; // 30 minutos
+  private platformId = inject(PLATFORM_ID);
+
+  /**
+   * Verifica se está no browser
+   */
+  private isBrowser(): boolean {
+    return isPlatformBrowser(this.platformId);
+  }
 
   /**
    * Obtém ou cria um ID de sessão único
    */
   getSessionId(): string {
+<<<<<<< HEAD
     if (!this.isBrowser) return '';
+=======
+    // Se não estiver no browser, retornar sessão temporária
+    if (!this.isBrowser()) {
+      return this.generateSessionId();
+    }
+
+>>>>>>> b5f2738636de535f6ccfc333327d5ae48f987cb9
     const stored = this.getStoredSession();
     
     if (stored && this.isSessionValid(stored.timestamp)) {
@@ -31,7 +52,14 @@ export class SessionService {
    * Recupera sessão armazenada
    */
   private getStoredSession(): { sessionId: string; timestamp: number } | null {
+<<<<<<< HEAD
     if (!this.isBrowser) return null;
+=======
+    if (!this.isBrowser()) {
+      return null;
+    }
+    
+>>>>>>> b5f2738636de535f6ccfc333327d5ae48f987cb9
     try {
       const data = localStorage.getItem(this.SESSION_KEY);
       return data ? JSON.parse(data) : null;
@@ -63,7 +91,14 @@ export class SessionService {
    * Armazena sessão no localStorage
    */
   private storeSession(sessionId: string): void {
+<<<<<<< HEAD
     if (!this.isBrowser) return;
+=======
+    if (!this.isBrowser()) {
+      return;
+    }
+    
+>>>>>>> b5f2738636de535f6ccfc333327d5ae48f987cb9
     const data = {
       sessionId,
       timestamp: Date.now()
@@ -93,7 +128,13 @@ export class SessionService {
    * Limpa sessão (útil para logout ou testes)
    */
   clearSession(): void {
+<<<<<<< HEAD
     if (!this.isBrowser) return;
+=======
+    if (!this.isBrowser()) {
+      return;
+    }
+>>>>>>> b5f2738636de535f6ccfc333327d5ae48f987cb9
     localStorage.removeItem(this.SESSION_KEY);
   }
 }

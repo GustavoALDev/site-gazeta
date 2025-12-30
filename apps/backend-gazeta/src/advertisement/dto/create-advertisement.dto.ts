@@ -34,11 +34,11 @@ export class CreateAdvertisementDto {
   @ApiProperty({ 
     description: 'Posição do anúncio na página', 
     example: 'top',
-    enum: ['top', 'center', 'bottom']
+    enum: ['top', 'center', 'bottom', 'lateral']
   })
   @IsNotEmpty({ message: 'Posição é obrigatória' })
-  @IsIn(['top', 'center', 'bottom'], {
-    message: 'Posição deve ser: top, center ou bottom'
+  @IsIn(['top', 'center', 'bottom', 'lateral'], {
+    message: 'Posição deve ser: top, center, bottom ou lateral'
   })
   position: string;
 
@@ -56,11 +56,19 @@ export class CreateAdvertisementDto {
   @ApiProperty({ 
     description: 'Tamanho do anúncio', 
     example: '728x90',
+<<<<<<< HEAD
     enum: ['728x90', '300x250', '160x600', '200x200']
   })
   @IsNotEmpty({ message: 'Tamanho é obrigatório' })
   @IsIn(['728x90', '300x250', '160x600', '200x200'], {
     message: 'Tamanho deve ser: 728x90, 300x250, 160x600 ou 200x200'
+=======
+    enum: ['728x90', '300x200', '160x160', '160x600']
+  })
+  @IsNotEmpty({ message: 'Tamanho é obrigatório' })
+  @IsIn(['728x90', '300x200', '160x160', '160x600'], {
+    message: 'Tamanho deve ser: 728x90, 300x200, 160x160 ou 160x600'
+>>>>>>> b5f2738636de535f6ccfc333327d5ae48f987cb9
   })
   size: string;
 

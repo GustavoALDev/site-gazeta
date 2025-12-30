@@ -39,7 +39,7 @@ export class HomeComponentsComponent implements OnInit {
   protected newsItems = this.apiService.getNews();
   protected categories = signal<Category[]>([]);
   protected videos = signal<Video[]>([]);
-  private ads = signal<{top: Ads[], center: Ads[], bottom: Ads[]}>({top: [], center: [], bottom: []});
+  private ads = signal<{top: Ads[], center: Ads[], bottom: Ads[], lateral: Ads[]}>({top: [], center: [], bottom: [], lateral: []});
 
   menuItems = signal<Menu[]>([]);
   carouselItems = signal<News[]>([]);
@@ -52,8 +52,10 @@ export class HomeComponentsComponent implements OnInit {
   protected topAd = computed(() => this.ads().top.length > 0 ? this.ads().top[0] : null);
   protected centerAd = computed(() => this.ads().center.length > 0 ? this.ads().center[0] : null);
   protected bottomAd = computed(() => this.ads().bottom.length > 0 ? this.ads().bottom[0] : null);
+  protected lateralAd = computed(() => this.ads().lateral.length > 0 ? this.ads().lateral[0] : null);
   protected hasTopAd = computed(() => this.topAd() !== null);
   protected hasBottomAd = computed(() => this.bottomAd() !== null);
+  protected hasLateralAd = computed(() => this.lateralAd() !== null);
 
   // Computed para primeiro categoria
   protected firstCategory = computed(() => 
@@ -65,8 +67,55 @@ export class HomeComponentsComponent implements OnInit {
   ngOnInit(): void {
     this.getAds();
   }
+<<<<<<< HEAD
   
   
+=======
+
+  getHomeCategoryConfig() {
+    this.apiService.getHomeCategoryConfig().subscribe((config) => {
+      // Verificar se há categorias de destaque antes de processar
+      if (config.destaque && config.destaque.categories && config.destaque.categories.length > 0) {
+        const categories = config.destaque.categories as Category[];
+        this.setCategoryGridItems(categories);
+      }
+      // Verificar se há top gazeta antes de definir
+      if (config.topGazeta) {
+        this.topGazeta.set(config.topGazeta);
+      }
+      console.log('Home Category Config:', config);
+      console.log('Top Gazeta:', this.topGazeta());
+    });
+  }
+  getNews() {
+    this.apiService.getNews().subscribe((news) => {
+      this.newsItems.set(news);
+    });
+  }
+
+  getCategories() {
+    this.apiService.getActiveCategories().subscribe((categories) => {
+      this.categories.set(categories);
+    });
+  }
+
+  getVideos() {
+    this.apiService.getVideos().subscribe((videos) => {
+      this.videos.set(videos);
+    });
+  }
+
+  setCarouselItems() {
+    this.apiService.getNewsFeatured()
+    .pipe(
+      map(news => news.slice(0, 5))
+    )
+    .subscribe((news) => {
+      this.carouselItems.set(news);
+    });
+  }
+
+>>>>>>> b5f2738636de535f6ccfc333327d5ae48f987cb9
   getAds() {
     console.log('getAds');
     this.apiService.getAdsByPlacement('home').subscribe((ads) => {
@@ -79,6 +128,7 @@ export class HomeComponentsComponent implements OnInit {
         top: ads.filter(ad => ad.position === 'top'),
         center: ads.filter(ad => ad.position === 'center'),
         bottom: ads.filter(ad => ad.position === 'bottom'),
+        lateral: ads.filter(ad => ad.position === 'lateral'),
       };
       this.ads.set(groupedAds);
   }
