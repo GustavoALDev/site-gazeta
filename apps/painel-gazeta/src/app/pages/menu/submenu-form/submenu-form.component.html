@@ -92,11 +92,12 @@
   @if (selectedType() === 'category') {
     <div class="form-group">
       <label>Categorias</label>
-      
-      <app-category-multi-select
-        [selectedCategories]="selectedCategories()"
-        (onCategoriesChange)="onCategoriesChange($event)">
-      </app-category-multi-select>
+      <multi-select
+        [items]="categories()"
+        [selectedItems]="selectedCategories()"
+        (selectedItemsChange)="onCategoriesChange($event)"
+      />
+
       
       @if (selectedCategories().length > 0) {
         <small class="success-message">

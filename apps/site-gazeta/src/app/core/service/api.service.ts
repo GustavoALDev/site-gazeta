@@ -96,55 +96,7 @@ export class ApiService {
     );
   }
   
-<<<<<<< HEAD
   
-=======
-  getHomeCategoryConfig(){
-    return forkJoin([
-      this.http.get<DestaqueConfig | null>(`${this.apiUrl}/config/destaques`).pipe(
-        map(config => {
-          if (config) return config;
-          const now = new Date().toISOString();
-          return { 
-            id: 0,
-            categories: [], 
-            categoryIds: [], 
-            randomMode: true,
-            createdAt: now,
-            updatedAt: now,
-            createdBy: 0
-          } as DestaqueConfig;
-        })
-      ),
-      this.http.get<TopGazetaConfig | null>(`${this.apiUrl}/config/top-gazeta`).pipe(
-        map(config => {
-          if (config) return config;
-          const now = new Date().toISOString();
-          return { 
-            id: 0,
-            categories: [], 
-            categoryIds: [], 
-            randomMode: true,
-            createdAt: now,
-            updatedAt: now,
-            createdBy: 0
-          } as TopGazetaConfig;
-        })
-      ),
-    ])
-    .pipe(
-      map(([destaque, topGazeta]) => {
-        return {
-          destaque,
-          topGazeta,
-        }
-      })
-    )
-  }
-  getVideos(){
-    return this.http.get<Video[]>(`${this.apiUrl}/videos`);
-  }
->>>>>>> b5f2738636de535f6ccfc333327d5ae48f987cb9
 
   getVideosById(id: number) {
     return this.http.get<Video>(`${this.apiUrl}/videos/${id}`);

@@ -52,14 +52,7 @@ export class SessionService {
    * Recupera sessão armazenada
    */
   private getStoredSession(): { sessionId: string; timestamp: number } | null {
-<<<<<<< HEAD
     if (!this.isBrowser) return null;
-=======
-    if (!this.isBrowser()) {
-      return null;
-    }
-    
->>>>>>> b5f2738636de535f6ccfc333327d5ae48f987cb9
     try {
       const data = localStorage.getItem(this.SESSION_KEY);
       return data ? JSON.parse(data) : null;
@@ -91,14 +84,7 @@ export class SessionService {
    * Armazena sessão no localStorage
    */
   private storeSession(sessionId: string): void {
-<<<<<<< HEAD
     if (!this.isBrowser) return;
-=======
-    if (!this.isBrowser()) {
-      return;
-    }
-    
->>>>>>> b5f2738636de535f6ccfc333327d5ae48f987cb9
     const data = {
       sessionId,
       timestamp: Date.now()
@@ -128,13 +114,7 @@ export class SessionService {
    * Limpa sessão (útil para logout ou testes)
    */
   clearSession(): void {
-<<<<<<< HEAD
     if (!this.isBrowser) return;
-=======
-    if (!this.isBrowser()) {
-      return;
-    }
->>>>>>> b5f2738636de535f6ccfc333327d5ae48f987cb9
     localStorage.removeItem(this.SESSION_KEY);
   }
 }

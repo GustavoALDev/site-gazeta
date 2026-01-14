@@ -67,55 +67,8 @@ export class HomeComponentsComponent implements OnInit {
   ngOnInit(): void {
     this.getAds();
   }
-<<<<<<< HEAD
   
   
-=======
-
-  getHomeCategoryConfig() {
-    this.apiService.getHomeCategoryConfig().subscribe((config) => {
-      // Verificar se há categorias de destaque antes de processar
-      if (config.destaque && config.destaque.categories && config.destaque.categories.length > 0) {
-        const categories = config.destaque.categories as Category[];
-        this.setCategoryGridItems(categories);
-      }
-      // Verificar se há top gazeta antes de definir
-      if (config.topGazeta) {
-        this.topGazeta.set(config.topGazeta);
-      }
-      console.log('Home Category Config:', config);
-      console.log('Top Gazeta:', this.topGazeta());
-    });
-  }
-  getNews() {
-    this.apiService.getNews().subscribe((news) => {
-      this.newsItems.set(news);
-    });
-  }
-
-  getCategories() {
-    this.apiService.getActiveCategories().subscribe((categories) => {
-      this.categories.set(categories);
-    });
-  }
-
-  getVideos() {
-    this.apiService.getVideos().subscribe((videos) => {
-      this.videos.set(videos);
-    });
-  }
-
-  setCarouselItems() {
-    this.apiService.getNewsFeatured()
-    .pipe(
-      map(news => news.slice(0, 5))
-    )
-    .subscribe((news) => {
-      this.carouselItems.set(news);
-    });
-  }
-
->>>>>>> b5f2738636de535f6ccfc333327d5ae48f987cb9
   getAds() {
     console.log('getAds');
     this.apiService.getAdsByPlacement('home').subscribe((ads) => {

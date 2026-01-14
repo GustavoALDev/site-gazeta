@@ -4,9 +4,8 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { MenuService } from '../../../core/services/menu.service';
 import { CategoryService } from '../../../core/services/category.service';
 import { Category, Menu } from '@site-gazeta/models';
-import { CategoryMultiSelectComponent } from '../category-multi-select/category-multi-select.component';
 import { AlertService } from '@site-gazeta/alert';
-
+import { MultiSelectComponent } from '@site-gazeta/multi-select';
 type MenuType = 'external' | 'internal' | 'category';
 
 interface InternalRoute {
@@ -17,7 +16,7 @@ interface InternalRoute {
 @Component({
   selector: 'app-submenu-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, CategoryMultiSelectComponent],
+  imports: [CommonModule, ReactiveFormsModule, MultiSelectComponent],
   templateUrl: './submenu-form.component.html',
   styleUrl: './submenu-form.component.scss',
 })

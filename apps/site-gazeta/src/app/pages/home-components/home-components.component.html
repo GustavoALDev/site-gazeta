@@ -21,28 +21,12 @@
       <div class="loading-spinner"></div>
     </div>
   }
-<<<<<<< HEAD
   @defer (on viewport) {
     <lib-video-manager></lib-video-manager>
   }@placeholder {
     <div class="loading-container">
       <div class="loading-spinner"></div>
     </div>
-=======
-  
-  <!-- News Category Section: renderiza apenas se houver categoria e notícias -->
-  @if (firstCategory() && hasNews()) {
-    @defer(on viewport ; when hasNews()) {
-    <lib-news-category-section 
-      class="order-5"
-      [category]="firstCategory()!"
-      [news]="newsItems()"
-      [announcements]="hasLateralAd() ? lateralAd()! : (centerAd() || undefined)">
-    </lib-news-category-section>
-    } @placeholder {
-      <div class="news-category-section-skeleton"></div>
-    }
->>>>>>> b5f2738636de535f6ccfc333327d5ae48f987cb9
   }
   @defer (on viewport) {
     <lib-news-highligths></lib-news-highligths>

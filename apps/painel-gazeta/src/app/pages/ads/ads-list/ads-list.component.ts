@@ -23,24 +23,9 @@ export class AdsListComponent implements OnInit, OnDestroy {
   loading = signal(false);
   private destroy$ = new Subject<void>();
   
-<<<<<<< HEAD
   // Signals para modal de confirmação
   adToDelete = signal<Ads | null>(null);
   showDeleteConfirm = signal(false);
-=======
-  // Opções para filtros
-  readonly positions = [
-    { value: '', label: 'Todas as posições' },
-    { value: 'top', label: 'Topo' },
-    { value: 'center', label: 'Centro' },
-    { value: 'bottom', label: 'Rodapé' },
-    { value: 'lateral', label: 'Lateral' },
-    { value: 'sidebar', label: 'Barra Lateral' },
-    { value: 'header', label: 'Cabeçalho' },
-    { value: 'footer', label: 'Rodapé da Página' },
-    { value: 'content', label: 'Conteúdo' }
-  ];
->>>>>>> b5f2738636de535f6ccfc333327d5ae48f987cb9
 
   // Filtros
   filterDate = signal<string>('');
