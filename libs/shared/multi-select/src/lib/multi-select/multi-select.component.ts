@@ -5,13 +5,9 @@ import {
   input,
   output,
   computed,
-  effect,
   viewChild,
   ElementRef,
   forwardRef,
-  afterNextRender,
-  Injector,
-  runInInjectionContext,
   afterRenderEffect,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';

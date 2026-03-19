@@ -3,7 +3,7 @@ import { NewsService } from '../../../core/services/news.service';
 import { CategoryService } from '../../../core/services/category.service';
 import { Category, News } from '@site-gazeta/models';
 import { CommonModule } from '@angular/common';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, tap } from 'rxjs';
 import { RouterModule } from '@angular/router';
 import { AlertService } from '@site-gazeta/alert';
 import { NewsListFiltersComponent } from './news-list-filters/news-list-filters.component';
@@ -79,6 +79,7 @@ export class NewsListComponent implements OnInit {
     this.getNews();
     this.getCategories();
 
+
   }
 
   getNews(){
@@ -152,4 +153,30 @@ export class NewsListComponent implements OnInit {
     }
     return !news.mediaNews.some(m => m.emphasis);
   }
+
+  // Contar destaques ativos
+  getActiveEmphasisCount(): number {
+    return this.news().filter(n => n.isEmphasis).length;
+  }
+
+  // Verificar se atingiu o limite de destaques
+  hasReachedEmphasisLimit(): boolean {
+    return this.getActiveEmphasisCount() >= 6;
+  }
+
+  // resetEmphasis(){
+  //   console.log('resetEmphasis')
+  //   this.news().forEach((news)=>{
+  //     console.log(news)
+  //     this.newsService.update(news.id, {isEmphasis: false})
+  //     .subscribe({
+  //       next:()=>{
+  //         console.log('resetado')
+  //       },
+  //       error:(error)=>{
+  //         throw error
+  //       }
+  //     })
+  //   })
+  // }
 }

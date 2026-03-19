@@ -15,8 +15,14 @@
   margin-bottom: 1rem;
   border-radius: var(--radius);
   box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
 
-  .news-count {
+  .news-count,
+  .emphasis-count {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -35,6 +41,24 @@
       padding: 0.25rem 0.75rem;
       background: rgba(10, 128, 196, 0.1);
       border-radius: var(--radius);
+    }
+  }
+
+  .emphasis-count {
+    .count-value {
+      color: #FFD700;
+      background: rgba(255, 215, 0, 0.1);
+    }
+
+    &.limit-reached .count-value {
+      color: var(--danger);
+      background: rgba(235, 50, 55, 0.1);
+    }
+
+    .limit-warning {
+      font-size: 1rem;
+      margin-left: 0.25rem;
+      animation: pulse 2s ease-in-out infinite;
     }
   }
 }
@@ -112,7 +136,7 @@
 
 .news-image-cell {
   justify-content: center;
-  
+
   .news-card-img {
     width: 60px;
     height: 45px;
@@ -231,7 +255,7 @@
 
 .news-actions-cell {
   justify-content: flex-end;
-  
+
   .news-actions {
     display: flex;
     gap: 0.5rem;
@@ -309,13 +333,22 @@
 }
 
 @keyframes starPulse {
-  0%, 100% { 
+  0%, 100% {
     transform: scale(1);
     opacity: 1;
   }
-  50% { 
+  50% {
     transform: scale(1.1);
     opacity: 0.9;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
   }
 }
 
@@ -385,7 +418,7 @@
       display: flex;
       justify-content: flex-start;
       order: -1;
-      
+
       .emphasis-star {
         font-size: 1.25rem;
       }
@@ -393,7 +426,7 @@
 
     .news-image-cell {
       justify-content: flex-start;
-      
+
       .news-card-img {
         width: 100%;
         height: 180px;

@@ -9,9 +9,11 @@ import { RouterModule } from '@angular/router';
 import { RelatedNewsComponent } from '@site-gazeta/related-news';
 import { MoreNewsComponent } from '@site-gazeta/more-news';
 import { GalleryComponent } from './gallery/gallery.component';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { AdsComponent } from '@site-gazeta/ads';
 @Component({
   selector: 'app-news-content',
-  imports: [CommonModule, RouterModule, RelatedNewsComponent, MoreNewsComponent, GalleryComponent],
+  imports: [CommonModule, RouterModule, RelatedNewsComponent, MoreNewsComponent, GalleryComponent, AdsComponent],
   templateUrl: './news-content.component.html',
   styleUrl: './news-content.component.scss'
 })
@@ -26,7 +28,7 @@ export class NewsContentComponent implements OnInit, OnDestroy {
   isLoading = signal<boolean>(true);
   relatedNews = signal<News[]>([]);
   moreNews = signal<News[]>([]);
-  
+
   // Analytics tracking
   private sessionId: string = this.sessionService.getSessionId();
   private viewStartTime: number = Date.now();
@@ -48,7 +50,7 @@ export class NewsContentComponent implements OnInit, OnDestroy {
   formattedViews = computed(() => {
     const currentNews = this.news();
     if (!currentNews?.views) return '0 visualizações';
-    
+
     const views = currentNews.views;
     if (views >= 1000000) {
       return (views / 1000000).toFixed(1) + 'M visualizações';
@@ -57,12 +59,13 @@ export class NewsContentComponent implements OnInit, OnDestroy {
     }
     return views.toString() + ' visualizações';
   });
-
+  protected centerAd = toSignal(this.apiService.getAdsByPlacementAndPosition('content', 'center'));
+  protected bottomAd = toSignal(this.apiService.getAdsByPlacementAndPosition('content', 'bottom'));
   ngOnInit(): void {
     // Preparado para receber o slug da rota
     this.route.paramMap.subscribe(params => {
       const slug = params.get('slug');
-      
+
       if (slug) {
         this.apiService.getNewsBySlug(slug)
           .subscribe({
@@ -81,9 +84,9 @@ export class NewsContentComponent implements OnInit, OnDestroy {
             complete: () => {
               this.isLoading.set(false);
             }
-          });            
-      } 
-      
+          });
+      }
+
     });
     this.getMoreNews();
   }
@@ -115,7 +118,7 @@ export class NewsContentComponent implements OnInit, OnDestroy {
 
   private trackInitialView(news: News): void {
     if (this.hasTrackedInitialView) return;
-    
+
     this.analyticsService.trackNewsView(
       news.id,
       news.slug,
@@ -124,7 +127,7 @@ export class NewsContentComponent implements OnInit, OnDestroy {
       next: (response: any) => {
         console.log('✅ View tracked:', news.slug);
         this.hasTrackedInitialView = true;
-        
+
         // Atualizar o número de visualizações em tempo real se retornado pelo backend
         if (response?.views !== undefined && this.news()) {
           const currentNews = this.news()!;
@@ -140,13 +143,13 @@ export class NewsContentComponent implements OnInit, OnDestroy {
     });
   }
 
- 
+
   ngOnDestroy(): void {
     const currentNews = this.news();
     if (!currentNews || !this.hasTrackedInitialView) return;
 
     const duration = Math.floor((Date.now() - this.viewStartTime) / 1000);
-    
+
     // Registrar duração apenas se o usuário ficou pelo menos 5 segundos
     if (duration >= 5) {
       this.analyticsService.trackViewDuration(

@@ -1,43 +1,26 @@
-<<<<<<< HEAD
-import { isPlatformBrowser } from '@angular/common';
-import { Injectable, PLATFORM_ID, inject } from '@angular/core';
-=======
 import { Injectable, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
->>>>>>> b5f2738636de535f6ccfc333327d5ae48f987cb9
 
 @Injectable({
   providedIn: 'root'
 })
 export class SessionService {
   private platformId = inject(PLATFORM_ID);
-  private readonly isBrowser = isPlatformBrowser(this.platformId);
+  private  isBrowser = isPlatformBrowser(this.platformId);
   private readonly SESSION_KEY = 'analytics_session_id';
   private readonly SESSION_DURATION = 30 * 60 * 1000; // 30 minutos
-  private platformId = inject(PLATFORM_ID);
-
-  /**
-   * Verifica se está no browser
-   */
-  private isBrowser(): boolean {
-    return isPlatformBrowser(this.platformId);
-  }
 
   /**
    * Obtém ou cria um ID de sessão único
    */
   getSessionId(): string {
-<<<<<<< HEAD
-    if (!this.isBrowser) return '';
-=======
     // Se não estiver no browser, retornar sessão temporária
-    if (!this.isBrowser()) {
+    if (!this.isBrowser) {
       return this.generateSessionId();
     }
 
->>>>>>> b5f2738636de535f6ccfc333327d5ae48f987cb9
     const stored = this.getStoredSession();
-    
+
     if (stored && this.isSessionValid(stored.timestamp)) {
       // Atualizar timestamp da sessão ativa
       this.updateSessionTimestamp(stored.sessionId);

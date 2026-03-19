@@ -16,26 +16,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
   isDarkMode$ = signal<boolean>(false);
   darkModeService = inject(DarkModeService);
   destroy$ = new Subject<void>();
-  announcements = input<Ads[]>([]); 
+  announcements = input<Ads>();
 
-  selectedAd = computed(() => {
-    const ads = this.announcements();
-    return ads.length > 0 ? this.selectAdByPriority(ads) : null;
-  });
-  
-  private selectAdByPriority(ads: Ads[]): Ads {
-    if (ads.length === 1) return ads[0];
-
-    const weights = ads.map(ad => (ad.priority || 0) + 1);
-    const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
-    
-    let random = Math.random() * totalWeight;
-    
-    return ads.find((_, index) => {
-      random -= weights[index];
-      return random <= 0;
-    }) ?? ads[ads.length - 1];
-  }
   ngOnInit(): void {
     this.darkModeService.isDarkMode$
     .pipe(takeUntil(this.destroy$))
@@ -51,7 +33,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   getButtonStyle(): string {
     const isDark = this.isDarkMode$();
     const baseStyle = 'display: flex; align-items: center; gap: 8px; border: none; border-radius: 25px; padding: 10px 16px; cursor: pointer; font-weight: 500; font-size: 14px; transition: all 0.3s ease;';
-    
+
     if (isDark) {
       return baseStyle + ' background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%); color: #2d3436; box-shadow: 0 4px 15px rgba(255, 234, 167, 0.3);';
     } else {

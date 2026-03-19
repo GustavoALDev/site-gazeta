@@ -147,6 +147,9 @@ export class NewsComponent implements OnInit, OnDestroy {
 
   onSubmit() {
     const formValue = this.form.value;
+    const isEmphasisValue = formValue.isEmphasis as boolean;
+
+    // Prepara os dados sem o isEmphasis para primeiro salvar a notícia
     const newsData = {
       title: formValue.title as string,
       subtitle: formValue.subtitle as string,
@@ -155,139 +158,116 @@ export class NewsComponent implements OnInit, OnDestroy {
       content: formValue.content as string,
       categoryId: formValue.categoryId as number[],
       published: formValue.published as string,
-      isEmphasis: formValue.isEmphasis as boolean,
+      isEmphasis: false, // Inicialmente salva como false
       validity: formValue.validity as string | null,
       status: formValue.status as string,
     };
+
     if(this.isEdit()){
-      this.newsService.update(this.newsId as number,newsData as News)
-    .subscribe({
-      next: (res) => {
-        // Atualizar newsId imediatamente para evitar deletar imagens no OnDestroy
-        this.newsId = res.id;
-
-        const newsMedia = formValue.newsMidia as NewsMedia[]
-        const midias:FormData[] = []
-        console.log(newsMedia)
-        newsMedia.forEach((media) => {
-          if(media.file){
-            const formMidia = new FormData();
-          formMidia.append('postId', res.id.toString());
-          formMidia.append('emphasis', media.emphasis.toString());
-          formMidia.append('author', media.author as string);
-          formMidia.append('date', media.date as string);
-          formMidia.append('file', media.file as File);
-          midias.push(formMidia);
-          }
-        })
-        newsMedia.forEach((media) => {
-          console.log(media)
-        })
-
-
-        if (midias.length > 0) {
-          this.isUploadingMedia.set(true);
-          this.mediaUploadProgress.set({ current: 0, total: midias.length });
-
-          from(midias)
-          .pipe(
-            concatMap((midia, index) => {
-              return this.newsService.uploadMedia(midia).pipe(
-                // Atualizar progresso após cada upload
-                tap(() => {
-                  this.mediaUploadProgress.set({ current: index + 1, total: midias.length });
-                })
-              );
-            }),
-            toArray() // junta os resultados em um array
-          )
-          .subscribe({
-          next: (res) => {
-            console.log(res);
-            this.isUploadingMedia.set(false);
-            this.alertService.success('Sucesso', 'Notícia editada com sucesso!');
-            this.onReset();
-            this.checkEdit();
-          },
-            error: (err) => {
-              this.isUploadingMedia.set(false);
-              this.alertService.error('Erro', 'Erro ao salvar mídia de notícia!');
-              throw err;
-            }
-          });
-        } else {
-          this.alertService.success('Sucesso', 'Notícia editada com sucesso!');
-          this.onReset();
-          this.checkEdit();
+      this.newsService.update(this.newsId as number, newsData as News)
+      .subscribe({
+        next: (res) => {
+          // Após salvar a notícia, atualiza o destaque usando a nova lógica
+          this.handleEmphasisUpdate(res.id, isEmphasisValue, formValue);
+        },
+        error: (err) => {
+          this.alertService.error('Erro', 'Erro ao editar notícia!');
+          throw err;
         }
-      },
-      error: (err) => {
-        this.alertService.error('Erro', 'Erro ao editar notícia!');
-        throw err;
-      }
-    });
+      });
     }else{
       this.newsService.create(newsData as News)
-    .subscribe({
-      next: (res) => {
-        // Atualizar newsId imediatamente para evitar deletar imagens no OnDestroy
-        this.newsId = res.id;
-
-        const newsMedia = formValue.newsMidia as NewsMedia[]
-        const midias:FormData[] = []
-        newsMedia.forEach((media) => {
-          const formMidia = new FormData();
-          formMidia.append('postId', res.id.toString());
-          formMidia.append('emphasis', media.emphasis.toString());
-          formMidia.append('author', media.author as string);
-          formMidia.append('date', media.date as string);
-          formMidia.append('file', media.file as File);
-          midias.push(formMidia);
-        })
-
-        if (midias.length > 0) {
-          this.isUploadingMedia.set(true);
-          this.mediaUploadProgress.set({ current: 0, total: midias.length });
-
-          from(midias)
-          .pipe(
-            concatMap((midia, index) => {
-              return this.newsService.uploadMedia(midia).pipe(
-                // Atualizar progresso após cada upload
-                tap(() => {
-                  this.mediaUploadProgress.set({ current: index + 1, total: midias.length });
-                })
-              );
-            }),
-            toArray() // junta os resultados em um array
-          )
-          .subscribe({
-            next: (res) => {
-              console.log(res);
-              this.isUploadingMedia.set(false);
-              this.alertService.success('Sucesso', 'Notícia criada com sucesso!');
-              this.onReset();
-              this.newsMidiaComponent?.resetMedia();
-            },
-            error: (err) => {
-              this.isUploadingMedia.set(false);
-              this.alertService.error('Erro', 'Erro ao salvar mídia de notícia!');
-              throw err;
-            }
-          });
-        } else {
-          this.alertService.success('Sucesso', 'Notícia criada com sucesso!');
-          this.onReset();
-          this.newsMidiaComponent?.resetMedia();
+      .subscribe({
+        next: (res) => {
+          // Após criar a notícia, atualiza o destaque usando a nova lógica
+          this.handleEmphasisUpdate(res.id, isEmphasisValue, formValue);
+        },
+        error: (err) => {
+          this.alertService.error('Erro', 'Erro ao criar notícia!');
+          throw err;
         }
+      });
+    }
+  }
+
+  private handleEmphasisUpdate(newsId: number, isEmphasisValue: boolean, formValue: any) {
+    // Atualizar newsId imediatamente para evitar deletar imagens no OnDestroy
+    this.newsId = newsId;
+
+    // Agora gerencia o destaque com a nova lógica
+    this.newsService.updateEmphasis(newsId, isEmphasisValue).subscribe({
+      next: (emphasisResult) => {
+        // Se removeu o destaque de outra notícia, mostra uma notificação
+        if (emphasisResult.removedEmphasis) {
+          this.alertService.info(
+            'Limite de destaques atingido',
+            `A notícia "${emphasisResult.removedEmphasis.title}" foi removida dos destaques para adicionar a nova.`
+          );
+        }
+
+        // Agora processa o upload de mídias
+        this.processMediaUpload(formValue, newsId);
       },
       error: (err) => {
-        this.alertService.error('Erro', 'Erro ao criar notícia!');
-        throw err;
+        // Se falhar a atualização do destaque, ainda processa as mídias
+        console.error('Erro ao atualizar destaque:', err);
+        this.processMediaUpload(formValue, newsId);
       }
     });
-    }
+  }
 
+  private processMediaUpload(formValue: any, newsId: number) {
+    const newsMedia = formValue.newsMidia as NewsMedia[]
+    const midias: FormData[] = []
+
+    console.log(newsMedia)
+    newsMedia.forEach((media) => {
+      if (media.file) {
+        const formMidia = new FormData();
+        formMidia.append('postId', newsId.toString());
+        formMidia.append('emphasis', media.emphasis.toString());
+        formMidia.append('author', media.author as string);
+        formMidia.append('date', media.date as string);
+        formMidia.append('file', media.file as File);
+        midias.push(formMidia);
+      }
+    })
+
+    if (midias.length > 0) {
+      this.isUploadingMedia.set(true);
+      this.mediaUploadProgress.set({ current: 0, total: midias.length });
+
+      from(midias)
+      .pipe(
+        concatMap((midia, index) => {
+          return this.newsService.uploadMedia(midia).pipe(
+            // Atualizar progresso após cada upload
+            tap(() => {
+              this.mediaUploadProgress.set({ current: index + 1, total: midias.length });
+            })
+          );
+        }),
+        toArray() // junta os resultados em um array
+      )
+      .subscribe({
+        next: (res) => {
+          console.log(res);
+          this.isUploadingMedia.set(false);
+          this.alertService.success('Sucesso', 'Notícia salva com sucesso!');
+          this.onReset();
+          this.checkEdit();
+        },
+        error: (err) => {
+          this.isUploadingMedia.set(false);
+          this.alertService.error('Erro', 'Erro ao salvar mídia de notícia!');
+          throw err;
+        }
+      });
+    } else {
+      this.alertService.success('Sucesso', 'Notícia salva com sucesso!');
+      this.onReset();
+      this.checkEdit();
+    }
   }
 
   setActiveTab(tab: 'info' | 'content' | 'media') {

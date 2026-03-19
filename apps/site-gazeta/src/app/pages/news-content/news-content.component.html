@@ -4,8 +4,8 @@
     @if (emphasisMedia(); as media) {
       <div class="news-hero">
         <div class="hero-image-container">
-          <img 
-            [src]="media.imgSize?.original" 
+          <img
+            [src]="media.imgSize?.original"
             [alt]="news()?.title"
             class="hero-image"
           >
@@ -21,12 +21,12 @@
         </div>
       </div>
     }
-    
+
     <div class="news-container">
       <div class="news-header">
         <h1 class="news-title">{{ news()?.title }}</h1>
         <h2 class="news-subtitle">{{ news()?.subtitle }}</h2>
-        
+
         <div class="news-meta">
           <div class="meta-item">
             <svg class="meta-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -35,7 +35,7 @@
             </svg>
             <span>Por <strong>{{ news()?.author }}</strong></span>
           </div>
-          
+
           <div class="meta-item">
             <svg class="meta-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="10"></circle>
@@ -43,20 +43,26 @@
             </svg>
             <span>{{ news()?.published | date:'dd/MM/yyyy HH:mm' }}</span>
           </div>
-          
-          <div class="meta-item">
+
+          <!-- <div class="meta-item">
             <svg class="meta-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
               <circle cx="12" cy="12" r="3"></circle>
             </svg>
             <span>{{ formattedViews() }}</span>
-          </div>
+          </div> -->
         </div>
       </div>
-
+      <div class="container-ads">
+        <lib-ads [announcements]="centerAd()!['728x90']"></lib-ads>
+        <lib-ads [announcements]="centerAd()!['300x250']"></lib-ads>
+      </div>
       <!-- Conteúdo da Notícia -->
       <div class="news-body">
-        <div class="news-text" [innerHTML]="news()?.content"></div>
+        <div class="container-news-text">
+          <div class="news-text" [innerHTML]="news()?.content"></div>
+          <lib-ads [announcements]="centerAd()!['160x600']"></lib-ads>
+        </div>
 
         <!-- Vídeos da Notícia -->
         @if (news()?.videoNews && news()!.videoNews.length > 0) {
@@ -66,10 +72,10 @@
               @for (video of news()?.videoNews; track video.id) {
                 <div class="video-item">
                   <div class="video-wrapper">
-                    <iframe 
-                      [src]="video.url" 
-                      frameborder="0" 
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    <iframe
+                      [src]="video.url"
+                      frameborder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowfullscreen>
                     </iframe>
                   </div>
@@ -78,9 +84,11 @@
             </div>
           </div>
         }
-        
-      </div>
 
+      </div>
+      <div class="container-ads">
+        <lib-ads [announcements]="bottomAd()!['728x90']"></lib-ads>
+      </div>
       <!-- Rodapé da Notícia -->
       <div class="news-footer">
         <div class="share-section">
@@ -105,7 +113,7 @@
         </div>
       </div>
     </div>
-    @defer (on viewport) {
+    @defer (on viewport ) {
     <lib-related-news [currentNews]="news()!"></lib-related-news>
     }
     @placeholder {

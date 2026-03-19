@@ -1,10 +1,14 @@
 .announcement {
-    align-self: stretch;   
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 10px 0;
-    height: 100%;
+  position: relative;
+  align-self: stretch;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 10px 0;
+  height: 100%;
+    a{
+      position: absolute;
+    }
 }
 
 .large{
@@ -13,29 +17,51 @@
         height: 90px;
         width: 100%;
     }
+    a{
+      max-width: 728px;
+        width: 100%;
+        height: 100%;
+    }
 }
 
 .small{
+  display: none;
     img {
         max-width: 300px;
         height: 250px;
         width: 100%;
     }
+    a{
+        max-width: 300px;
+        width: 100%;
+        height: 100%;
+    }
 }
 
 .vertical{
     img {
-        max-width: 160px;
+        min-width: 160px;
         height: 600px;
         width: 100%;
+    }
+    a{
+        min-width: 160px;
+        width: 100%;
+        height: 100%;
     }
 }
 
 .superSmall{
+  display: none;
     img {
         max-width: 200px;
         height: 200px;
         width: 100%;
+    }
+    a{
+        max-width: 200px;
+        width: 100%;
+        height: 100%;
     }
 }
 
@@ -43,7 +69,12 @@
     .large{
         display: none;
     }
-    
+    .small{
+        display: flex;
+    }
+    .superSmall{
+        display: flex;
+    }
     .vertical{
         display: none;
     }

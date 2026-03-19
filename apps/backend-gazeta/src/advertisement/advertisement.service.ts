@@ -14,8 +14,8 @@ export class AdvertisementService {
   ) {}
 
   async create(
-    createAdvertisementDto: CreateAdvertisementDto, 
-    file: any, 
+    createAdvertisementDto: CreateAdvertisementDto,
+    file: any,
     userId: number
   ): Promise<AdvertisementResponseDto> {
     // Upload da imagem
@@ -30,6 +30,7 @@ export class AdvertisementService {
           clickUrl: createAdvertisementDto.clickUrl,
           position: createAdvertisementDto.position,
           placement: createAdvertisementDto.placement,
+          size: createAdvertisementDto.size,
           isActive: createAdvertisementDto.isActive ?? true,
           priority: createAdvertisementDto.priority ?? 0,
           startDate: createAdvertisementDto.startDate ? new Date(createAdvertisementDto.startDate) : null,
@@ -135,9 +136,9 @@ export class AdvertisementService {
     return advertisements.map(ad => this.formatResponse(ad));
   }
 
-  async findActiveByPlacementAndPosition(placement: string, position: string): Promise<AdvertisementResponseDto[]> {
+  async findActiveByPlacementAndPosition(placement: string, position: string): Promise<Record<string, AdvertisementResponseDto>> {
     const now = new Date();
-    
+
     const advertisements = await this.prisma.advertisement.findMany({
       where: {
         placement,
@@ -166,13 +167,25 @@ export class AdvertisementService {
           },
         },
       },
-      orderBy: [
-        { priority: 'desc' },
-        { createdAt: 'desc' }
-      ],
     });
 
-    return advertisements.map(ad => this.formatResponse(ad));
+    const adsBySize = advertisements.reduce<Record<string, any[]>>((acc, ad) => {
+      if (!ad.size) return acc;
+      acc[ad.size] = acc[ad.size] ?? [];
+      acc[ad.size].push(ad);
+      return acc;
+    }, {});
+
+    const selectedBySize: Record<string, AdvertisementResponseDto> = {};
+
+    Object.entries(adsBySize).forEach(([size, ads]) => {
+      const selected = this.selectAdByPriority(ads);
+      if (selected) {
+        selectedBySize[size] = this.formatResponse(selected);
+      }
+    });
+
+    return selectedBySize;
   }
 
   async findOne(id: number): Promise<AdvertisementResponseDto> {
@@ -196,8 +209,8 @@ export class AdvertisementService {
   }
 
   async update(
-    id: number, 
-    updateAdvertisementDto: UpdateAdvertisementDto, 
+    id: number,
+    updateAdvertisementDto: UpdateAdvertisementDto,
     file?: any,
     userId?: number
   ): Promise<AdvertisementResponseDto> {
@@ -220,10 +233,10 @@ export class AdvertisementService {
     // Se nova imagem foi enviada, fazer upload e deletar a antiga
     if (file) {
       const newImageUrl = await this.advertisementImageService.uploadAdvertisementImage(file);
-      
+
       // Deletar imagem antiga
       await this.advertisementImageService.deleteAdvertisementImage(existingAd.imageUrl);
-      
+
       imageUrl = newImageUrl;
     }
 
@@ -334,4 +347,21 @@ export class AdvertisementService {
       creatorName: advertisement.creator?.name || 'Usuário não encontrado',
     };
   }
-} 
+
+  private selectAdByPriority(ads: any[]): any {
+    if (!ads || ads.length === 0) return null;
+    if (ads.length === 1) return ads[0];
+
+    const weights = ads.map((ad) => (ad.priority ?? 0) + 1);
+    const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
+
+    let random = Math.random() * totalWeight;
+
+    return (
+      ads.find((_, index) => {
+        random -= weights[index];
+        return random <= 0;
+      }) ?? ads[ads.length - 1]
+    );
+  }
+}

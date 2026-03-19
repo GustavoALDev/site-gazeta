@@ -36,13 +36,13 @@ export class NewsClusterComponent implements OnInit{
   // Inputs
   news = signal<News[]>([]);
   categories = signal<Category[]>([]);
-  
+
   // Computed: organiza as seções de categorias com suas notícias processadas
   categorySections = computed<CategorySection[]>(() => {
     const allNews = this.news();
     console.log(allNews);
     const categories = this.categories();
-    
+
     if (allNews.length === 0 || categories.length === 0) {
       return [];
     }
@@ -52,7 +52,7 @@ export class NewsClusterComponent implements OnInit{
       .slice(0, MAX_SECTIONS)
       .map(category => {
         const categoryNews = allNews
-          .filter(news => 
+          .filter(news =>
             news.categoryId.some(catId => category.id === catId)
           )
           .slice(0, MAX_NEWS_PER_SECTION)
@@ -74,12 +74,14 @@ export class NewsClusterComponent implements OnInit{
 
   getCategories(){
     this.apiService.getCategories().subscribe((categories) => {
+      console.log(categories)
       this.categories.set(categories);
     });
   }
 
   getNews(){
     this.apiService.getNews().subscribe((news) => {
+      console.log(news)
       this.news.set(news);
     });
   }
@@ -96,7 +98,7 @@ export class NewsClusterComponent implements OnInit{
       subtitle: (news as { subtitle?: string }).subtitle,
       author: news.author || '',
       imageUrl,
-      slug: news.slug 
+      slug: news.slug
         ? ['/news', news.slug]
         : ['/news', String(news.id)]
     };

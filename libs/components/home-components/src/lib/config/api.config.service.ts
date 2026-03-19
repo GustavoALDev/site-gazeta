@@ -23,7 +23,7 @@ export class ApiConfigService {
   private $mostViewedNews = new BehaviorSubject<News[]>([]);
   private $latestNews = new BehaviorSubject<News[]>([]);
 
-  constructor() {}
+
   getHomeCategoryConfig() {
     return this.httpClient.get<{
       primary: PrimaryConfig;
@@ -79,6 +79,7 @@ export class ApiConfigService {
       )}),
     );
   }
+
   gethighlights() {
    return this.getHomeCategoryConfig().pipe(
       switchMap((config) => {

@@ -5,7 +5,7 @@ import { filter } from 'rxjs/operators';
 
 /**
  * Serviço para gerenciar IDs de notícias excluídas e evitar duplicatas
- * 
+ *
  * Funcionalidades:
  * - Armazena IDs de notícias já exibidas na página atual (apenas em memória)
  * - Limpa automaticamente ao navegar para uma nova página
@@ -20,7 +20,7 @@ export class NewsManagerService {
   private plataformID = inject(PLATFORM_ID);
   private router = inject(Router);
   excludedIds: number[] = [];
-  private currentRoute: string = '';
+  private currentRoute = '';
 
   constructor() {
     if (isPlatformBrowser(this.plataformID)) {
@@ -28,7 +28,6 @@ export class NewsManagerService {
       this.excludedIds = [];
       this.currentRoute = this.router.url;
 
-      console.log('🎬 NewsManager: Iniciado com IDs vazios (página carregada/recarregada)');
 
       // Monitora início de navegação para limpar IDs
       this.router.events
@@ -36,7 +35,6 @@ export class NewsManagerService {
         .subscribe((event) => {
           // Limpa IDs no INÍCIO da navegação
           if (this.currentRoute !== event.url) {
-            console.log(`🔄 NewsManager: Navegação iniciada (${this.currentRoute} → ${event.url})`);
             this.clearExcludedIds();
           }
         });
@@ -46,7 +44,6 @@ export class NewsManagerService {
         .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
         .subscribe((event) => {
           this.currentRoute = event.urlAfterRedirects;
-          console.log(`✅ NewsManager: Navegação concluída (${this.currentRoute})`);
         });
     }
   }
@@ -56,14 +53,10 @@ export class NewsManagerService {
    */
   excludeIds(newIds: number[]): void {
     const uniqueNewIds = newIds.filter(id => !this.excludedIds.includes(id));
-    
+
     if (uniqueNewIds.length > 0) {
       this.excludedIds.push(...uniqueNewIds);
       this.excludedIds = [...new Set(this.excludedIds)];
-      
-      // NÃO persiste em sessionStorage para evitar acúmulo infinito
-      console.log(`📝 NewsManager: ${uniqueNewIds.length} novos IDs adicionados (total: ${this.excludedIds.length})`);
-      console.log(`   IDs atuais: [${this.excludedIds.slice(0, 10).join(', ')}${this.excludedIds.length > 10 ? '...' : ''}]`);
     }
   }
 
@@ -71,12 +64,7 @@ export class NewsManagerService {
    * Limpa todos os IDs excluídos
    */
   clearExcludedIds(): void {
-    const previousCount = this.excludedIds.length;
     this.excludedIds = [];
-
-    if (previousCount > 0) {
-      console.log(`🧹 NewsManager: ${previousCount} IDs excluídos limpos`);
-    }
   }
 
   /**

@@ -5,7 +5,7 @@ import { NewsManagerService } from '../service/news-manager.service';
 
 /**
  * Interceptor que adiciona automaticamente IDs excluídos nos endpoints de notícias
- * 
+ *
  * Funciona de forma inteligente:
  * - Detecta endpoints de notícias que suportam o parâmetro 'exclude'
  * - Injeta automaticamente os IDs de notícias já exibidas
@@ -42,7 +42,7 @@ export const excludeNewsInterceptor: HttpInterceptorFn = (req, next) => {
 
     // Adiciona o parâmetro 'exclude' na requisição
     let params = req.params || new HttpParams();
-    
+
     // Não sobrescreve se já existe um parâmetro exclude (permite override manual)
     if (!params.has('exclude')) {
       params = params.set('exclude', excludeIds);
@@ -51,7 +51,6 @@ export const excludeNewsInterceptor: HttpInterceptorFn = (req, next) => {
     // Clona a requisição com os novos parâmetros
     const modifiedReq = req.clone({ params });
 
-    console.log(`🔍 Exclude Interceptor: Adicionando ${newsManagerService.excludedIds.length} IDs excluídos para ${url}`);
 
     return next(modifiedReq);
   }

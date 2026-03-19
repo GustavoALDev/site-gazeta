@@ -31,22 +31,22 @@ $border-radius-lg: 12px;
   max-width: $max-width;
   margin: 0 auto $spacing-lg;
 ;
-  
+
   .hero-image-container {
     position: relative;
     width: 100%;
-    max-height: 600px;
+    height: 600px;
     overflow: hidden;
-    background: #000;
+    background: linear-gradient(135deg, #c44569, #54016e);;
     border-radius: $border-radius-lg;
-    
+
     .hero-image {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
       display: block;
     }
-    
+
     .image-credit {
       position: absolute;
       bottom: 0;
@@ -61,7 +61,7 @@ $border-radius-lg: 12px;
       gap: 0.5rem;
       flex-wrap: wrap;
       border-radius: 0 0 $border-radius-lg $border-radius-lg;
-      
+
       .credit-label { font-weight: 600; }
       .credit-author { font-weight: 400; }
       .credit-date {
@@ -86,7 +86,7 @@ $border-radius-lg: 12px;
 .news-header {
   font-family: $font-family;
   margin-bottom: $spacing-lg;
-  
+
   .news-title {
     font-size: 2.5rem;
     font-weight: 600;
@@ -94,7 +94,7 @@ $border-radius-lg: 12px;
     color: $color-dark;
     margin: 0 0 $spacing-sm;
   }
-  
+
   .news-subtitle {
     font-size: 1.25rem;
     font-weight: 400;
@@ -102,7 +102,7 @@ $border-radius-lg: 12px;
     color: $color-muted;
     margin: 0 0 $spacing-md;
   }
-  
+
   .news-meta {
     display: flex;
     flex-wrap: wrap;
@@ -110,20 +110,20 @@ $border-radius-lg: 12px;
     padding: $spacing-sm 0;
     border-top: 1px solid $color-border;
     border-bottom: 1px solid $color-border;
-    
+
     .meta-item {
       display: flex;
       align-items: center;
       gap: 0.5rem;
       font-size: 0.875rem;
       color: $color-muted;
-      
+
       .meta-icon {
         width: 18px;
         height: 18px;
         color: $color-primary;
       }
-      
+
       strong {
         color: $color-dark;
         font-weight: 600;
@@ -133,19 +133,22 @@ $border-radius-lg: 12px;
 }
 
 .news-body {
+  .container-news-text{
+    display: flex;
+  }
   .news-text {
     font-size: 1.125rem;
     line-height: 1.8;
     color: #333;
     font-family: $font-family;
-    
+
     ::ng-deep {
       p {
         margin: 0 0 $spacing-md;
         font-family: $font-family;
         &:last-child { margin-bottom: 0; }
       }
-      
+
       h2 {
         font-size: 1.75rem;
         font-weight: 700;
@@ -154,7 +157,7 @@ $border-radius-lg: 12px;
         line-height: 1.3;
         font-family: $font-family;
       }
-      
+
       h3 {
         font-size: 1.5rem;
         font-weight: 600;
@@ -163,12 +166,12 @@ $border-radius-lg: 12px;
         line-height: 1.3;
         font-family: $font-family;
       }
-      
+
       strong {
         font-weight: 600;
         color: $color-dark;
       }
-      
+
       a {
         color: $color-primary;
         text-decoration: none;
@@ -176,14 +179,14 @@ $border-radius-lg: 12px;
         transition: border-color 0.3s;
         &:hover { border-bottom-color: $color-primary; }
       }
-      
+
       ul, ol {
         margin: $spacing-md 0;
         padding-left: 2rem;
         font-family: $font-family;
         li { margin-bottom: 0.5rem; }
       }
-      
+
       blockquote {
         margin: $spacing-lg 0;
         padding: $spacing-md;
@@ -195,7 +198,7 @@ $border-radius-lg: 12px;
       }
     }
   }
-  
+
   .section-title {
     font-size: 1.5rem;
     font-weight: 700;
@@ -208,12 +211,12 @@ $border-radius-lg: 12px;
 
 .news-videos {
   margin-top: $spacing-xl;
-  
+
   .videos-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: $spacing-md;
-    
+
     .video-item .video-wrapper {
       position: relative;
       padding-bottom: 56.25%; // 16:9 aspect ratio
@@ -221,7 +224,7 @@ $border-radius-lg: 12px;
       overflow: hidden;
       border-radius: $border-radius;
       background: #000;
-      
+
       iframe {
         position: absolute;
         top: 0;
@@ -238,23 +241,23 @@ $border-radius-lg: 12px;
   margin-top: $spacing-xl;
   padding-top: $spacing-lg;
   border-top: 1px solid $color-border;
-  
+
   .share-section {
     display: flex;
     align-items: center;
     gap: $spacing-sm;
     flex-wrap: wrap;
-    
+
     .share-label {
       font-weight: 600;
       color: $color-muted;
       font-size: 0.875rem;
     }
-    
+
     .share-buttons {
       display: flex;
       gap: 0.75rem;
-      
+
       .share-btn {
         width: 40px;
         height: 40px;
@@ -265,20 +268,20 @@ $border-radius-lg: 12px;
         align-items: center;
         justify-content: center;
         transition: transform 0.2s, box-shadow 0.2s;
-        
+
         svg {
           width: 20px;
           height: 20px;
           color: #fff;
         }
-        
+
         &:hover {
           transform: translateY(-2px);
           box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
-        
+
         &:active { transform: translateY(0); }
-        
+
         &.facebook { background: #1877f2; }
         &.twitter { background: #1da1f2; }
         &.whatsapp { background: #25d366; }
@@ -290,7 +293,7 @@ $border-radius-lg: 12px;
 // Responsividade
 @media (max-width: 768px) {
   .news-container { padding: 0 $spacing-sm $spacing-lg; }
-  
+
   .news-hero .hero-image-container {
     max-height: 400px;
     .image-credit {
@@ -298,7 +301,7 @@ $border-radius-lg: 12px;
       font-size: 0.75rem;
     }
   }
-  
+
   .news-header {
     .news-title { font-size: 2rem; }
     .news-subtitle { font-size: 1.125rem; }
@@ -307,7 +310,7 @@ $border-radius-lg: 12px;
       .meta-item { font-size: 0.8125rem; }
     }
   }
-  
+
   .news-body .news-text {
     font-size: 1rem;
     ::ng-deep {
@@ -318,7 +321,7 @@ $border-radius-lg: 12px;
       h3 { font-size: 1.25rem; }
     }
   }
-  
+
   .news-videos .videos-grid { grid-template-columns: 1fr; }
 }
 
@@ -332,7 +335,7 @@ $border-radius-lg: 12px;
       align-items: flex-start;
     }
   }
-  
+
   .news-footer .share-section {
     flex-direction: column;
     align-items: flex-start;

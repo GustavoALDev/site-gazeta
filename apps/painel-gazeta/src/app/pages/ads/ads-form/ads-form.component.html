@@ -99,7 +99,7 @@
 
           <!-- Posição -->
           <div class="form-group">
-            <label for="position" [class.required]="!isPositionDisabled">
+            <label for="position" [class.required]="!isPositionDisabled()">
               <i class="material-icons">vertical_align_center</i>
               Posição
             </label>
@@ -107,25 +107,26 @@
               id="position"
               formControlName="position"
               class="select"
-              [class.error]="hasError('position')">
-              @if (!isPositionDisabled) {
+              [class.error]="hasError('position')"
+         >
+              @if (!isPositionDisabled()) {
                 <option value="">Selecione uma posição</option>
               }
-              @if (isPositionDisabled) {
-                <option value="">Topo (automático)</option>
+              @if (isPositionDisabled()) {
+                <option value="top">Topo (automático)</option>
               }
-              @for (option of positionOptions; track option.value) {
+              @for (option of positionOptions(); track option.value) {
                 <option [value]="option.value">
                   {{ option.label }}
                 </option>
               }
             </select>
-            @if (isPositionDisabled) {
+            @if (isPositionDisabled()) {
               <div class="file-info">
                 <small><i class="material-icons">info</i> Para página "Cabeçalho", a posição é sempre "Topo"</small>
               </div>
             }
-            @if (!isPositionDisabled && hasError('position')) {
+            @if (!isPositionDisabled() && hasError('position')) {
               <div class="error-message">
                 {{ getErrorMessage('position') }}
               </div>
@@ -145,13 +146,13 @@
             class="select"
             [class.error]="hasError('size')">
             <option value="">Selecione um tamanho</option>
-            @for (option of sizeOptions; track option.value) {
+            @for (option of sizeOptions(); track option.value) {
               <option [value]="option.value">
                 {{ option.label }}
               </option>
             }
           </select>
-          @if (sizeOptions.length === 0) {
+          @if (sizeOptions().length === 0) {
             <div class="file-info">
               <small><i class="material-icons">info</i> Selecione uma página e posição primeiro</small>
             </div>
@@ -272,17 +273,17 @@
                 <div class="image-preview-container">
                   <img [src]="imagePreviewUrl()" alt="Preview" class="image-preview">
                   <div class="image-overlay">
-                    <button 
-                      type="button" 
-                      class="change-image-btn" 
+                    <button
+                      type="button"
+                      class="change-image-btn"
                       (click)="triggerFileInput()"
                       aria-label="Trocar imagem">
                       <i class="material-icons">edit</i>
                       <span>Trocar</span>
                     </button>
-                    <button 
-                      type="button" 
-                      class="remove-image-btn" 
+                    <button
+                      type="button"
+                      class="remove-image-btn"
                       (click)="onRemoveImage()"
                       aria-label="Remover imagem">
                       <i class="material-icons">delete</i>
@@ -292,7 +293,7 @@
                 </div>
               </div>
             }
-            
+
             <!-- Input de arquivo (sempre presente mas oculto quando há preview) -->
             <div class="file-input-container" [class.hidden]="imagePreviewUrl()">
               <input
@@ -311,12 +312,12 @@
                 </span>
               </div>
             </div>
-            
+
             <div class="file-info">
               <i class="material-icons">info_outline</i>
               <small>Formatos aceitos: JPG, PNG, GIF, WEBP • Tamanho máximo: 5MB</small>
             </div>
-            
+
             @if (hasError('image')) {
               <div class="error-message">
                 <i class="material-icons">error</i>
@@ -330,17 +331,17 @@
 
     <!-- Botões de ação -->
     <div class="form-actions">
-      <button 
-        type="button" 
-        class="btn btn-secondary" 
+      <button
+        type="button"
+        class="btn btn-secondary"
         (click)="onCancel()"
         [disabled]="isSubmitting()">
         <i class="material-icons">close</i>
         Cancelar
       </button>
-      <button 
-        type="submit" 
-        class="btn btn-primary" 
+      <button
+        type="submit"
+        class="btn btn-primary"
         [disabled]="isSubmitting()">
         @if (isSubmitting()) {
           <i class="material-icons spinning">sync</i>

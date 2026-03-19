@@ -91,8 +91,9 @@
   <!-- Campos específicos para Category -->
   @if (selectedType() === 'category') {
     <div class="form-group">
-      <label>Categorias</label>
+      <label for="categories">Categorias</label>
       <multi-select
+        id="categories"
         [items]="categories()"
         [selectedItems]="selectedCategories()"
         (selectedItemsChange)="onCategoriesChange($event)"

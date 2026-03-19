@@ -12,11 +12,11 @@
       </div>
       <div class="category-grid">
         @if (categoryData.featured) {
-          <article class="news-card featured-card" 
+          <article class="news-card featured-card"
           [style.--category-color]="categoryData.category.color" [routerLink]="['/news', categoryData.featured.slug]">
             <div class="card-image">
-              <img 
-                [ngSrc]="categoryData.featured.mediaNews[0].imgSize!.small" 
+              <img
+                [ngSrc]="categoryData.featured.mediaNews[0].imgSize!.small"
                 [alt]="categoryData.featured.title"
                 priority
                 fill
@@ -42,8 +42,8 @@
             @for (news of categoryData.secondary; track news.id) {
               <article class="news-card secondary-card" [style.--category-color]="categoryData.category.color" [routerLink]="['/news', categoryData.featured.slug]">
                 <div class="card-image" >
-                  <img 
-                    [ngSrc]="news.mediaNews[0].imgSize!.small" 
+                  <img
+                    [ngSrc]="news.mediaNews[0].imgSize!.small"
                     [alt]="news.title"
                     fill
                     priority

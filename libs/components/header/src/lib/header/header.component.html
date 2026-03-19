@@ -3,14 +3,14 @@
         <div class="logo" routerLink="/">
             <img src="img/logo02.webp" alt="logo">
         </div>
-        @if(selectedAd()) {
-            <lib-ads [announcements]="selectedAd()!"></lib-ads>
+        @if(announcements()) {
+            <lib-ads [announcements]="announcements()!"></lib-ads>
         }
         <div class="dark_mode">
-            <button 
-                (click)="toggleDarkMode()" 
+            <button
+                (click)="toggleDarkMode()"
                 [attr.aria-label]="(isDarkMode$()) ? 'Ativar modo claro' : 'Ativar modo escuro'"
-                
+
                 class="dark-mode-toggle">
                 <!-- <span class="toggle-icon">
                     {{ (isDarkMode$()) ?  '🌙':'☀️' }}

@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
-import { Category, News, Video, Menu, Ads, TopCategoriesConfig,SectionOrderConfig, SectionOrderConfigMap } from '@site-gazeta/models';
-import { BehaviorSubject, firstValueFrom, forkJoin, map, Observable } from 'rxjs';
+import { Category, News, Video, Menu, Ads,SectionOrderConfig, SectionOrderConfigMap } from '@site-gazeta/models';
+import {  map, Observable } from 'rxjs';
 import { environment } from '../env/env';
 import { HttpClient } from '@angular/common/http';
 @Injectable({
@@ -9,8 +9,7 @@ import { HttpClient } from '@angular/common/http';
 export class ApiService {
   private apiUrl = environment.apiUrl;
   private http = inject(HttpClient);
-  constructor() { }
-  
+
   getMenu(){
     return this.http.get<Menu[]>(`${this.apiUrl}/menu`);
   }
@@ -29,7 +28,7 @@ export class ApiService {
         if (!config || Object.keys(config).length === 0) {
           const now = new Date().toISOString();
           return {
-            carousel: { 
+            carousel: {
               id: 0,
               sectionId: 'carousel',
               name: 'Carrossel',
@@ -41,7 +40,7 @@ export class ApiService {
               updatedAt: now,
               createdBy: 0
             },
-            destaques: { 
+            destaques: {
               id: 0,
               sectionId: 'destaques',
               name: 'Destaques',
@@ -53,7 +52,7 @@ export class ApiService {
               updatedAt: now,
               createdBy: 0
             },
-            videos: { 
+            videos: {
               id: 0,
               sectionId: 'videos',
               name: 'Vídeos',
@@ -65,7 +64,7 @@ export class ApiService {
               updatedAt: now,
               createdBy: 0
             },
-            'top-gazeta': { 
+            'top-gazeta': {
               id: 0,
               sectionId: 'top-gazeta',
               name: 'Top Gazeta',
@@ -77,7 +76,7 @@ export class ApiService {
               updatedAt: now,
               createdBy: 0
             },
-            cluster: { 
+            cluster: {
               id: 0,
               sectionId: 'cluster',
               name: 'Cluster',
@@ -95,8 +94,8 @@ export class ApiService {
       })
     );
   }
-  
-  
+
+
 
   getVideosById(id: number) {
     return this.http.get<Video>(`${this.apiUrl}/videos/${id}`);
@@ -109,7 +108,7 @@ export class ApiService {
   getNewsById(id: number){
     return this.http.get(`${this.apiUrl}/news/${id}`);
   }
-  
+
   getCategories(){
     return this.http.get<Category[]>(`${this.apiUrl}/categories/all`);
   }
@@ -130,8 +129,8 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/advertisements/${id}`);
   }
 
-  getAdsByPositionAndPlacement(placement: string,position: string ){
-    return this.http.get<Ads[]>(`${this.apiUrl}/advertisements/active/${placement}/${position}`);
+  getAdsByPlacementAndPosition(placement: string,position: string ){
+    return this.http.get<{[key: string]: Ads}>(`${this.apiUrl}/advertisements/active/${placement}/${position}`);
   }
   getAdsByPlacement(placement: string){
     return this.http.get<Ads[]>(`${this.apiUrl}/advertisements/by-page/${placement}`);
@@ -158,7 +157,7 @@ export class ApiService {
     return this.http.get<News[]>(`${this.apiUrl}/news/related-news/${newsId}`);
   }
 
-  
+
 
   getNewsForCategory(categoryId: number): Observable<News[]> {
     return this.http.get<News[]>(`${this.apiUrl}/news/category/${categoryId}`);

@@ -21,8 +21,8 @@
         <article class="featured-news" [routerLink]="['/news', featuredNews()!.slug]" >
           <div class="news-image">
             @if (featuredNews()!.mediaNews && featuredNews()!.mediaNews.length > 0) {
-              <img 
-                [src]="featuredNews()!.mediaNews[0].imgSize?.medium || featuredNews()!.mediaNews[0].imgSize?.original" 
+              <img
+                [src]="featuredNews()!.mediaNews[0].imgSize?.medium || featuredNews()!.mediaNews[0].imgSize?.original"
                 [alt]="featuredNews()!.title"
                 loading="lazy"
               />
@@ -44,8 +44,8 @@
           <article class="secondary-news-item" [routerLink]="['/news', newsItem.slug]">
             <div class="news-image">
               @if (newsItem.mediaNews && newsItem.mediaNews.length > 0) {
-                <img 
-                  [src]="newsItem.mediaNews[0].imgSize?.small || newsItem.mediaNews[0].imgSize?.original" 
+                <img
+                  [src]="newsItem.mediaNews[0].imgSize?.small || newsItem.mediaNews[0].imgSize?.original"
                   [alt]="newsItem.title"
                   loading="lazy"
                 />
@@ -64,7 +64,7 @@
     </div>
     <div class="more-news">
       <div class="more-news-container">
-      <lib-more-news [moreNews]="moreNews()" [title]="'Veja também'" [category]="category()!" [slice]="3"></lib-more-news>
+      <lib-more-news [moreNews]="moreNews()" [title]="''" [category]="category()!" [slice]="3"></lib-more-news>
       </div>
     </div>
     } @else {

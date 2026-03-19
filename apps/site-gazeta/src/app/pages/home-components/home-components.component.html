@@ -1,21 +1,34 @@
 <main>
-  
+
   <lib-carousel-manager></lib-carousel-manager>
-  
-  <lib-news-category-grid ></lib-news-category-grid>
-  
-  @if(hasTopAd()){
-    <lib-ads [announcements]="topAd()!"></lib-ads>
+
+  @if(topAd()!['728x90']) {
+    <lib-ads [announcements]="topAd()!['728x90']"></lib-ads>
   }
+  @if(topAd()!['300x250']) {
+    <lib-ads [announcements]="topAd()!['300x250']"></lib-ads>
+  }
+  <lib-news-category-grid ></lib-news-category-grid>
   @defer (on viewport) {
-    <lib-most-viewed></lib-most-viewed>
+    <lib-news-highligths></lib-news-highligths>
+    @if(centerAd()!['728x90']) {
+    <lib-ads [announcements]="centerAd()!['728x90']"></lib-ads>
+    }
+    @if(centerAd()!['300x250']) {
+      <lib-ads [announcements]="centerAd()!['300x250']"></lib-ads>
+    }
+
   }@placeholder {
     <div class="loading-container">
       <div class="loading-spinner"></div>
     </div>
   }
+
   @defer (on viewport) {
     <lib-latest-news ></lib-latest-news>
+     @if(centerAd()!['200x200']) {
+      <lib-ads [announcements]="centerAd()!['200x200']"></lib-ads>
+    }
   }@placeholder {
     <div class="loading-container">
       <div class="loading-spinner"></div>
@@ -28,24 +41,27 @@
       <div class="loading-spinner"></div>
     </div>
   }
-  @defer (on viewport) {
-    <lib-news-highligths></lib-news-highligths>
-  }@placeholder {
-    <div class="loading-container">
-      <div class="loading-spinner"></div>
-    </div>
-  }
 
-  @defer (on viewport) {
+
+   <!-- @defer (on viewport) {
     <lib-news-cluster ></lib-news-cluster>
   }@placeholder {
     <div class="loading-container">
       <div class="loading-spinner"></div>
     </div>
-  }
+  } -->
 
-  @defer (on viewport) {
-    <lib-more-news  [slice]="3" ></lib-more-news>
+   @defer (on viewport) {
+    <div class="container-more-news">
+      <lib-more-news  [slice]="3" ></lib-more-news>
+      @if(bottomAd()!['160x600']) {
+        <lib-ads [announcements]="bottomAd()!['160x600']" />
+      }
+    </div>
+    @if(bottomAd()!['728x90']) {
+      <lib-ads [announcements]="bottomAd()!['728x90']" />
+    }
+
   }@placeholder {
     <div class="loading-container">
       <div class="loading-spinner"></div>

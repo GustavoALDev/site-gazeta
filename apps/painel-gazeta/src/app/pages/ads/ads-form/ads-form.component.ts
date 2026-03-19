@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed, ElementRef, viewChild, output, input, effect } from '@angular/core';
+import { Component, inject, signal, computed, ElementRef, viewChild, output, input, effect } from '@angular/core';
 import {
   NonNullableFormBuilder,
   FormGroup,
@@ -8,13 +8,13 @@ import {
 import { CommonModule } from '@angular/common';
 import { Ads } from '@site-gazeta/models';
 import { AlertService } from '@site-gazeta/alert';
-import { 
-  AdsFormControls, 
+import {
+  AdsFormControls,
   SelectOption
 } from '@site-gazeta/ads-config';
-import { 
-  urlValidator, 
-  endDateAfterStartDateValidator 
+import {
+  urlValidator,
+  endDateAfterStartDateValidator
 } from '@site-gazeta/ads-config';
 import { AdsService } from '../../../core/services/ads.service';
 
@@ -32,14 +32,14 @@ interface FormState {
   templateUrl: './ads-form.component.html',
   styleUrls: ['./ads-form.component.scss'],
 })
-export class AdsFormComponent implements OnInit {
+export class AdsFormComponent  {
   private fb = inject(NonNullableFormBuilder);
   private adsService = inject(AdsService);
   private alertService = inject(AlertService);
 
   // Inputs
   adToEdit = input<Ads | null>(null);
-  
+
   // Outputs
   formSubmitted = output<void>();
   formCancelled = output<void>();
@@ -76,60 +76,30 @@ export class AdsFormComponent implements OnInit {
   ];
 
   readonly allSizeOptions: SelectOption[] = [
-    { value: '728x90', label: '728x90 (Leaderboard)' },
-    { value: '300x250', label: '300x250 (Medium Rectangle)' },
-    { value: '160x600', label: '160x600 (Banner)' },
-    { value: '200x200', label: '200x200 (Square)' },
+    { value: '728x90', label: '728x90 (Banner horizontal)' },
+    { value: '300x250', label: '300x250 (Banner Mobile)' },
+    { value: '160x600', label: '160x600 (Banner vertical)' },
+    { value: '200x200', label: '200x200 (Banner pequeno Mobile)' },
   ];
 
-  // Getter para tamanhos disponíveis baseado em placement e position
-  get sizeOptions(): SelectOption[] {
-    const placement = this.adForm?.get('placement')?.value as string;
-    const position = this.adForm?.get('position')?.value as string;
+  private readonly sizeMatrix: Record<string, Record<string, string[]>> = {
+    header: {
+      top: ['728x90'],
+    },
+    home: {
+      top: ['728x90','300x250'],
+      center: ['728x90', '300x250', '200x200'],
+      bottom: ['160x600', '728x90'],
+    },
+    content: {
+      center: ['728x90', '300x250', '160x600'],
+      bottom: ['728x90',],
+    },
+  };
 
-    if (!placement) {
-      return [];
-    }
-
-    // Header = 728x90 apenas topo
-    if (placement === 'header') {
-      return this.allSizeOptions.filter(opt => opt.value === '728x90');
-    }
-
-    // Para home e content, precisa ter position selecionado
-    if (!position) {
-      return [];
-    }
-
-    // Home
-    if (placement === 'home') {
-      if (position === 'top') {
-        // Topo = 728x90 apenas
-        return this.allSizeOptions.filter(opt => opt.value === '728x90');
-      } else if (position === 'center') {
-        // centro 728x90 | 300x250 | 200x200
-        return this.allSizeOptions.filter(opt => 
-          opt.value === '728x90' || opt.value === '300x250' || opt.value === '200x200'
-        );
-      } else if (position === 'bottom') {
-        // bottom 160x600
-        return this.allSizeOptions.filter(opt => opt.value === '160x600');
-      }
-    }
-
-    // Conteúdo
-    if (placement === 'content') {
-      if (position === 'top') {
-        // Topo = 728x90
-        return this.allSizeOptions.filter(opt => opt.value === '728x90');
-      } else if (position === 'bottom') {
-        // bottom = 160x600
-        return this.allSizeOptions.filter(opt => opt.value === '160x600');
-      }
-    }
-
-    return [];
-  }
+  positionOptions = signal<SelectOption[]>([]);
+  isPositionDisabled = signal<boolean>(false);
+  sizeOptions = signal<SelectOption[]>([]);
 
   readonly ALLOWED_IMAGE_TYPES = [
     'image/jpeg',
@@ -142,119 +112,95 @@ export class AdsFormComponent implements OnInit {
   readonly MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
   constructor() {
-    // Observa mudanças no adToEdit para carregar ou resetar o formulário
+    this.initForm();
+    this.setupPositionDisableSync();
+    this.setupPlacementListener();
+    this.refreshPositionSignals(this.adForm.get('placement')?.value as string | null);
+    this.refreshSizeOptionsSignal();
+
     effect(() => {
       const ad = this.adToEdit();
       if (ad) {
         this.loadAdForEdit(ad);
-      } else if (this.adForm) {
-        // Reseta o formulário quando adToEdit for null
+      } else {
         this.resetForm();
       }
     });
   }
 
-  ngOnInit(): void {
-    this.initForm();
-    this.setupPlacementListener();
-  }
+  private setupPositionDisableSync(): void {
+    // Sincroniza o estado disabled do campo position com o placement
+    const placementControl = this.adForm.get('placement');
+    const positionControl = this.adForm.get('position');
 
-  get positionOptions(): SelectOption[] {
-    const placement = this.adForm?.get('placement')?.value as string;
-    if (!placement || placement === 'header') {
-      return [];
+    // Verifica o estado inicial
+    if (placementControl?.value === 'header') {
+      positionControl?.disable();
     }
-    return this.allPositionOptions.filter(option => 
-      option.pages?.includes(placement as 'home' | 'content')
-    );
-  }
 
-  get isPositionDisabled(): boolean {
-    return this.adForm?.get('placement')?.value === 'header';
+    // Observa mudanças no placement
+    placementControl?.valueChanges.subscribe((value) => {
+      if (value === 'header') {
+        positionControl?.disable();
+      } else {
+        positionControl?.enable();
+      }
+    });
   }
 
   private setupPlacementListener(): void {
-    this.adForm.get('placement')?.valueChanges.subscribe((value) => {
+    const placementControl = this.adForm.get('placement');
+    const positionControl = this.adForm.get('position');
+    const sizeControl = this.adForm.get('size');
+
+    placementControl?.valueChanges.subscribe((value) => {
       const placement = value as string;
-      const positionControl = this.adForm.get('position');
-      const sizeControl = this.adForm.get('size');
-      
+      this.refreshPositionSignals(placement);
+
       if (placement === 'header') {
-        // Define o valor antes de desabilitar
-        positionControl?.setValue('top');
-        
-        // Remove o validador required quando for header
-        positionControl?.clearValidators();
-        positionControl?.updateValueAndValidity({ emitEvent: false });
-        
-        // Desabilita o campo
-        positionControl?.disable();
-        
-        // Resetar tamanho se não for válido para header
-        const validSizes = this.sizeOptions.map(opt => opt.value);
-        if (sizeControl?.value && !validSizes.includes(sizeControl.value)) {
-          sizeControl.setValue('');
-        }
-      } else {
-        // Habilita o campo primeiro
-        positionControl?.enable();
-        
-        // Restaura o validador required para outras páginas
-        positionControl?.setValidators([Validators.required]);
-        
+        positionControl?.setValue('top', { emitEvent: false });
+        this.ensureValidSize(sizeControl);
+        this.refreshSizeOptionsSignal();
+        return;
+      }
+
+      if (placement === 'home' || placement === 'content') {
+        const validPositions = this.getValidPositions(placement);
         const currentPosition = positionControl?.value as string;
-        
-        if (placement && (placement === 'home' || placement === 'content')) {
-          const validPositions = this.allPositionOptions
-            .filter(opt => opt.pages?.includes(placement as 'home' | 'content'))
-            .map(opt => opt.value);
-          
-          if (currentPosition && !validPositions.includes(currentPosition)) {
-            positionControl?.setValue('');
-          }
-        }
-        
-        // Atualiza a validação após restaurar validadores
-        positionControl?.updateValueAndValidity({ emitEvent: false });
-        
-        // Resetar tamanho se não for válido para o novo placement
-        const validSizes = this.sizeOptions.map(opt => opt.value);
-        if (sizeControl?.value && !validSizes.includes(sizeControl.value)) {
-          sizeControl.setValue('');
+
+        if (currentPosition && !validPositions.includes(currentPosition)) {
+          positionControl?.setValue('');
         }
       }
+
+      this.ensureValidSize(sizeControl);
+      this.refreshSizeOptionsSignal();
     });
 
-    // Listener para mudanças de position
-    this.adForm.get('position')?.valueChanges.subscribe(() => {
-      const sizeControl = this.adForm.get('size');
-      const validSizes = this.sizeOptions.map(opt => opt.value);
-      
-      // Resetar tamanho se não for válido para a nova posição
-      if (sizeControl?.value && !validSizes.includes(sizeControl.value)) {
-        sizeControl.setValue('');
-      }
+    positionControl?.valueChanges.subscribe(() => {
+      this.ensureValidSize(sizeControl);
+      this.refreshSizeOptionsSignal();
     });
+
+    this.refreshPositionSignals(placementControl?.value as string | null);
+    this.refreshSizeOptionsSignal();
   }
 
   private initForm(): void {
-    this.adForm = this.fb.group({
-      title: this.fb.control('', [Validators.required, Validators.minLength(3)]),
-      description: this.fb.control('', [Validators.maxLength(500)]),
-      clickUrl: this.fb.control<string | null>(null, [urlValidator()]),
-      position: this.fb.control('', [Validators.required]),
-      placement: this.fb.control('', [Validators.required]),
-      size: this.fb.control('', [Validators.required]),
-      isActive: this.fb.control(true),
-      priority: this.fb.control(1, [Validators.min(1), Validators.max(10)]),
-      startDate: this.fb.control(this.formatDate(new Date().toISOString())),
-      endDate: this.fb.control(
-        this.formatDate(
-          new Date(new Date().setDate(new Date().getDate() + 30)).toISOString()
-        ),
-        [endDateAfterStartDateValidator('startDate')]
-      ),
-      image: this.fb.control('', [Validators.required]),
+    const initialValues = this.getInitialFormValues();
+
+    this.adForm = this.fb.group<AdsFormControls>({
+      title: this.fb.control(initialValues.title, [Validators.required, Validators.minLength(3)]),
+      description: this.fb.control(initialValues.description, [Validators.maxLength(500)]),
+      clickUrl: this.fb.control(initialValues.clickUrl, [urlValidator()]),
+      position: this.fb.control(initialValues.position, [Validators.required]),
+      placement: this.fb.control(initialValues.placement, [Validators.required]),
+      size: this.fb.control(initialValues.size, [Validators.required]),
+      isActive: this.fb.control(initialValues.isActive),
+      priority: this.fb.control(initialValues.priority, [Validators.min(1), Validators.max(10)]),
+      startDate: this.fb.control(initialValues.startDate),
+      endDate: this.fb.control(initialValues.endDate, [endDateAfterStartDateValidator('startDate')]),
+      image: this.fb.control(initialValues.image, [Validators.required]),
     });
   }
 
@@ -270,33 +216,21 @@ export class AdsFormComponent implements OnInit {
       endDate: this.formatDate(ad.endDate),
     };
 
-    // No modo de edição, a imagem não é obrigatória
-    this.adForm.get('image')?.clearValidators();
-    this.adForm.get('image')?.updateValueAndValidity();
-    
+    this.updateImageValidators(false);
+
     this.adForm.patchValue(formattedAd);
-    
+
     if (ad.placement === 'header') {
       const positionControl = this.adForm.get('position');
-      // Garante que o valor está definido
-      positionControl?.setValue('top');
-      // Remove o validador required quando for header
-      positionControl?.clearValidators();
-      positionControl?.updateValueAndValidity({ emitEvent: false });
-      // Desabilita o campo
-      positionControl?.disable();
+      // Limpa o campo primeiro para remover qualquer estado de erro
+      positionControl?.reset();
+      // Define o valor "topo" após limpar o campo
+      positionControl?.setValue('top', { emitEvent: false });
     }
 
-    // Validar tamanho após carregar os dados
-    setTimeout(() => {
-      const sizeControl = this.adForm.get('size');
-      const validSizes = this.sizeOptions.map(opt => opt.value);
-      
-      // Se o tamanho atual não for válido para a combinação placement/position, resetar
-      if (sizeControl?.value && !validSizes.includes(sizeControl.value)) {
-        sizeControl.setValue('');
-      }
-    }, 0);
+    this.ensureValidSize(this.adForm.get('size'));
+    this.refreshPositionSignals(ad.placement);
+    this.refreshSizeOptionsSignal();
   }
 
   triggerFileInput(): void {
@@ -353,23 +287,9 @@ export class AdsFormComponent implements OnInit {
     return this.ALLOWED_IMAGE_TYPES.includes(file.type);
   }
 
-  private clearFileSelection(): void {
-    this.state.update(state => ({
-      ...state,
-      selectedFile: null,
-      selectedFileName: '',
-      imagePreviewUrl: this.isEdit() ? state.imagePreviewUrl : null,
-    }));
-    
-    if (!this.isEdit()) {
-      this.adForm.patchValue({ image: '' });
-    }
-  }
-
   onRemoveImage(): void {
-    this.clearFileSelection();
+    this.clearFileSelection({ resetImageControl: !this.isEdit(), preservePreview: false });
     if (!this.isEdit()) {
-      this.adForm.patchValue({ image: '' });
       this.adForm.get('image')?.markAsTouched();
     }
   }
@@ -483,13 +403,137 @@ export class AdsFormComponent implements OnInit {
   }
 
   resetForm(): void {
-    this.adForm.reset();
-    this.clearFileSelection();
-    this.initForm();
+    const initialValues = this.getInitialFormValues();
+    this.adForm.reset(initialValues);
+    this.updateImageValidators(true);
+    this.clearFileSelection({ resetImageControl: true, preservePreview: false });
+    this.refreshPositionSignals(this.adForm.get('placement')?.value as string | null);
+    this.refreshSizeOptionsSignal();
+  }
+
+  private getInitialFormValues() {
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setDate(endDate.getDate() + 30);
+
+    return {
+      title: '' as string,
+      description: '' as string,
+      clickUrl: null as string | null,
+      position: '' as string,
+      placement: '' as string,
+      size: '' as string,
+      isActive: true,
+      priority: 1,
+      startDate: this.formatDate(startDate.toISOString()),
+      endDate: this.formatDate(endDate.toISOString()),
+      image: '' as string,
+    } as const;
+  }
+
+  private updateImageValidators(isRequired: boolean): void {
+    const imageControl = this.adForm.get('image');
+    if (!imageControl) {
+      return;
+    }
+
+    if (isRequired) {
+      imageControl.setValidators([Validators.required]);
+    } else {
+      imageControl.clearValidators();
+    }
+
+    imageControl.updateValueAndValidity({ emitEvent: false });
+  }
+
+  private clearFileSelection(options?: { resetImageControl?: boolean; preservePreview?: boolean }): void {
+    const { resetImageControl = !this.isEdit(), preservePreview = this.isEdit() } = options ?? {};
+
     this.state.update(state => ({
       ...state,
-      imagePreviewUrl: null,
+      selectedFile: null,
+      selectedFileName: '',
+      imagePreviewUrl: preservePreview ? state.imagePreviewUrl : null,
     }));
+
+    if (resetImageControl) {
+      this.adForm.patchValue({ image: '' });
+    }
+  }
+
+  private ensureValidSize(
+    sizeControl: FormGroup['controls'][keyof AdsFormControls] | null | undefined,
+  ): void {
+    if (!sizeControl) {
+      return;
+    }
+
+    const validSizes = this.getValidSizesFromForm();
+    if (sizeControl.value && !validSizes.includes(sizeControl.value as string)) {
+      sizeControl.setValue('');
+    }
+  }
+
+  private getValidSizesFromForm(): string[] {
+    const placement = (this.adForm?.get('placement')?.value as string) ?? null;
+    const position = (this.adForm?.get('position')?.value as string) ?? null;
+    return this.buildSizeOptions(placement, position).map(option => option.value);
+  }
+
+  private getValidPositions(placement: 'home' | 'content'): string[] {
+    return this.allPositionOptions
+      .filter(option => option.pages?.includes(placement))
+      .map(option => option.value);
+  }
+
+  private refreshPositionSignals(placement: string | null): void {
+    const isHeader = placement === 'header';
+    this.isPositionDisabled.set(isHeader);
+
+    if (!placement || isHeader) {
+      this.positionOptions.set([]);
+      return;
+    }
+
+    if (placement === 'home' || placement === 'content') {
+      const options = this.allPositionOptions.filter(option =>
+        option.pages?.includes(placement)
+      );
+      this.positionOptions.set(options);
+      return;
+    }
+
+    this.positionOptions.set([]);
+  }
+
+  private refreshSizeOptionsSignal(): void {
+    const placement = (this.adForm?.get('placement')?.value as string) ?? null;
+    const position = (this.adForm?.get('position')?.value as string) ?? null;
+    this.sizeOptions.set(this.buildSizeOptions(placement, position));
+  }
+
+  private buildSizeOptions(placement: string | null, position: string | null): SelectOption[] {
+    if (!placement) {
+      return [];
+    }
+
+    const placementMap = this.sizeMatrix[placement];
+
+    if (!placementMap) {
+      return [];
+    }
+
+    if (placement === 'header') {
+      const allowedSizes = placementMap['top'] ?? [];
+      return this.allSizeOptions.filter(opt => allowedSizes.includes(opt.value));
+    }
+
+    if (!position) {
+      return [];
+    }
+
+    const allowedSizes = placementMap[position] ?? [];
+    return this.allSizeOptions.filter(opt => allowedSizes.includes(opt.value));
   }
 
   onCancel(): void {
@@ -518,6 +562,10 @@ export class AdsFormComponent implements OnInit {
 
   hasError(controlName: keyof AdsFormControls): boolean {
     const control = this.adForm.get(controlName);
+    // Não mostrar erro para campos desabilitados
+    if (control?.disabled) {
+      return false;
+    }
     return !!(control?.invalid && control?.touched);
   }
 }

@@ -18,23 +18,23 @@ export class HomeComponent {
   authService = inject(AuthService);
   route = inject(ActivatedRoute);
   menuItems = [
-    { name: 'Metricas', routerLink: '' },
-    { name: 'Menu', routerLink: 'menu'},
-    { name: 'Categorias', routerLink: 'category'},
-    { name: 'Notícias', routerLink: 'news', children:[
-      { name: 'Criar Notícia', routerLink: 'news' },
-      { name:'Lista de Notícias', routerLink: 'newsList'}
+    { name: 'Metricas', routerLink: '', type: 'internal'},
+    { name: 'Menu', routerLink: 'menu', type: 'internal'},
+    { name: 'Categorias', routerLink: 'category', type: 'internal'},
+    { name: 'Notícias', routerLink: 'news', type: 'submenu', children:[
+      { name: 'Criar Notícia', routerLink: 'news', type: 'internal' },
+      { name:'Lista de Notícias', routerLink: 'newsList', type: 'internal'}
     ]},
-    { name: 'Vídeos', routerLink: 'videos', children:[
-      { name: 'Upload de Vídeo', routerLink: 'videos' },
-      { name:'Lista de Vídeos', routerLink: 'videosList'}
+    { name: 'Vídeos', routerLink: 'videos', type: 'submenu', children:[
+      { name: 'Upload de Vídeo', routerLink: 'videos', type: 'internal' },
+      { name:'Lista de Vídeos', routerLink: 'videosList', type: 'internal'}
     ]},
-    { name: 'Anúncios', routerLink: 'ads', children:[
-      { name: 'Criar Anúncio', routerLink: 'ads' },
-      { name:'Lista de Anúncios', routerLink: 'adsList'}
+    { name: 'Anúncios', routerLink: 'ads', type: 'submenu', children:[
+      { name: 'Criar Anúncio', routerLink: 'ads', type: 'internal' },
+      { name:'Lista de Anúncios', routerLink: 'adsList', type: 'internal'}
     ]},
     // { name: 'Usuários', routerLink: 'users'},
-    { name: 'Configurações', routerLink: 'config' },
+    { name: 'Configurações', routerLink: 'config ', type: 'internal' },
   ]
   logout(){
     this.authService.logout();

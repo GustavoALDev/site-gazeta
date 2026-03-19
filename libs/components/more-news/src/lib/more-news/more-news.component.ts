@@ -30,22 +30,23 @@ export class MoreNewsComponent implements OnInit{
   });
   currentCategory = computed(() =>{
     const category = this.category();
+    console.log(category);
     if(category){
       return category;
     }
     return null;
-  
+
   });
   ngOnInit(): void {
     this.sliceNews();
   }
 
- 
+
 
   sliceNews(){
     if(this.slice()){
       this.showNews.set(this.slice()!);
-    } 
+    }
   }
   showMoreNews(){
     this.showNews.update(value => value + 3);

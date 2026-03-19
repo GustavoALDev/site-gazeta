@@ -1,14 +1,15 @@
-<lib-header [announcements]="headerAds()" ></lib-header>
+<lib-header [announcements]="headerAds()!['728x90']" ></lib-header>
 <main>
-    <lib-menu [menuItems]="menuItems()" 
-        (searchActive)="searchActive.set($event)" 
+    <lib-menu [menuItems]="menuItems()"
+        (searchActive)="searchActive.set($event)"
         (searchBarValue)="searchQuery.set($event)" >
     </lib-menu>
    @if(searchActive()) {
         <div class="search-container">
             <app-news-search  [query]="searchQuery()"></app-news-search>
         </div>
-   }@else {
+   }
+   @else {
     <router-outlet></router-outlet>
    }
 </main>

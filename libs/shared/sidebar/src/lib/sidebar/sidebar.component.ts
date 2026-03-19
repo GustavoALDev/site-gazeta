@@ -14,18 +14,18 @@ export class SidebarComponent implements OnDestroy {
   private readonly document = inject(DOCUMENT);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly isBrowser = isPlatformBrowser(this.platformId);
-  
+
   backdrop = input(true);
   type = input<'overlay' | 'static'>('overlay');
   opened = model<boolean>(false);
   menuItems = input< Menu[]>([]);
   painelItems = input();
-  
+
   isOpened_ = signal<boolean>(false);
   expandedMenus = signal<Set<string>>(new Set());
-  
+
   isOpened = output<boolean>();
-  
+
   constructor() {
     effect(() => {
       this.isOpened_.set(this.opened());
@@ -49,16 +49,20 @@ export class SidebarComponent implements OnDestroy {
     this.opened.set(newState);
   }
 
+  closeSidebar() {
+    this.opened.set(false);
+  }
+
   toggleMenu(menuName: string) {
     const expanded = this.expandedMenus();
     const newExpanded = new Set(expanded);
-    
+
     if (newExpanded.has(menuName)) {
       newExpanded.delete(menuName);
     } else {
       newExpanded.add(menuName);
     }
-    
+
     this.expandedMenus.set(newExpanded);
   }
 

@@ -91,11 +91,11 @@ export class AdvertisementController {
 
   @Get('active/:placement/:position')
   @ApiOperation({ summary: 'Buscar anúncios ativos por local e posição' })
-  @ApiResponse({ status: 200, description: 'Lista de anúncios ativos', type: [AdvertisementResponseDto] })
+  @ApiResponse({ status: 200, description: 'Mapa de anúncios ativos por tamanho', type: AdvertisementResponseDto })
   async findActiveByPlacementAndPosition(
     @Param('placement') placement: string,
     @Param('position') position: string,
-  ): Promise<AdvertisementResponseDto[]> {
+  ): Promise<Record<string, AdvertisementResponseDto>> {
     return this.advertisementService.findActiveByPlacementAndPosition(placement, position);
   }
 
@@ -169,4 +169,4 @@ export class AdvertisementController {
   ): Promise<AdvertisementResponseDto> {
     return this.advertisementService.toggleActive(id, req.user.id);
   }
-} 
+}

@@ -12,34 +12,34 @@ import { toSignal } from '@angular/core/rxjs-interop';
   templateUrl: './news-category-grid.component.html',
   styleUrl: './news-category-grid.component.scss',
 })
-export class NewsCategoryGridComponent implements OnInit {
+export class NewsCategoryGridComponent implements OnInit{
   private apiService = inject(ApiConfigService);
 
   $news = toSignal(
-    this.apiService.getCategoryGrid().pipe(tap(news=> console.log(news))), 
+    this.apiService.getCategoryGrid().pipe(tap(news=> console.log(news))),
     { initialValue: [] as { category: Category; news: News[] }[] }
   )
 
   newsInColumns = computed(() => {
     const categoriesData = this.$news();
-    
+
     if (!categoriesData || categoriesData.length === 0) {
       return [];
     }
-    
+
     const result: Array<{ category: Category; featured: News; secondary: News[] }> = [];
-    
+
     // Itera sobre cada categoria (uma coluna por categoria)
     for (const categoryData of categoriesData) {
       const { category, news } = categoryData;
-      
+
       if (!news || news.length === 0) {
         continue;
       }
-      
+
       // Pega apenas as primeiras 3 notícias de cada categoria
       const threeNews = news.slice(0, 3);
-      
+
       if (threeNews.length > 0 && threeNews[0]) {
         result.push({
           category: category,
@@ -48,10 +48,13 @@ export class NewsCategoryGridComponent implements OnInit {
         });
       }
     }
-    
+
     return result;
   })
 
   ngOnInit(): void {
+    this.apiService.getNewsForCategory(21).subscribe(news => {
+      console.log(news);
+    });
   }
 }

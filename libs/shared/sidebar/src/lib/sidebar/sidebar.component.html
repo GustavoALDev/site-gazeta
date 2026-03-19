@@ -4,15 +4,15 @@
     <div class="sidebar-overlay">
       <!-- Backdrop: apenas quando backdrop=true -->
       @if(backdrop()) {
-        <div class="backdrop" 
-             role="button" 
-             tabindex="0" 
-             (click)="toggleSidebar()" 
-             (keydown.enter)="toggleSidebar()" 
+        <div class="backdrop"
+             role="button"
+             tabindex="0"
+             (click)="toggleSidebar()"
+             (keydown.enter)="toggleSidebar()"
              (keydown.space)="toggleSidebar()">
         </div>
       }
-      
+
       <!-- Sidebar -->
       <div class="sidebar" [class.sidebar_opened]="isOpened_()">
         <div class="toggle_sidebar"></div>
@@ -23,43 +23,88 @@
         </div>
         <div class="sidebar__content">
           <div class="sidebar__content__menu">
-            @for (menu of menuItems(); track menu.name) {
+            @for (menu of menuItems(); track menu.id ?? menu.name) {
               <div class="menu-item">
-                @if (hasChildren(menu)) {
-                  <!-- Menu pai com filhos -->
-                  <div class="menu-parent" 
-                     (click)="toggleMenu(menu.name)"
-                     (keydown.enter)="toggleMenu(menu.name)"
-                     (keydown.space)="toggleMenu(menu.name)"
-                     [class.expanded]="isMenuExpanded(menu.name)"
+                @if (menu.type === 'submenu' && menu.children && menu.children.length > 0) {
+                  <!-- Menu pai com filhos (submenu) -->
+                  <div class="menu-parent"
+                     (click)="toggleMenu(menu.name || '')"
+                     (keydown.enter)="toggleMenu(menu.name || '')"
+                     (keydown.space)="toggleMenu(menu.name || '')"
+                     [class.expanded]="isMenuExpanded(menu.name || '')"
                      tabindex="0"
                      role="button">
                   <span class="menu-text">{{ menu.name }}</span>
                   <span class="expand-icon material-icons">
-                    {{ isMenuExpanded(menu.name) ? 'expand_less' : 'expand_more' }}
+                    {{ isMenuExpanded(menu.name || '') ? 'expand_less' : 'expand_more' }}
                   </span>
                 </div>
-                
+
                 <!-- Submenu -->
-                <div class="submenu" 
-                     [class.expanded]="isMenuExpanded(menu.name)">
-                  @for (child of menu.children; track child.name) {
-                    <a [routerLink]="child.router" 
-                       routerLinkActive="active"
-                       [routerLinkActiveOptions]="{exact: true}"
-                       class="submenu-item">
-                      {{ child.name }}
-                    </a>
+                <div class="submenu"
+                     [class.expanded]="isMenuExpanded(menu.name || '')">
+                  @for (child of menu.children; track child.id ?? child.name) {
+                    @if (child.type === 'internal') {
+                      <a [routerLink]="child.routerLink"
+                         routerLinkActive="active"
+                         [routerLinkActiveOptions]="{exact: true}"
+                         class="submenu-item"
+                         (click)="closeSidebar()">
+                        {{ child.name }}
+                      </a>
+                    } @else if (child.type === 'external') {
+                      <a [href]="child.externalLink"
+                         target="_blank"
+                         rel="noopener noreferrer"
+                         class="submenu-item">
+                        {{ child.name }}
+                      </a>
+                    } @else if (child.type === 'category') {
+                      <a [routerLink]="['/category', child.slug]"
+                         routerLinkActive="active"
+                         [routerLinkActiveOptions]="{exact: true}"
+                         class="submenu-item"
+                         (click)="closeSidebar()">
+                        {{ child.name }}
+                      </a>
+                    }
                   }
                 </div>
               } @else {
                 <!-- Menu simples sem filhos -->
-                <a [routerLink]="menu.router" 
-                   routerLinkActive="active"
-                   [routerLinkActiveOptions]="{exact: true}"
-                   class="menu-simple">
-                  {{ menu.name }}
-                </a>
+                @if (menu.type === 'internal') {
+                  <a [routerLink]="menu.routerLink"
+                     routerLinkActive="active"
+                     [routerLinkActiveOptions]="{exact: true}"
+                     class="menu-simple"
+                     (click)="closeSidebar()">
+                    {{ menu.name }}
+                  </a>
+                } @else if (menu.type === 'external') {
+                  <a [href]="menu.externalLink"
+                     target="_blank"
+                     rel="noopener noreferrer"
+                     class="menu-simple">
+                    {{ menu.name }}
+                  </a>
+                } @else if (menu.type === 'category') {
+                  <a [routerLink]="['/category', menu.slug]"
+                     routerLinkActive="active"
+                     [routerLinkActiveOptions]="{exact: true}"
+                     class="menu-simple"
+                     (click)="closeSidebar()">
+                    {{ menu.name }}
+                  </a>
+                } @else {
+                  <!-- Fallback para estrutura antiga (router ou routerLink) -->
+                  <a [routerLink]="menu.router || menu.routerLink"
+                     routerLinkActive="active"
+                     [routerLinkActiveOptions]="{exact: true}"
+                     class="menu-simple"
+                     (click)="closeSidebar()">
+                    {{ menu.name }}
+                  </a>
+                }
               }
             </div>
             }
@@ -88,43 +133,88 @@
     </div>
     <div class="sidebar__content">
       <div class="sidebar__content__menu">
-        @for (menu of menuItems(); track menu.name) {
+        @for (menu of menuItems(); track menu.id ?? menu.name) {
           <div class="menu-item">
-            @if (hasChildren(menu)) {
-              <!-- Menu pai com filhos -->
-              <div class="menu-parent" 
-                 (click)="toggleMenu(menu.name)"
-                 (keydown.enter)="toggleMenu(menu.name)"
-                 (keydown.space)="toggleMenu(menu.name)"
-                 [class.expanded]="isMenuExpanded(menu.name)"
+            @if (menu.type === 'submenu' && menu.children && menu.children.length > 0) {
+              <!-- Menu pai com filhos (submenu) -->
+              <div class="menu-parent"
+                 (click)="toggleMenu(menu.name || '')"
+                 (keydown.enter)="toggleMenu(menu.name || '')"
+                 (keydown.space)="toggleMenu(menu.name || '')"
+                 [class.expanded]="isMenuExpanded(menu.name || '')"
                  tabindex="0"
                  role="button">
               <span class="menu-text">{{ menu.name }}</span>
               <span class="expand-icon material-icons">
-                {{ isMenuExpanded(menu.name) ? 'expand_less' : 'expand_more' }}
+                {{ isMenuExpanded(menu.name || '') ? 'expand_less' : 'expand_more' }}
               </span>
             </div>
-            
+
             <!-- Submenu -->
-            <div class="submenu" 
-                 [class.expanded]="isMenuExpanded(menu.name)">
-              @for (child of menu.children; track child.name) {
-                <a [routerLink]="child.routerLink" 
-                   routerLinkActive="active"
-                   [routerLinkActiveOptions]="{exact: true}"
-                   class="submenu-item">
-                  {{ child.name }}
-                </a>
+            <div class="submenu"
+                 [class.expanded]="isMenuExpanded(menu.name || '')">
+              @for (child of menu.children; track child.id ?? child.name) {
+                @if (child.type === 'internal') {
+                  <a [routerLink]="child.routerLink"
+                     routerLinkActive="active"
+                     [routerLinkActiveOptions]="{exact: true}"
+                     class="submenu-item"
+                     (click)="closeSidebar()">
+                    {{ child.name }}
+                  </a>
+                } @else if (child.type === 'external') {
+                  <a [href]="child.externalLink"
+                     target="_blank"
+                     rel="noopener noreferrer"
+                     class="submenu-item">
+                    {{ child.name }}
+                  </a>
+                } @else if (child.type === 'category') {
+                  <a [routerLink]="['/category', child.slug]"
+                     routerLinkActive="active"
+                     [routerLinkActiveOptions]="{exact: true}"
+                     class="submenu-item"
+                     (click)="closeSidebar()">
+                    {{ child.name }}
+                  </a>
+                }
               }
             </div>
           } @else {
             <!-- Menu simples sem filhos -->
-            <a [routerLink]="menu.routerLink" 
-               routerLinkActive="active"
-               [routerLinkActiveOptions]="{exact: true}"
-               class="menu-simple">
-              {{ menu.name }}
-            </a>
+            @if (menu.type === 'internal') {
+              <a [routerLink]="menu.routerLink"
+                 routerLinkActive="active"
+                 [routerLinkActiveOptions]="{exact: true}"
+                 class="menu-simple"
+                 (click)="closeSidebar()">
+                {{ menu.name }}
+              </a>
+            } @else if (menu.type === 'external') {
+              <a [href]="menu.externalLink"
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 class="menu-simple">
+                {{ menu.name }}
+              </a>
+            } @else if (menu.type === 'category') {
+              <a [routerLink]="['/category', menu.slug]"
+                 routerLinkActive="active"
+                 [routerLinkActiveOptions]="{exact: true}"
+                 class="menu-simple"
+                 (click)="closeSidebar()">
+                {{ menu.name }}
+              </a>
+            } @else {
+              <!-- Fallback para estrutura antiga (router ou routerLink) -->
+              <a [routerLink]="menu.router || menu.routerLink"
+                 routerLinkActive="active"
+                 [routerLinkActiveOptions]="{exact: true}"
+                 class="menu-simple"
+                 (click)="closeSidebar()">
+                {{ menu.name }}
+              </a>
+            }
           }
         </div>
         }

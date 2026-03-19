@@ -19,6 +19,13 @@
       <span class="count-label">Total de notícias:</span>
       <span class="count-value">{{ filteredNews().length }}</span>
     </div>
+    <div class="emphasis-count" [class.limit-reached]="hasReachedEmphasisLimit()">
+      <span class="count-label">Destaques ativos:</span>
+      <span class="count-value">{{ getActiveEmphasisCount() }}/6</span>
+      @if(hasReachedEmphasisLimit()) {
+        <span class="limit-warning" title="Limite de 6 destaques atingido">⚠️</span>
+      }
+    </div>
   </div>
 
   <div class="news-list">
@@ -29,7 +36,7 @@
       <div class="header-cell header-meta">Metadados</div>
       <div class="header-cell header-actions">Ações</div>
     </div>
-    
+
     @for(news of filteredNews(); track news.id){
       <div class="news-row">
         <div class="news-cell news-featured-cell">
@@ -37,7 +44,7 @@
             <span class="emphasis-star material-icons" title="Notícia em destaque">star</span>
           }
         </div>
-        
+
         <div class="news-cell news-image-cell">
           <div class="news-card-img">
             @for(media of news.mediaNews; track media.id){
@@ -50,14 +57,14 @@
             }
           </div>
         </div>
-        
+
         <div class="news-cell news-content-cell">
           <div class="news-title-wrapper">
             <h3 class="news-title">{{news.title}}</h3>
           </div>
           <p class="news-subtitle">{{news.subtitle}}</p>
         </div>
-        
+
         <div class="news-cell news-meta-cell">
           <div class="news-meta">
             <span class="news-author"><b>Por:</b> {{news.author}}</span>
@@ -74,7 +81,7 @@
             <span class="news-views">{{news.views}} visualizações</span>
           </div>
         </div>
-        
+
         <div class="news-cell news-actions-cell">
           <div class="news-actions">
             <button class="btn-action btn-view" (click)="openNewsInSite(news.slug)" [attr.aria-label]="'Ir para página da notícia'" title="Ir para página">

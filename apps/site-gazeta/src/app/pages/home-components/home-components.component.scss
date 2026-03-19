@@ -8,3 +8,13 @@ main {
     padding: 5px;
     min-height: 100vh;
 }
+.container-more-news {
+    display: flex;
+    align-items: start;
+    gap: 30px;
+    lib-more-news{
+      flex-grow: 1;
+      flex-shrink: 1;
+      flex-basis: 0;
+    }
+}

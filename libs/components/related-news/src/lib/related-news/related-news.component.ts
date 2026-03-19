@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, signal } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { News } from '@site-gazeta/models';
 import { RouterModule } from '@angular/router';

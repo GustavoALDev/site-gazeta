@@ -23,18 +23,18 @@ import { Ads, Menu } from '@site-gazeta/models';
 export class AppComponent implements OnInit{
   apiService = inject(ApiService);
   announcements = signal<Ads[]>([]);
-  
+
   title = 'site-gazeta';
   ngOnInit(): void {
       // ApiService espera: getAdsByPositionAndPlacement(placement, position)
       // Endpoint: /advertisements/active/:placement/:position
       // Para header/top: placement='header', position='top'
-      this.getAdsbyPositionAndPlacement('header', 'top');
+      // this.getAdsbyPositionAndPlacement('header', 'top');
   }
-  getAdsbyPositionAndPlacement(placement: string, position: string){
-    this.apiService.getAdsByPositionAndPlacement(placement, position).subscribe((ads) => {
-      this.announcements.set(ads as Ads[]);
-    });
-  }
-  
+  // getAdsbyPositionAndPlacement(placement: string, position: string){
+  //   this.apiService.getAdsByPositionAndPlacement(placement, position).subscribe((ads) => {
+  //     this.announcements.set(ads as Ads[]);
+  //   });
+  // }
+
 }
