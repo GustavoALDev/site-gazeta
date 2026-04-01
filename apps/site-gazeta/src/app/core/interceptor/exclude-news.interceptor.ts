@@ -33,8 +33,16 @@ export const excludeNewsInterceptor: HttpInterceptorFn = (req, next) => {
     '/news'
   ];
 
+  // Endpoints que NÃO devem receber exclude
+  const excludedEndpoints = [
+    '/news/most-viewed',
+    '/news/latest-news',
+    '/news/search'
+  ];
+
   // Verifica se é um endpoint de notícias que suporta exclusão
-  const isNewsEndpoint = newsEndpointsWithExclude.some(endpoint => url.includes(endpoint));
+  const isExcludedEndpoint = excludedEndpoints.some(endpoint => url.includes(endpoint));
+  const isNewsEndpoint = !isExcludedEndpoint && newsEndpointsWithExclude.some(endpoint => url.includes(endpoint));
 
   if (isNewsEndpoint && newsManagerService.excludedIds.length > 0) {
     // Pega os IDs excluídos

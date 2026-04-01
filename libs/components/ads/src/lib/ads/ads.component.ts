@@ -11,4 +11,5 @@ import { Ads } from '@site-gazeta/models';
 })
 export class AdsComponent {
   announcements = input<Ads>();
+  priority = input<boolean>(false);
 }

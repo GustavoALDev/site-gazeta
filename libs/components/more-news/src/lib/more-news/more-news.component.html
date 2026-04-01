@@ -1,37 +1,54 @@
-@if (newsChecked()!.length > 0) {
-  <div class="remaining-news-grid">
-    <div class="header">
-      <h2>{{ title() }}</h2>
-    </div>
-    <div class="news-grid">
-      @for (newsItem of newsChecked()!.slice(0, showNews()? showNews() : newsChecked()!.length); track newsItem.id) {
-        <article class="news-item" [routerLink]="['/news', newsItem.slug]">
-          <div class="news-image" [style.background-color]="category()?.color">
-            @if (newsItem.mediaNews && newsItem.mediaNews.length > 0) {
-              <img
-                [src]="newsItem.mediaNews[0].imgSize?.small || newsItem.mediaNews[0].imgSize?.original"
-                [alt]="newsItem.title"
-                loading="lazy"
-              />
-            } @else {
-              <div class="placeholder-image">
-                <span>Sem imagem</span>
-              </div>
-            }
-          </div>
-          <div class="news-content">
-            <h3 class="news-title" [style.color]="category()?.color">{{ newsItem.title }}</h3>
-            @if (newsItem.subtitle) {
-              <p class="news-subtitle" [style.color]="category()?.color">{{ newsItem.subtitle }}</p>
-            }
-          </div>
-        </article>
-      }
-      @if (slice() > 0 && showNews() < newsChecked()!.length) {
-        <div class="show-more-news-container">
-          <button class="show-more-news" (click)="showMoreNews()">Ver mais</button>
-        </div>
-      }
-    </div>
+@if (newsChecked().length > 0) {
+<div class="remaining-news-grid">
+  <div class="title-content_header">
+    <h2 class="title-content_title">{{title()}}</h2>
+    <span class="title-content_red"></span>
+    <span class="title-content_blue"></span>
   </div>
+  <div class="news-grid" [class.news-grid--loading-next]="isLoadingNextBatch()">
+    @for (newsItem of visibleNews(); track newsItem.id; let index = $index) {
+    <div class="news-item-wrapper" [style.animation-delay]="(index * 90) + 'ms'">
+      <article class="news-item" [routerLink]="['/news', newsItem.slug]">
+        <div class="news-image" [style.background-color]="category()?.color" [class.loading]="isImageLoading(newsItem.id)">
+          @if (newsItem.mediaNews && newsItem.mediaNews.length > 0) {
+          <img [src]="newsItem.mediaNews[0].imgSize?.small || newsItem.mediaNews[0].imgSize?.original"
+            [alt]="newsItem.title"
+
+            [class.image-hidden]="isImageLoading(newsItem.id)"
+            (load)="handleImageLoaded(newsItem.id)"
+            (error)="handleImageError(newsItem.id)" />
+          @if (isImageLoading(newsItem.id)) {
+            <div class="image-skeleton">
+              <div class="shimmer"></div>
+            </div>
+          }
+          } @else {
+          <div class="placeholder-image">
+            <span>Sem imagem</span>
+          </div>
+          }
+        </div>
+        <div class="news-content">
+          <h3 class="news-title" [style.color]="category()?.color">{{ newsItem.title }}</h3>
+          @if (newsItem.subtitle) {
+          <p class="news-subtitle" [style.color]="category()?.color">{{ newsItem.subtitle }}</p>
+          }
+        </div>
+      </article>
+    </div>
+    }
+    @if (canLoadMore()) { <div class="show-more-news-container">
+      <button
+        type="button"
+        class="show-more-news"
+        [disabled]="isLoadingNextBatch()"
+        [attr.aria-busy]="isLoadingNextBatch()"
+        (click)="showMoreNews()"
+      >
+        {{ isLoadingNextBatch() ? 'Carregando...' : 'Ver mais' }}
+      </button>
+  </div>
+  }
+</div>
+</div>
 }

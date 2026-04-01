@@ -157,7 +157,7 @@
                   <div class="tab-content" [class.active]="activeTab === 'content'">
                     <div class="form-group">
                       <label for="content">Conteúdo da Notícia *</label>
-                      <lib-text-editor 
+                      <lib-text-editor
                         (ready)="onReady($event)"
                         formControlName="content"
                         [apiUrl]="apiUrl"
@@ -240,14 +240,17 @@
                           </div>
 
                           <div class="sidebar-actions">
-                            <button type="submit" class="btn-primary" [disabled]="form.invalid || isUploadingMedia()" >
-                              @if (isUploadingMedia()) {
-                                <span class="material-icons spinning">refresh</span>
-                                <span>Enviando mídias... ({{ mediaUploadProgress().current }}/{{ mediaUploadProgress().total }})</span>
-                              } @else {
-                                {{isEdit() ? 'Atualizar Notícia' : 'Criar Notícia'}}
-                              }
-                            </button>
+                            <button type="submit" class="btn-primary" [disabled]="form.invalid || isUploadingMedia() || isSavingNews()" >
+                            @if (isUploadingMedia()) {
+                              <span class="material-icons spinning">refresh</span>
+                              <span>Enviando mídias... ({{ mediaUploadProgress().current }}/{{ mediaUploadProgress().total }})</span>
+                            } @else if (isSavingNews()) {
+                              <span class="material-icons spinning">refresh</span>
+                              <span>Salvando notícia...</span>
+                            } @else {
+                              {{isEdit() ? 'Atualizar Notícia' : 'Criar Notícia'}}
+                            }
+                          </button>
                             <button type="button" class="btn-secondary" (click)="onReset()" [disabled]="isUploadingMedia()">
                               Limpar
                             </button>

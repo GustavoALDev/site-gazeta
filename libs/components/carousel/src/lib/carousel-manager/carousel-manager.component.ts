@@ -1,9 +1,9 @@
-import { Component, OnInit, input, ChangeDetectionStrategy, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { News } from '@site-gazeta/models';
 import { CarouselComponent } from '../carousel/carousel.component';
 import { CarouselSwipeComponent } from '../carousel-swipe/carousel-swipe.component';
-import { ApiConfigService } from '../config/api.config.service';
+import { ApiConfigService } from 'libs/api/service/api-config.service';
 import { combineLatest, map } from 'rxjs';
 
 @Component({
@@ -15,10 +15,10 @@ import { combineLatest, map } from 'rxjs';
 })
 export class CarouselManagerComponent implements OnInit {
   private apiConfigService = inject(ApiConfigService);
-  
+
   $news = this.apiConfigService.getNewsFeatured();
   $carouselLimit = this.apiConfigService.getCarouselConfig();
-  
+
   $limitedNews = combineLatest([this.$news, this.$carouselLimit]).pipe(
     map(([news, limit]) => {
       return news.slice(0, limit);

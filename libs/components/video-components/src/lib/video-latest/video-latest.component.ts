@@ -1,7 +1,7 @@
 import { Component, signal, computed, output, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Video } from '@site-gazeta/models';
-import { ApiConfigService } from '../config/api.config.service';
+import { ApiConfigService } from 'libs/api/service/api-config.service';
 
 @Component({
   selector: 'lib-video-latest',
@@ -16,7 +16,7 @@ export class VideoLatestComponent implements OnInit {
   excludedVideoIds = output<number[]>();
   videos = signal<Video[]>([]);
 
-  
+
 
   firstRow = computed(() => {
     return this.videos().slice(0, 3);

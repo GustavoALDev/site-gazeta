@@ -8,6 +8,8 @@ import {
 import { FormValidatorComponent, FormValidatorService } from '@site-gazeta/form-validator';
 import { Subject, takeUntil } from 'rxjs';
 import { AlertService } from '@site-gazeta/alert';
+import { ConfigService } from '../../../core/services/config.service';
+
 
 @Component({
   selector: 'app-social-media',
@@ -17,6 +19,7 @@ import { AlertService } from '@site-gazeta/alert';
   styleUrl: './social-media.component.scss',
 })
 export class SocialMediaComponent implements OnInit, OnDestroy {
+  private apiService = inject(ConfigService);
   fb = inject(NonNullableFormBuilder);
   formValidator = inject(FormValidatorService);
   private alertService = inject(AlertService);
@@ -104,7 +107,7 @@ export class SocialMediaComponent implements OnInit, OnDestroy {
       name: 'whatsapp',
       label: 'WhatsApp',
       icon: 'phone',
-      placeholder: '+55 11 99999-9999',
+      placeholder: '11 99999-9999',
       color: '#25D366'
     },
   ];
@@ -123,16 +126,32 @@ export class SocialMediaComponent implements OnInit, OnDestroy {
 
   loadSocialMediaData() {
     // Implementar carregamento dos dados da API
-    console.log('Carregando dados das redes sociais...');
+    this.apiService.getSocialMedia().subscribe({
+      next: (data) => {
+        this.form.patchValue(data || {});
+      },
+      error: (error) => {
+        console.error('Erro ao carregar dados das redes sociais:', error);
+      }
+    });
   }
 
   onSubmit() {
     if (this.form.valid) {
       const formValue = this.form.value;
-      console.log('Dados do formulário:', formValue);
-      
+      console.log(formValue)
+      this.apiService.createSocialMedia(formValue).subscribe({
+        next: (data) => {
+          console.log('Redes sociais criadas:', data);
+          this.alertService.success('Sucesso', 'Configurações de redes sociais salvas com sucesso!');
+        },
+        error: (error) => {
+          console.error('Erro ao salvar redes sociais:', error);
+          this.alertService.error('Erro', 'Erro ao salvar configurações de redes sociais');
+        }
+      });
+
       // TODO: Implementar chamada da API para salvar
-      this.alertService.success('Sucesso', 'Configurações de redes sociais salvas com sucesso!');
     } else {
       this.alertService.warning('Atenção', 'Por favor, corrija os erros no formulário antes de salvar.');
     }

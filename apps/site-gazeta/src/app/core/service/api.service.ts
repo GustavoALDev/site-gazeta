@@ -130,7 +130,7 @@ export class ApiService {
   }
 
   getAdsByPlacementAndPosition(placement: string,position: string ){
-    return this.http.get<{[key: string]: Ads}>(`${this.apiUrl}/advertisements/active/${placement}/${position}`);
+    return this.http.get<Record<string, Ads>>(`${this.apiUrl}/advertisements/active/${placement}/${position}`);
   }
   getAdsByPlacement(placement: string){
     return this.http.get<Ads[]>(`${this.apiUrl}/advertisements/by-page/${placement}`);

@@ -1,49 +1,83 @@
 <main>
+  <section class="home-block" appScrollReveal="up">
+    <lib-carousel-manager></lib-carousel-manager>
+  </section>
 
-  <lib-carousel-manager></lib-carousel-manager>
+  @if (topAd()['728x90']) {
+    <section class="home-block" >
+      <lib-ads [announcements]="topAd()['728x90']"></lib-ads>
+    </section>
+  }
 
-  @if(topAd()!['728x90']) {
-    <lib-ads [announcements]="topAd()!['728x90']"></lib-ads>
+  @if (topAd()['300x250']) {
+    <section class="home-block" appScrollReveal="right">
+      <lib-ads [announcements]="topAd()['300x250']"></lib-ads>
+    </section>
   }
-  @if(topAd()!['300x250']) {
-    <lib-ads [announcements]="topAd()!['300x250']"></lib-ads>
-  }
-  <lib-news-category-grid ></lib-news-category-grid>
+
+  <section class="home-block" appScrollReveal="left">
+    <lib-news-category-grid></lib-news-category-grid>
+  </section>
+
   @defer (on viewport) {
-    <lib-news-highligths></lib-news-highligths>
-    @if(centerAd()!['728x90']) {
-    <lib-ads [announcements]="centerAd()!['728x90']"></lib-ads>
-    }
-    @if(centerAd()!['300x250']) {
-      <lib-ads [announcements]="centerAd()!['300x250']"></lib-ads>
-    }
+    <section class="home-block" appScrollReveal="right">
+      <lib-news-highligths></lib-news-highligths>
+    </section>
+  } @placeholder {
+    <div class="loading-container">
+      <div class="loading-spinner"></div>
+    </div>
+  }
 
-  }@placeholder {
+  @if (centerAd()['728x90']) {
+    <section class="home-block" appScrollReveal="left">
+      <lib-ads [announcements]="centerAd()['728x90']"></lib-ads>
+    </section>
+  }
+
+  @if (centerAd()['300x250']) {
+    <section class="home-block" appScrollReveal="right">
+      <lib-ads [announcements]="centerAd()['300x250']"></lib-ads>
+    </section>
+  }
+
+  @defer (on viewport) {
+    <section class="home-block" appScrollReveal="left">
+      <lib-latest-news></lib-latest-news>
+    </section>
+  } @placeholder {
+    <div class="loading-container">
+      <div class="loading-spinner"></div>
+    </div>
+  }
+
+  @if (centerAd()['200x200']) {
+    <section class="home-block" appScrollReveal="right">
+      <lib-ads [announcements]="centerAd()['200x200']"></lib-ads>
+    </section>
+  }
+
+  @defer (on viewport) {
+    <section class="home-block" appScrollReveal="right">
+      <lib-video-manager></lib-video-manager>
+    </section>
+  } @placeholder {
     <div class="loading-container">
       <div class="loading-spinner"></div>
     </div>
   }
 
   @defer (on viewport) {
-    <lib-latest-news ></lib-latest-news>
-     @if(centerAd()!['200x200']) {
-      <lib-ads [announcements]="centerAd()!['200x200']"></lib-ads>
-    }
-  }@placeholder {
-    <div class="loading-container">
-      <div class="loading-spinner"></div>
-    </div>
-  }
-  @defer (on viewport) {
-    <lib-video-manager></lib-video-manager>
-  }@placeholder {
+    <section class="home-block" appScrollReveal="left">
+      <lib-most-viewed></lib-most-viewed>
+    </section>
+  } @placeholder {
     <div class="loading-container">
       <div class="loading-spinner"></div>
     </div>
   }
 
-
-   <!-- @defer (on viewport) {
+  <!-- @defer (on viewport) {
     <lib-news-cluster ></lib-news-cluster>
   }@placeholder {
     <div class="loading-container">
@@ -51,18 +85,20 @@
     </div>
   } -->
 
-   @defer (on viewport) {
-    <div class="container-more-news">
-      <lib-more-news  [slice]="3" ></lib-more-news>
-      @if(bottomAd()!['160x600']) {
-        <lib-ads [announcements]="bottomAd()!['160x600']" />
-      }
-    </div>
-    @if(bottomAd()!['728x90']) {
-      <lib-ads [announcements]="bottomAd()!['728x90']" />
-    }
+  @defer (on viewport) {
+    <section class="home-block home-block--more-news" appScrollReveal="right">
+      <div class="container-more-news">
+        <lib-more-news [slice]="3"></lib-more-news>
+        @if (bottomAd()['160x600']) {
+          <lib-ads appScrollReveal="left" [announcements]="bottomAd()['160x600']" />
+        }
+      </div>
 
-  }@placeholder {
+      @if (bottomAd()['728x90']) {
+        <lib-ads appScrollReveal="right" [announcements]="bottomAd()['728x90']" />
+      }
+    </section>
+  } @placeholder {
     <div class="loading-container">
       <div class="loading-spinner"></div>
     </div>

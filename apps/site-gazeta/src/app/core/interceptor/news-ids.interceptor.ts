@@ -7,7 +7,7 @@ import { News } from '@site-gazeta/models';
 
 /**
  * Interceptor que captura IDs de notícias das respostas HTTP
- * 
+ *
  * Funcionalidades:
  * - Detecta respostas de endpoints de notícias
  * - Extrai IDs das notícias retornadas
@@ -17,7 +17,7 @@ import { News } from '@site-gazeta/models';
 export const newsIdsInterceptor: HttpInterceptorFn = (req, next) => {
   const platformId = inject(PLATFORM_ID);
   const isBrowser = isPlatformBrowser(platformId);
-  
+
   // Apenas processa no browser
   if (!isBrowser) {
     return next(req);
@@ -29,19 +29,19 @@ export const newsIdsInterceptor: HttpInterceptorFn = (req, next) => {
     tap((response) => {
       const responseData = response as HttpResponse<any>;
       const url = req.url;
-      
+
       // Detecta endpoints de notícias
-      const isNewsEndpoint = url.includes('/news') && 
-                            !url.includes('/news/') || 
-                            url.match(/\/news\/(featured|category|latest-news|most-viewed|search)/);
-      
+      const isNewsEndpoint = url.includes('/news') &&
+                            !url.includes('/news/') ||
+                            url.match(/\/news\/(featured|category|latest-news|search)/);
+
       if (isNewsEndpoint && Array.isArray(responseData.body) && responseData.body.length > 0) {
         const firstItem = responseData.body[0];
-        
+
         // Verifica se é um array de notícias (tem ID)
         if (firstItem && typeof firstItem === 'object' && 'id' in firstItem) {
           const ids = (responseData.body as News[]).map((news: News) => news.id);
-          
+
           if (ids.length > 0) {
             newsManagerService.excludeIds(ids);
           }

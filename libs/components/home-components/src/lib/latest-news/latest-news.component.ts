@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { News } from '@site-gazeta/models';
-import { ApiConfigService } from '../config/api.config.service';
+import { ApiConfigService } from 'libs/api/service/api-config.service';
 import { RouterModule } from '@angular/router';
 import { Observable } from 'rxjs';
 
@@ -14,7 +14,7 @@ import { Observable } from 'rxjs';
 export class LatestNewsComponent {
   private apiService = inject(ApiConfigService);
   news = signal<Observable<News[]>>(this.apiService.getLatestNews());
-  
+
   onImageError(event: Event): void {
     const img = event.target as HTMLImageElement;
     img.src = 'https://via.placeholder.com/300x180?text=Imagem+Indisponível';

@@ -28,7 +28,6 @@ export class HomeComponent implements OnInit{
   private apiService = inject(ApiService);
   private analyticsService = inject(AnalyticsService);
   private sessionService = inject(SessionService);
-  private route = inject(ActivatedRoute);
   menuItems = signal<Menu[]>([]);
   searchActive = signal<boolean>(false);
   searchQuery = signal<string>('');

@@ -310,12 +310,12 @@ export class MediaController {
         throw new HttpException('Nenhum arquivo fornecido', HttpStatus.BAD_REQUEST);
       }
 
-      if (files.length > 10) {
-        throw new HttpException('Máximo 10 arquivos por upload', HttpStatus.BAD_REQUEST);
-      }
-
       if (!postId) {
         throw new HttpException('ID da postagem é obrigatório', HttpStatus.BAD_REQUEST);
+      }
+
+      if (files.length > 10) {
+        throw new HttpException('Máximo 10 arquivos por upload', HttpStatus.BAD_REQUEST);
       }
 
       const baseUrl = this.getBaseUrl(req);
@@ -329,6 +329,40 @@ export class MediaController {
       if (error instanceof HttpException) {
         throw error;
       }
+
+      throw new HttpException({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Erro no servidor, tente novamente mais tarde',
+        error: 'Internal Server Error'
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Post('cleanup/by-post/:postId')
+  @ApiOperation({
+    summary: 'Limpar mídias duplicadas por notícia',
+    description: 'Remove mídias duplicadas de uma notícia, preservando a versão destacada quando existir'
+  })
+  @ApiParam({
+    name: 'postId',
+    description: 'ID da notícia',
+    type: 'number',
+    example: 1
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Limpeza executada com sucesso'
+  })
+  async cleanupDuplicatesByPost(@Param('postId', ParseIntPipe) postId: number): Promise<{
+    message: string;
+    postId: number;
+    deletedCount: number;
+    keptMediaIds: number[];
+    removedMediaIds: number[];
+  }> {
+    try {
+      return await this.mediaService.cleanupDuplicatesByPost(postId);
+    } catch (error) {
       throw new HttpException({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         message: 'Erro no servidor, tente novamente mais tarde',
@@ -338,15 +372,6 @@ export class MediaController {
   }
 
   @Get()
-  @ApiOperation({
-    summary: 'Listar todas as mídias',
-    description: 'Endpoint para obter todas as mídias'
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Lista de mídias',
-    type: [MediaResponseDto]
-  })
   async findAll(): Promise<MediaResponseDto[]> {
     try {
       return await this.mediaService.findAll();
@@ -506,4 +531,4 @@ export class MediaController {
       }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-} 
+}

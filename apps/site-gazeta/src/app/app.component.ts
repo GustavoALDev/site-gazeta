@@ -1,9 +1,7 @@
 import { Component, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { HeaderComponent } from '@site-gazeta/header';
-import { FooterComponent } from '@site-gazeta/footer';
 import { ApiService } from './core/service/api.service';
-import { Ads, Menu } from '@site-gazeta/models';
+import { Ads } from '@site-gazeta/models';
 @Component({
   imports: [RouterModule],
   selector: 'app-root',

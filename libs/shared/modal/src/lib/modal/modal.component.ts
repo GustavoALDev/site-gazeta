@@ -1,12 +1,13 @@
-import { 
-  Component, 
-  OnDestroy, 
-  Renderer2, 
-  inject, 
-  DOCUMENT, 
+import {
+  Component,
+  OnDestroy,
+  Renderer2,
+  inject,
+  DOCUMENT,
   PLATFORM_ID,
   effect,
   model,
+  input,
   output,
   ViewEncapsulation
 } from '@angular/core';
@@ -25,12 +26,13 @@ export class ModalComponent implements OnDestroy {
   private readonly document = inject(DOCUMENT);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly isBrowser = isPlatformBrowser(this.platformId);
-  
+
   private bodyOverflowStyle?: string;
-  
+
   // Inputs
   isOpen = model<boolean>(false);
-  
+  transparent = input<boolean>(false);
+
   // Outputs
   closed = output<void>();
 

@@ -6,22 +6,7 @@
   font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI',
     Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
-.title {
-  width: 100%;
-  margin-bottom: 2rem;
-  h2 {
-    font-size: 1.75rem;
-    font-weight: 500;
-    color: #0066cc;
-    margin: 0;
-    padding-bottom: 0.5rem;
-    border-bottom: 3px solid #e30613;
-    display: inline-block;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
 
-  }
-}
 
 .carousel-container {
   position: relative;
@@ -130,7 +115,7 @@
     }
 
     .news-card__title {
-      font-size: 26px;
+      font-size: 20px;
       font-weight: 600;
       line-height: 1.2;
       line-clamp: 3;
@@ -203,7 +188,7 @@
 .news-card__tag {
   display: inline-block;
   padding: 5px 10px;
-  background: linear-gradient(135deg, #c44569, #54016e);
+  background: linear-gradient(135deg, #eb3336, #0980c5);
   color: white;
   font-size: 9px;
   font-weight: 600;

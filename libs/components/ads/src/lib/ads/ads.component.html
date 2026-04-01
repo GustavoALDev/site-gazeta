@@ -2,30 +2,30 @@
   @if(announcements()!.size === '728x90') {
     <div class="announcement large">
       @if(announcements()!.clickUrl) {
-        <a [href]="announcements()!.clickUrl" target="_blank" rel="noopener noreferrer"></a>
+        <a [href]="announcements()!.clickUrl"  target="_blank" rel="noopener noreferrer"></a>
       }
-      <img [ngSrc]="announcements()!.imageUrl" alt="announcement" width="728" height="90" />
+      <img [ngSrc]="announcements()!.imageUrl" [priority]="priority()" alt="announcement" width="728" height="90" />
     </div>
   } @else if(announcements()!.size === '300x250') {
     <div class="announcement small" >
       @if(announcements()!.clickUrl) {
         <a [href]="announcements()!.clickUrl" target="_blank" rel="noopener noreferrer"></a>
       }
-      <img [ngSrc]="announcements()!.imageUrl" alt="announcement" width="300" height="250" />
+      <img [ngSrc]="announcements()!.imageUrl" [priority]="priority()" alt="announcement" width="300" height="250" />
     </div>
   } @else if(announcements()!.size === '160x600') {
     <div class="announcement vertical">
       @if(announcements()!.clickUrl) {
         <a [href]="announcements()!.clickUrl" target="_blank" rel="noopener noreferrer"></a>
       }
-      <img [ngSrc]="announcements()!.imageUrl" alt="announcement" width="160" height="600" />
+      <img [ngSrc]="announcements()!.imageUrl" [priority]="priority()" alt="announcement" width="160" height="600" />
     </div>
   }@else if(announcements()!.size === '200x200') {
     <div class="announcement superSmall">
       @if(announcements()!.clickUrl) {
         <a [href]="announcements()!.clickUrl" target="_blank" rel="noopener noreferrer"></a>
       }
-      <img [ngSrc]="announcements()!.imageUrl" alt="announcement" width="200" height="200" />
+      <img [ngSrc]="announcements()!.imageUrl" [priority]="priority()" alt="announcement" width="200" height="200" />
     </div>
   }
 }

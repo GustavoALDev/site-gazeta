@@ -32,7 +32,7 @@ export class NewsQueryService {
    */
   private parseExcludeIds(exclude?: string): number[] {
     if (!exclude) return [];
-    
+
     return exclude
       .split(',')
       .map(id => parseInt(id.trim(), 10))
@@ -63,7 +63,7 @@ export class NewsQueryService {
         .split(',')
         .map(id => parseInt(id.trim(), 10))
         .filter(id => !isNaN(id));
-      
+
       if (excludeIds.length > 0) {
         whereCondition.id = { notIn: excludeIds };
       }
@@ -133,7 +133,7 @@ export class NewsQueryService {
    */
   async findFeatured(exclude?: string): Promise<NewsResponseDto[]> {
     const excludeIds = this.parseExcludeIds(exclude);
-    
+
     const whereCondition: any = {
       status: NewsStatus.ACTIVE,
       isEmphasis: true
@@ -175,27 +175,51 @@ export class NewsQueryService {
 
   /**
    * Busca notícias mais vistas dos últimos 7 dias
+   * Se não houver notícias suficientes, busca da semana anterior e assim sucessivamente
+   * @throws NotFoundException se não houver notícias cadastradas
    */
-  async findMostViewed(limit = 9): Promise<NewsResponseDto[]> {
-    // Calcular data de 7 dias atrás
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    
-    const whereCondition: any = {
-      status: NewsStatus.ACTIVE,
-      createdAt: {
-        gte: oneWeekAgo
+  async findMostViewed(): Promise<NewsResponseDto[]> {
+    const targetCount = 9;
+    const maxWeeksBack = 52; // Limite de 1 ano
+    let collectedNews: any[] = [];
+
+    for (let week = 0; week < maxWeeksBack && collectedNews.length < targetCount; week++) {
+      const endDate = new Date();
+      endDate.setDate(endDate.getDate() - (7 * week));
+
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - (7 * (week + 1)));
+
+      // Buscar notícias publicadas nesta semana
+      const weekNews = await this.prisma.news.findMany({
+        where: {
+          status: NewsStatus.ACTIVE,
+          AND: [
+            { published: { not: 'false' } },
+            { published: { not: '' } },
+            { published: { gte: startDate.toISOString() } },
+            { published: { lte: endDate.toISOString() } }
+          ]
+        },
+        include: this.getNewsInclude(),
+        orderBy: { views: 'desc' }
+      });
+
+      // Adicionar notícias que ainda não foram coletadas
+      for (const news of weekNews) {
+        if (collectedNews.length >= targetCount) break;
+        if (!collectedNews.some(n => n.id === news.id)) {
+          collectedNews.push(news);
+        }
       }
-    };
+    }
 
-    const news = await this.prisma.news.findMany({
-      where: whereCondition,
-      include: this.getNewsInclude(),
-      orderBy: { views: 'desc' },
-      take: limit
-    });
+    // Se não encontrou nenhuma notícia, lança erro
+    if (collectedNews.length === 0) {
+      throw new NotFoundException('Não há notícias cadastradas');
+    }
 
-    return this.formatter.formatManyNewsResponse(news, true);
+    return this.formatter.formatManyNewsResponse(collectedNews, true);
   }
 
   /**
@@ -261,7 +285,7 @@ export class NewsQueryService {
    */
   async findByCategory(categoryId: number, exclude?: string): Promise<NewsResponseDto[]> {
     const excludeIds = this.parseExcludeIds(exclude);
-    
+
     const whereCondition: any = {
       status: NewsStatus.ACTIVE,
       newsCategories: {

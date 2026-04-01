@@ -1,8 +1,8 @@
 // ============================================
 // Variáveis SCSS - Cores Principais
 // ============================================
-$primary: #eb3237;
-$secondary: #0a80c4;
+$primary: #eb3336;
+$secondary: #0980c5;
 $success: #28a745;
 $danger: #dc3545;
 $warning: #ffc107;
@@ -21,7 +21,7 @@ $success-color: $success;
 $danger-color: $danger;
 $warning-color: $warning;
 $info-color: $info;
-  
+
 // ============================================
 // Variáveis SCSS - Cores de Texto
 // ============================================
@@ -52,7 +52,7 @@ $gray-900: #212529;
 $border: #dee2e6;
 $border-color: #dee2e6;
 $border-light: #f1f3f4;
-  
+
 // ============================================
 // Variáveis SCSS - Dimensões e Espaçamentos
 // ============================================
@@ -84,7 +84,7 @@ $tablet: 768px;
 $desktop: 992px;
 $large: 1200px;
 $xlarge: 1400px;
-  
+
 // ============================================
 // Mixins SCSS - Utilitários de Layout
 // ============================================
@@ -132,16 +132,16 @@ $xlarge: 1400px;
   background-color: $bg-color;
   color: $text-color;
   text-decoration: none;
-  
+
   &:hover:not(:disabled) {
     filter: brightness(0.9);
     transform: translateY(-1px);
   }
-  
+
   &:active:not(:disabled) {
     transform: translateY(0);
   }
-  
+
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
@@ -163,55 +163,55 @@ $xlarge: 1400px;
 @mixin shadow-lg {
   box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175);
 }
-  
+
 // ============================================
 // Mixins SCSS - Responsividade
 // ============================================
 @mixin mobile {
-  @media (max-width: #{$mobile - 1px}) { 
-    @content; 
+  @media (max-width: #{$mobile - 1px}) {
+    @content;
   }
 }
 
 @mixin mobile-up {
-  @media (min-width: #{$mobile}) { 
-    @content; 
+  @media (min-width: #{$mobile}) {
+    @content;
   }
 }
 
 @mixin tablet {
-  @media (min-width: #{$tablet}) and (max-width: #{$desktop - 1px}) { 
-    @content; 
+  @media (min-width: #{$tablet}) and (max-width: #{$desktop - 1px}) {
+    @content;
   }
 }
 
 @mixin tablet-up {
-  @media (min-width: #{$tablet}) { 
-    @content; 
+  @media (min-width: #{$tablet}) {
+    @content;
   }
 }
 
 @mixin desktop {
-  @media (min-width: #{$desktop}) { 
-    @content; 
+  @media (min-width: #{$desktop}) {
+    @content;
   }
 }
 
 @mixin desktop-up {
-  @media (min-width: #{$desktop}) { 
-    @content; 
+  @media (min-width: #{$desktop}) {
+    @content;
   }
 }
 
 @mixin large {
-  @media (min-width: #{$large}) { 
-    @content; 
+  @media (min-width: #{$large}) {
+    @content;
   }
 }
 
 @mixin xlarge {
-  @media (min-width: #{$xlarge}) { 
-    @content; 
+  @media (min-width: #{$xlarge}) {
+    @content;
   }
 }
 
@@ -271,4 +271,4 @@ $xlarge: 1400px;
   .d-md-none { display: none; }
   .d-md-block { display: block; }
   .d-md-flex { display: flex; }
-} 
+}

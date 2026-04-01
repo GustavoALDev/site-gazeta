@@ -1,10 +1,10 @@
 import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
-import { Component, input, signal, OnInit, computed, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, input, signal, OnInit, computed, inject, effect } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Category, News } from '@site-gazeta/models';
-import { EMPTY, Observable } from 'rxjs';
-import { ApiConfigService } from '../config/api.config.service';
+import { ApiConfigService } from 'libs/api/service/api-config.service';
+import { PLATFORM_ID } from '@angular/core';
 
 @Component({
   selector: 'lib-more-news',
@@ -13,17 +13,52 @@ import { ApiConfigService } from '../config/api.config.service';
   styleUrl: './more-news.component.scss',
 })
 export class MoreNewsComponent implements OnInit{
+  constructor(){
+    effect(() => {
+      const list = this.newsChecked();
+      const currentState = this.imageLoadingState();
+      const nextState = { ...currentState } as Record<number, boolean>;
+      let hasChange = false;
+      list.forEach((item) => {
+        if (nextState[item.id] === undefined) {
+          nextState[item.id] = true;
+          hasChange = true;
+        }
+      });
+      if (hasChange) {
+        this.imageLoadingState.set(nextState);
+      }
+    });
+  }
   private apiService = inject(ApiConfigService);
+  private readonly platformId = inject(PLATFORM_ID);
   $moreNews = toSignal(this.apiService.getNews(), { initialValue: [] as News[] });
-  moreNews = input<News[]>([]);
+  moreNews = input<News[] | undefined>(undefined);
   category = input<Category>();
   slice = input<number>(0);
   showNews = signal<number>(0);
   title = input<string>('Mais notícias');
+  protected imageLoadingState = signal<Record<number, boolean>>({});
+  protected isLoadingNextBatch = signal<boolean>(false);
+
+  visibleNews = computed(() => {
+    const news = this.newsChecked();
+    const limit = this.showNews() > 0 ? this.showNews() : news.length;
+    return news.slice(0, limit);
+  });
+
+  protected hasPendingVisibleImages = computed(() =>
+    this.visibleNews().some((item) => this.isImageLoading(item.id))
+  );
+
+  protected canLoadMore = computed(() => {
+    const total = this.newsChecked().length;
+    return this.slice() > 0 && this.showNews() < total;
+  });
 
   newsChecked = computed(() => {
     const news = this.moreNews()
-    if(news && news.length > 0){
+    if(news !== undefined){
       return news;
     }
     return this.$moreNews();
@@ -39,6 +74,7 @@ export class MoreNewsComponent implements OnInit{
   });
   ngOnInit(): void {
     this.sliceNews();
+
   }
 
 
@@ -48,7 +84,82 @@ export class MoreNewsComponent implements OnInit{
       this.showNews.set(this.slice()!);
     }
   }
-  showMoreNews(){
-    this.showNews.update(value => value + 3);
+  async showMoreNews(){
+    if (this.hasPendingVisibleImages()) {
+      return;
+    }
+
+    if (!this.canLoadMore()) {
+      return;
+    }
+
+    const news = this.newsChecked();
+    const currentVisible = this.showNews() > 0 ? this.showNews() : news.length;
+    const nextLimit = Math.min(currentVisible + 3, news.length);
+    const nextBatch = news.slice(currentVisible, nextLimit);
+
+    if (nextBatch.length === 0) {
+      return;
+    }
+
+    if (!isPlatformBrowser(this.platformId)) {
+      this.showNews.set(nextLimit);
+      return;
+    }
+
+    this.isLoadingNextBatch.set(true);
+
+    try {
+      await Promise.all(nextBatch.map((newsItem) => this.preloadNewsImage(newsItem)));
+
+      this.imageLoadingState.update((state) => {
+        const nextState = { ...state };
+
+        nextBatch.forEach((item) => {
+          nextState[item.id] = false;
+        });
+
+        return nextState;
+      });
+
+      this.showNews.set(nextLimit);
+    } finally {
+      this.isLoadingNextBatch.set(false);
+    }
+  }
+
+  protected isImageLoading(newsId: number): boolean {
+    return this.imageLoadingState()[newsId] ?? true;
+  }
+
+  protected handleImageLoaded(newsId: number): void {
+    this.updateImageLoadingState(newsId, false);
+  }
+
+  protected handleImageError(newsId: number): void {
+    this.updateImageLoadingState(newsId, false);
+  }
+
+  private updateImageLoadingState(newsId: number, isLoading: boolean): void {
+    this.imageLoadingState.update((state) => ({
+      ...state,
+      [newsId]: isLoading,
+    }));
+  }
+
+  private preloadNewsImage(newsItem: News): Promise<void> {
+    const imageUrl = newsItem.mediaNews?.[0]?.imgSize?.small || newsItem.mediaNews?.[0]?.imgSize?.original;
+
+    if (!imageUrl) {
+      return Promise.resolve();
+    }
+
+    return new Promise((resolve) => {
+      const image = new Image();
+
+      image.onload = () => resolve();
+      image.onerror = () => resolve();
+      image.src = imageUrl;
+    });
   }
 }

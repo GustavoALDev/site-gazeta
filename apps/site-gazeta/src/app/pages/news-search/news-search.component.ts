@@ -4,6 +4,7 @@ import { ApiService } from '../../core/service/api.service';
 import { map } from 'rxjs';
 import { News } from '@site-gazeta/models';
 import { MoreNewsComponent } from '@site-gazeta/more-news';
+import { NewsManagerService } from '../../core/service/news-manager.service';
 
 @Component({
   selector: 'app-news-search',
@@ -13,14 +14,15 @@ import { MoreNewsComponent } from '@site-gazeta/more-news';
 })
 export class NewsSearchComponent implements OnDestroy {
   private apiService = inject(ApiService);
+  private newsManagerService = inject(NewsManagerService);
   query = input<string>('');
   filteredNews = signal<News[]>([]);
-  isLoading = signal<boolean>(true);
+  isLoading = signal<boolean>(false);
   private searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
   // Computed que sempre retorna uma string válida para o template
   safeQuery = computed(() => this.query() ?? '');
-
+  queryLength = computed(()=> this.query().length > 1?true :false)
   constructor() {
     effect(() => {
       const query = this.query() ?? '';
@@ -28,7 +30,11 @@ export class NewsSearchComponent implements OnDestroy {
     });
   }
 
-  getNewsByQuery(query: string | null | undefined): void {
+  getNewsByQuery(query: string): void {
+    // Limpa lista atual
+    this.filteredNews.set([]);
+
+
     // Limpa timeout anterior se existir
     if (this.searchTimeout) {
       clearTimeout(this.searchTimeout);
@@ -36,42 +42,27 @@ export class NewsSearchComponent implements OnDestroy {
     }
 
     // Valida se query é válido
-    if (!query || typeof query !== 'string' || query.length <= 1) {
-      this.filteredNews.set([]);
-      this.isLoading.set(false);
-      return;
-    }
-
-    this.isLoading.set(true);
-    this.searchTimeout = setTimeout(() => {
-      const normalizedQuery = this.regexQuery(query);
-      this.apiService.getNews().pipe(
-        map((news) => {
-          return news.filter((news) => this.searchNews(news, normalizedQuery));
-        })
-      ).subscribe((news) => {
+    if(query.length >= 1){
+      this.isLoading.set(true)
+      this.searchTimeout = setTimeout(() => {
+      this.apiService.getBySearch(query, 20).pipe()
+      .subscribe((news) => {
         this.filteredNews.set(news);
         this.isLoading.set(false);
         this.searchTimeout = null;
       });
-    }, 3000);
+      }, 3000);
+    }
   }
-  
-  searchNews(news:News, query:string){
-    return this.regexQuery(news.title).includes(query) ||
-    this.regexQuery(news.subtitle).includes(query);
-  }
-  regexQuery(value:string){
-    return value.normalize('NFD') 
-    .replace(/[\u0300-\u036f]/g, '') 
-    .replace(/[^\w]/g, '') 
-    .toLowerCase(); 
-  }
+
 
   ngOnDestroy(): void {
     if (this.searchTimeout) {
       clearTimeout(this.searchTimeout);
       this.searchTimeout = null;
     }
+    // Limpa lista ao destruir o componente
+    this.filteredNews.set([]);
+    this.newsManagerService.clearExcludedIds();
   }
 }

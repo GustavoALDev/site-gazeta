@@ -47,6 +47,15 @@
   -webkit-overflow-scrolling: touch;
 }
 
+.modal-content--transparent {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+}
+
 // Corpo do modal (onde o conteúdo é projetado)
 .modal-body {
   position: relative;
@@ -60,6 +69,23 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   overflow-y: auto; // Permite scroll interno se necessário
   -webkit-overflow-scrolling: touch;
+}
+
+.modal-body--transparent {
+  width: auto;
+  height: auto;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: visible;
+  overflow-y: visible;
+  padding: 0;
+}
+
+.modal-content--transparent .modal-close {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
 }
 
 // Botão de fechar
@@ -193,6 +219,19 @@
 
   .modal-body {
     border-radius: 0;
+  }
+
+  .modal-content--transparent {
+    padding: 0;
+  }
+
+  .modal-body--transparent {
+    padding: 0;
+  }
+
+  .modal-content--transparent .modal-close {
+    top: 0.75rem;
+    right: 0.75rem;
   }
 
   .modal-close {

@@ -19,13 +19,22 @@
       <!-- Notícia principal (imagem grande) -->
       @if (featuredNews()) {
         <article class="featured-news" [routerLink]="['/news', featuredNews()!.slug]" >
-          <div class="news-image">
+          <div class="news-image" [class.loading]="isImageLoading(featuredNews()!.id)">
             @if (featuredNews()!.mediaNews && featuredNews()!.mediaNews.length > 0) {
               <img
-                [src]="featuredNews()!.mediaNews[0].imgSize?.medium || featuredNews()!.mediaNews[0].imgSize?.original"
+                [ngSrc]="featuredNews()!.mediaNews[0].imgSize!.medium || featuredNews()!.mediaNews[0].imgSize!.original"
                 [alt]="featuredNews()!.title"
-                loading="lazy"
+                fill
+                priority
+                [class.image-hidden]="isImageLoading(featuredNews()!.id)"
+                (load)="handleImageLoaded(featuredNews()!.id)"
+                (error)="handleImageError(featuredNews()!.id)"
               />
+              @if (isImageLoading(featuredNews()!.id)) {
+                <div class="image-skeleton">
+                  <div class="shimmer"></div>
+                </div>
+              }
             } @else {
               <div class="placeholder-image">
                 <span>Sem imagem</span>
@@ -42,13 +51,22 @@
       <div class="secondary-news">
         @for (newsItem of secondaryNews(); track newsItem.id) {
           <article class="secondary-news-item" [routerLink]="['/news', newsItem.slug]">
-            <div class="news-image">
+            <div class="news-image" [class.loading]="isImageLoading(newsItem.id)">
               @if (newsItem.mediaNews && newsItem.mediaNews.length > 0) {
                 <img
-                  [src]="newsItem.mediaNews[0].imgSize?.small || newsItem.mediaNews[0].imgSize?.original"
+                  [ngSrc]="newsItem.mediaNews[0].imgSize!.small || newsItem.mediaNews[0].imgSize!.original"
                   [alt]="newsItem.title"
-                  loading="lazy"
+                  fill
+                  priority
+                  [class.image-hidden]="isImageLoading(newsItem.id)"
+                  (load)="handleImageLoaded(newsItem.id)"
+                  (error)="handleImageError(newsItem.id)"
                 />
+                @if (isImageLoading(newsItem.id)) {
+                  <div class="image-skeleton">
+                    <div class="shimmer"></div>
+                  </div>
+                }
               } @else {
                 <div class="placeholder-image">
                   <span>Sem imagem</span>

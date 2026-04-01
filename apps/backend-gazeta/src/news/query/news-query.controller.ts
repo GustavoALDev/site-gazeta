@@ -85,7 +85,7 @@ export class NewsQueryController {
   }
 
   @Get('latest-news')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Listar últimas notícias recentes',
     description: 'Retorna sempre as notícias mais recentes, sem filtro de exclusão. Este endpoint é uma exceção e pode retornar notícias já exibidas em outras seções.'
   })
@@ -94,20 +94,19 @@ export class NewsQueryController {
   async findLatestNews(
     @Query('limit') limit?: number
   ): Promise<NewsResponseDto[]> {
-    return await this.newsQueryService.findLatestNews(undefined, limit);
+    const limitNumber = limit ? parseInt(limit.toString(), 10) : undefined;
+    return await this.newsQueryService.findLatestNews(undefined, limitNumber);
   }
 
   @Get('most-viewed')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Listar notícias mais vistas',
-    description: 'Retorna as notícias mais vistas dos últimos 7 dias. Este endpoint pode retornar notícias já exibidas em outras seções.'
+    description: 'Retorna as notícias mais vistas dos últimos 7 dias. Se não houver, busca da semana anterior e assim sucessivamente.'
   })
-  @ApiQuery({ name: 'limit', type: 'number', required: false, description: 'Quantidade de notícias a retornar', example: 9 })
-  @ApiResponse({ status: 200, description: 'Lista das notícias mais vistas dos últimos 7 dias', type: [NewsResponseDto] })
-  async findMostViewed(
-    @Query('limit') limit?: number
-  ): Promise<NewsResponseDto[]> {
-    return await this.newsQueryService.findMostViewed(limit);
+  @ApiResponse({ status: 200, description: 'Lista das notícias mais vistas', type: [NewsResponseDto] })
+  @ApiResponse({ status: 404, description: 'Não há notícias cadastradas' })
+  async findMostViewed(): Promise<NewsResponseDto[]> {
+    return await this.newsQueryService.findMostViewed();
   }
 
   @Get('related-news/:id')

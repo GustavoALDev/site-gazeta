@@ -51,6 +51,7 @@ export class NewsComponent implements OnInit, OnDestroy {
   isEdit = signal<boolean>(false)
   newsId:number |null = null
   exportEditNewsMedia = signal<{newsMedia:NewsMedia[], newsVideos:NewsVideo[]}| null>(null)
+  isSavingNews = signal<boolean>(false)
   isUploadingMedia = signal<boolean>(false)
   mediaUploadProgress = signal<{ current: number; total: number }>({ current: 0, total: 0 })
   form = this.fb.group({
@@ -146,6 +147,11 @@ export class NewsComponent implements OnInit, OnDestroy {
   }
 
   onSubmit() {
+    if (this.isSavingNews()) {
+      return;
+    }
+
+    this.isSavingNews.set(true);
     const formValue = this.form.value;
     const isEmphasisValue = formValue.isEmphasis as boolean;
 
@@ -171,6 +177,7 @@ export class NewsComponent implements OnInit, OnDestroy {
           this.handleEmphasisUpdate(res.id, isEmphasisValue, formValue);
         },
         error: (err) => {
+          this.isSavingNews.set(false);
           this.alertService.error('Erro', 'Erro ao editar notícia!');
           throw err;
         }
@@ -183,6 +190,7 @@ export class NewsComponent implements OnInit, OnDestroy {
           this.handleEmphasisUpdate(res.id, isEmphasisValue, formValue);
         },
         error: (err) => {
+          this.isSavingNews.set(false);
           this.alertService.error('Erro', 'Erro ao criar notícia!');
           throw err;
         }
@@ -219,10 +227,18 @@ export class NewsComponent implements OnInit, OnDestroy {
   private processMediaUpload(formValue: any, newsId: number) {
     const newsMedia = formValue.newsMidia as NewsMedia[]
     const midias: FormData[] = []
+    const seenFiles = new Set<string>();
 
     console.log(newsMedia)
     newsMedia.forEach((media) => {
       if (media.file) {
+        const fileKey = `${media.file.name}_${media.file.size}_${media.file.lastModified}_${media.file.type}`;
+        if (seenFiles.has(fileKey)) {
+          return;
+        }
+
+        seenFiles.add(fileKey);
+
         const formMidia = new FormData();
         formMidia.append('postId', newsId.toString());
         formMidia.append('emphasis', media.emphasis.toString());
@@ -253,19 +269,24 @@ export class NewsComponent implements OnInit, OnDestroy {
         next: (res) => {
           console.log(res);
           this.isUploadingMedia.set(false);
+          this.isSavingNews.set(false);
           this.alertService.success('Sucesso', 'Notícia salva com sucesso!');
           this.onReset();
+          this.newsMidiaComponent?.resetMedia();
           this.checkEdit();
         },
         error: (err) => {
           this.isUploadingMedia.set(false);
+          this.isSavingNews.set(false);
           this.alertService.error('Erro', 'Erro ao salvar mídia de notícia!');
           throw err;
         }
       });
     } else {
+      this.isSavingNews.set(false);
       this.alertService.success('Sucesso', 'Notícia salva com sucesso!');
       this.onReset();
+      this.newsMidiaComponent?.resetMedia();
       this.checkEdit();
     }
   }
@@ -357,6 +378,8 @@ export class NewsComponent implements OnInit, OnDestroy {
     this.form.reset();
     this.form.controls['content'].reset('');
     this.selectedCategories.set([]);
+    this.isSavingNews.set(false);
+    this.isUploadingMedia.set(false);
     setTimeout(() => {
       this.form.patchValue({
         published: this.getCurrentDateTime(),

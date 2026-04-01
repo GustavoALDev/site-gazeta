@@ -1,5 +1,5 @@
 <section class="top-gazeta">
- 
+
   <div class="top-gazeta__grid">
     @for (data of $news(); track data) {
       <div class="top-gazeta__category" [attr.data-category]="data.category.color">
@@ -12,7 +12,7 @@
                 <p class="item__text">{{ newsItem.title }}</p>
               </a>
             </li>
-           
+
           } @empty {
             <li class="category__empty">Nenhuma notícia disponível</li>
           }

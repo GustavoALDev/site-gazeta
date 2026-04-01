@@ -12,7 +12,7 @@ export class ConfigService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/config`;
 
-  
+
   createTopCategoriesPrimary(body: CreateTopCategoriesConfigDto): Observable<TopCategoriesConfig> {
     return this.http.post<TopCategoriesConfig>(`${this.apiUrl}/top-categories-primary`, body);
   }
@@ -60,7 +60,7 @@ export class ConfigService {
     return this.updateTopCategoriesSecondary(body) as any;
   }
 
- 
+
   createSection(body: CreateSectionOrderDto): Observable<SectionOrderConfig> {
     return this.http.post<SectionOrderConfig>(`${this.apiUrl}/sections`, body);
   }
@@ -70,7 +70,7 @@ export class ConfigService {
     return this.http.get<SectionOrderConfig[]>(`${this.apiUrl}/sections`);
   }
 
- 
+
   getSection(sectionId: string): Observable<SectionOrderConfig> {
     return this.http.get<SectionOrderConfig>(`${this.apiUrl}/sections/${sectionId}`);
   }
@@ -80,7 +80,7 @@ export class ConfigService {
     return this.http.patch<SectionOrderConfig>(`${this.apiUrl}/sections/${sectionId}`, body);
   }
 
-  
+
   bulkUpdateSections(sections: CreateSectionOrderDto[]): Observable<SectionOrderConfig[]> {
     return this.http.patch<SectionOrderConfig[]>(`${this.apiUrl}/sections`, { sections });
   }
@@ -91,7 +91,7 @@ export class ConfigService {
   }
 
   createSocialMedia(body: CreateSocialMediaConfigDto): Observable<SocialMediaConfig> {
-    return this.http.post<SocialMediaConfig>(`${this.apiUrl}/social-media`, body);
+    return this.http.put<SocialMediaConfig>(`${this.apiUrl}/social-media`, body);
   }
 
 

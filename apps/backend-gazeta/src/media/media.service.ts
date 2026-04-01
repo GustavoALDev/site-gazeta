@@ -36,10 +36,10 @@ export class MediaService {
     // Gerar nome único para o arquivo (formato: {timestamp}_{nome_sanitizado})
     const timestamp = Date.now();
     const filename = `${timestamp}_${sanitizedOriginalName}`;
-    
+
     // Processar imagem em diferentes tamanhos
     const imageSizes = await this.imageProcessingService.processImage(file, filename);
-    
+
     // Gerar URLs públicas
     const resolvedBaseUrl = baseUrlFromRequest || process.env.BASE_URL || '';
     const publicUrls = this.imageProcessingService.generatePublicUrls(imageSizes, resolvedBaseUrl);
@@ -64,7 +64,7 @@ export class MediaService {
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      
+
       try {
         // Sanitizar nome do arquivo antes de adicionar timestamp e randomId
         const sanitizedOriginalName = sanitizeFileName(file.originalname);
@@ -72,10 +72,10 @@ export class MediaService {
         const timestamp = Date.now();
         const randomId = Math.random().toString(36).substring(2, 15);
         const filename = `${timestamp}_${randomId}_${sanitizedOriginalName}`;
-        
+
         // Processar imagem em diferentes tamanhos
         const imageSizes = await this.imageProcessingService.processImage(file, filename);
-        
+
         // Gerar URLs públicas
         const publicUrls = this.imageProcessingService.generatePublicUrls(imageSizes, resolvedBaseUrl);
 
@@ -182,6 +182,65 @@ export class MediaService {
     return { message: 'Mídia removida com sucesso' };
   }
 
+  async cleanupDuplicatesByPost(postId: number): Promise<{
+    message: string;
+    postId: number;
+    deletedCount: number;
+    keptMediaIds: number[];
+    removedMediaIds: number[];
+  }> {
+    const medias = await this.findByPost(postId);
+
+    if (medias.length <= 1) {
+      return {
+        message: 'Nenhuma mídia duplicada encontrada',
+        postId,
+        deletedCount: 0,
+        keptMediaIds: medias.map((media) => media.id),
+        removedMediaIds: []
+      };
+    }
+
+    const groupedMedias = new Map<string, MediaResponseDto[]>();
+
+    medias.forEach((media) => {
+      const fingerprint = this.buildMediaFingerprint(media);
+      const currentGroup = groupedMedias.get(fingerprint) || [];
+      currentGroup.push(media);
+      groupedMedias.set(fingerprint, currentGroup);
+    });
+
+    const keptMediaIds: number[] = [];
+    const removedMediaIds: number[] = [];
+
+    for (const group of groupedMedias.values()) {
+      if (group.length === 1) {
+        keptMediaIds.push(group[0].id);
+        continue;
+      }
+
+      const preferredMedia = group.find((media) => media.emphasis) ?? [...group].sort((a, b) => b.id - a.id)[0];
+      keptMediaIds.push(preferredMedia.id);
+
+      const duplicates = group
+        .filter((media) => media.id !== preferredMedia.id)
+        .sort((a, b) => a.id - b.id);
+
+      for (const duplicate of duplicates) {
+        await this.remove(duplicate.id);
+        removedMediaIds.push(duplicate.id);
+      }
+    }
+
+    return {
+      message: 'Limpeza de mídias duplicadas concluída',
+      postId,
+      deletedCount: removedMediaIds.length,
+      keptMediaIds,
+      removedMediaIds
+    };
+  }
+
   private async findMediaById(id: number) {
     const media = await this.prisma.newsMedia.findUnique({
       where: { id },
@@ -232,4 +291,15 @@ export class MediaService {
       updatedAt: media.updatedAt?.toISOString() || new Date().toISOString(),
     };
   }
-} 
+
+  private buildMediaFingerprint(media: MediaResponseDto): string {
+    const source = media.imgSize?.original || media.imgSize?.medium || media.imgSize?.small || '';
+    const filename = source.split('?')[0].split('/').pop() || '';
+
+    return filename
+      .replace(/_(medium|small|superSmall)(?=\.[^.]+$)/i, '')
+      .replace(/^media_\d+_/, '')
+      .replace(/^\d+_/, '')
+      .toLowerCase();
+  }
+}

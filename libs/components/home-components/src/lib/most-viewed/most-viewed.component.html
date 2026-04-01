@@ -1,9 +1,11 @@
 @if (mostViewedNews(); as news) {
   <section class="most-viewed-container">
-    <div class="most-viewed-title">
-      <h2>TOP GAZETA</h2>
-    </div>
-    
+   <div class="title-content_header">
+    <h2 class="title-content_title">Top Gazeta</h2>
+    <span class="title-content_red"></span>
+    <span class="title-content_blue"></span>
+  </div>
+
     <div class="most-viewed-grid">
       @for (column of columns(); track $index; let columnIndex = $index) {
         <div class="most-viewed-column">
@@ -11,8 +13,8 @@
             <article class="most-viewed-item" [routerLink]="['/news', newsItem.slug]">
               <div class="most-viewed-item__image">
                 @if (getImageUrl(newsItem); as imageUrl) {
-                  <img 
-                    [ngSrc]="imageUrl" 
+                  <img
+                    [ngSrc]="imageUrl"
                     [alt]="newsItem.title"
                     width="100"
                     height="100"

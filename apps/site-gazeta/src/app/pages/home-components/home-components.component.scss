@@ -7,6 +7,58 @@ main {
     max-width: 1366px;
     padding: 5px;
     min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.home-block {
+    will-change: transform, opacity, filter;
+}
+
+.scroll-reveal {
+    opacity: 0;
+    transform: translate3d(var(--scroll-reveal-x, 0px), var(--scroll-reveal-y, 24px), 0)
+        scale(0.985);
+    filter: blur(8px);
+    transition:
+        opacity 650ms ease,
+        transform 650ms cubic-bezier(0.16, 1, 0.3, 1),
+        filter 650ms ease;
+    transition-delay: var(--scroll-reveal-delay, 0ms);
+}
+
+.scroll-reveal.is-visible {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: blur(0);
+}
+
+.scroll-reveal[appScrollReveal='left'] {
+    --scroll-reveal-x: -84px;
+    --scroll-reveal-y: 0px;
+}
+
+.scroll-reveal[appScrollReveal='right'] {
+    --scroll-reveal-x: 84px;
+    --scroll-reveal-y: 0px;
+}
+
+.scroll-reveal[appScrollReveal='up'] {
+    --scroll-reveal-x: 0px;
+    --scroll-reveal-y: 32px;
+}
+
+.scroll-reveal[appScrollReveal='down'] {
+    --scroll-reveal-x: 0px;
+    --scroll-reveal-y: -32px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .scroll-reveal {
+        opacity: 1;
+        transform: none;
+        filter: none;
+        transition: none;
+    }
 }
 .container-more-news {
     display: flex;

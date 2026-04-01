@@ -1,10 +1,9 @@
-import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { NgOptimizedImage } from '@angular/common';
 import { News } from '@site-gazeta/models';
-import { ApiConfigService } from '../config/api.config.service';
-import { Observable } from 'rxjs';
+import { ApiConfigService } from 'libs/api/service/api-config.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 @Component({
   selector: 'lib-most-viewed',

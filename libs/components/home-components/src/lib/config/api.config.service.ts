@@ -51,16 +51,10 @@ export class ApiConfigService {
   }
 
   getMostViewedNews(): Observable<News[]> {
-    if (this.$mostViewedNews.value.length > 0) {
-      return this.$mostViewedNews.asObservable();
-    } else {
-      firstValueFrom(
-        this.httpClient.get<News[]>(`${this.apiUrl}/news/most-viewed`)
-      ).then((news) => {
-        this.$mostViewedNews.next(news);
-      });
-      return this.$mostViewedNews.asObservable();
-    }
+   return this.httpClient.get<News[]>(`${this.apiUrl}/news/most-viewed`)
+   .pipe(
+    tap((news)=> console.log(news))
+   )
   }
 
   getCategoryGrid() {

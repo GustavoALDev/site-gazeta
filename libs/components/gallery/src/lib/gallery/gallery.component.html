@@ -1,0 +1,53 @@
+@if (totalItems() > 0) {
+  <section class="gallery" aria-label="Galeria de imagens da notícia">
+    <button
+      type="button"
+      class="gallery__button gallery__button--prev"
+      (click)="goToPrevious()"
+      [disabled]="!canGoPrevious()"
+      aria-label="Ver imagens anteriores"
+    >
+      <span class="material-icons">chevron_left</span>
+    </button>
+
+    <div class="gallery__viewport">
+      <div class="gallery__grid">
+        @for (media of visibleItems(); track media.id ?? $index; let index = $index) {
+          <button
+            type="button"
+            class="gallery__card"
+            (click)="selectMedia(media)"
+            [attr.aria-label]="'Abrir imagem ' + (currentIndex() + index + 1)"
+          >
+            @if (getPreviewSource(media); as previewSource) {
+              <div class="gallery__image-wrapper">
+                <img
+                  class="gallery__image"
+                  [src]="previewSource"
+                  [alt]="'Imagem ' + (currentIndex() + index + 1) + ' da galeria'"
+                  loading="lazy"
+                />
+              </div>
+            } @else {
+              <div class="gallery__image-wrapper gallery__image-wrapper--empty">
+                <span class="material-icons">image_not_supported</span>
+              </div>
+            }
+          </button>
+        }
+      </div>
+    </div>
+
+    <button
+      type="button"
+      class="gallery__button gallery__button--next"
+      (click)="goToNext()"
+      [disabled]="!canGoNext()"
+      aria-label="Ver próximas imagens"
+    >
+      <span class="material-icons">chevron_right</span>
+    </button>
+
+    <div class="gallery__counter">{{ pageCounterLabel() }}</div>
+  </section>
+}

@@ -2,7 +2,7 @@ import { Component, computed, inject, input } from '@angular/core';
 import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { News } from '@site-gazeta/models';
 import { RouterModule } from '@angular/router';
-import { ApiConfigService } from './config/api.config.service';
+import { ApiConfigService } from 'libs/api/service/api-config.service';
 import { map } from 'rxjs';
 @Component({
   selector: 'lib-related-news',

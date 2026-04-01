@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Patch,
+  Put,
   Delete,
   Body,
   Param,
@@ -50,14 +51,14 @@ export class ConfigSystemController {
   // =============== TOP CATEGORIES CONFIG ===============
 
   @Get('top-categories')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Obter configurações de Top Categories',
     description: 'Retorna as configurações de categorias primárias e secundárias em um único endpoint.'
   })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Configurações encontradas', 
-    type: TopCategoriesCombinedResponseDto 
+  @ApiResponse({
+    status: 200,
+    description: 'Configurações encontradas',
+    type: TopCategoriesCombinedResponseDto
   })
   async getTopCategoriesConfig(): Promise<TopCategoriesCombinedResponseDto> {
     return this.configService.getTopCategoriesConfig();
@@ -65,15 +66,15 @@ export class ConfigSystemController {
 
   @Post('top-categories-primary')
   @UseGuards(JwtAuthGuard)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Criar configuração de Top Categories Primary',
     description: 'Cria a configuração de categorias primárias. Só pode existir uma por usuário.'
   })
   @ApiBearerAuth()
-  @ApiResponse({ 
-    status: 201, 
-    description: 'Configuração criada com sucesso', 
-    type: TopCategoriesConfigResponseDto 
+  @ApiResponse({
+    status: 201,
+    description: 'Configuração criada com sucesso',
+    type: TopCategoriesConfigResponseDto
   })
   @ApiResponse({ status: 400, description: 'Dados inválidos' })
   @ApiResponse({ status: 401, description: 'Não autorizado' })
@@ -90,15 +91,15 @@ export class ConfigSystemController {
 
   @Patch('top-categories-primary')
   @UseGuards(JwtAuthGuard)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Atualizar configuração de Top Categories Primary',
     description: 'Atualiza a configuração de categorias primárias'
   })
   @ApiBearerAuth()
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Configuração atualizada', 
-    type: TopCategoriesConfigResponseDto 
+  @ApiResponse({
+    status: 200,
+    description: 'Configuração atualizada',
+    type: TopCategoriesConfigResponseDto
   })
   @ApiResponse({ status: 400, description: 'Dados inválidos' })
   @ApiResponse({ status: 401, description: 'Não autorizado' })
@@ -112,15 +113,15 @@ export class ConfigSystemController {
 
   @Post('top-categories-secondary')
   @UseGuards(JwtAuthGuard)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Criar configuração de Top Categories Secondary',
     description: 'Cria a configuração de categorias secundárias. Só pode existir uma por usuário.'
   })
   @ApiBearerAuth()
-  @ApiResponse({ 
-    status: 201, 
-    description: 'Configuração criada com sucesso', 
-    type: TopCategoriesConfigResponseDto 
+  @ApiResponse({
+    status: 201,
+    description: 'Configuração criada com sucesso',
+    type: TopCategoriesConfigResponseDto
   })
   @ApiResponse({ status: 400, description: 'Dados inválidos' })
   @ApiResponse({ status: 401, description: 'Não autorizado' })
@@ -137,15 +138,15 @@ export class ConfigSystemController {
 
   @Patch('top-categories-secondary')
   @UseGuards(JwtAuthGuard)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Atualizar configuração de Top Categories Secondary',
     description: 'Atualiza a configuração de categorias secundárias'
   })
   @ApiBearerAuth()
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Configuração atualizada', 
-    type: TopCategoriesConfigResponseDto 
+  @ApiResponse({
+    status: 200,
+    description: 'Configuração atualizada',
+    type: TopCategoriesConfigResponseDto
   })
   @ApiResponse({ status: 400, description: 'Dados inválidos' })
   @ApiResponse({ status: 401, description: 'Não autorizado' })
@@ -161,15 +162,15 @@ export class ConfigSystemController {
 
   @Post('sections')
   @UseGuards(JwtAuthGuard)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Criar seção',
     description: 'Cria uma nova seção na ordenação da home'
   })
   @ApiBearerAuth()
-  @ApiResponse({ 
-    status: 201, 
-    description: 'Seção criada com sucesso', 
-    type: SectionOrderConfigResponseDto 
+  @ApiResponse({
+    status: 201,
+    description: 'Seção criada com sucesso',
+    type: SectionOrderConfigResponseDto
   })
   @ApiResponse({ status: 400, description: 'Dados inválidos' })
   @ApiResponse({ status: 401, description: 'Não autorizado' })
@@ -182,26 +183,26 @@ export class ConfigSystemController {
   }
 
   @Get('sections')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Listar todas as seções',
     description: 'Retorna todas as seções ordenadas'
   })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Lista de seções', 
-    type: [SectionOrderConfigResponseDto] 
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de seções',
+    type: [SectionOrderConfigResponseDto]
   })
   async getSectionOrders(): Promise<SectionOrderConfigResponseDto[]> {
     return this.configService.getSectionOrders();
   }
 
   @Get('sections-map')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Obter seções em formato de mapa',
     description: 'Retorna todas as seções em formato de objeto onde as chaves são os sectionIds. Formato ideal para uso no front-end.'
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Mapa de seções indexado por sectionId',
     schema: {
       type: 'object',
@@ -241,14 +242,14 @@ export class ConfigSystemController {
   }
 
   @Get('sections/:sectionId')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Obter seção específica',
     description: 'Retorna os detalhes de uma seção específica'
   })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Seção encontrada', 
-    type: SectionOrderConfigResponseDto 
+  @ApiResponse({
+    status: 200,
+    description: 'Seção encontrada',
+    type: SectionOrderConfigResponseDto
   })
   @ApiResponse({ status: 404, description: 'Seção não encontrada' })
   async getSectionOrder(@Param('sectionId') sectionId: string): Promise<SectionOrderConfigResponseDto> {
@@ -257,15 +258,15 @@ export class ConfigSystemController {
 
   @Patch('sections/:sectionId')
   @UseGuards(JwtAuthGuard)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Atualizar seção',
     description: 'Atualiza os dados de uma seção específica'
   })
   @ApiBearerAuth()
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Seção atualizada', 
-    type: SectionOrderConfigResponseDto 
+  @ApiResponse({
+    status: 200,
+    description: 'Seção atualizada',
+    type: SectionOrderConfigResponseDto
   })
   @ApiResponse({ status: 400, description: 'Dados inválidos' })
   @ApiResponse({ status: 401, description: 'Não autorizado' })
@@ -281,15 +282,15 @@ export class ConfigSystemController {
 
   @Patch('sections')
   @UseGuards(JwtAuthGuard)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Atualizar múltiplas seções (bulk)',
     description: 'Atualiza todas as seções de uma vez. Útil para reordenação.'
   })
   @ApiBearerAuth()
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Seções atualizadas', 
-    type: [SectionOrderConfigResponseDto] 
+  @ApiResponse({
+    status: 200,
+    description: 'Seções atualizadas',
+    type: [SectionOrderConfigResponseDto]
   })
   @ApiResponse({ status: 400, description: 'Dados inválidos ou ordens duplicadas' })
   @ApiResponse({ status: 401, description: 'Não autorizado' })
@@ -303,7 +304,7 @@ export class ConfigSystemController {
 
   @Delete('sections/:sectionId')
   @UseGuards(JwtAuthGuard)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Deletar seção',
     description: 'Remove uma seção da ordenação'
   })
@@ -321,37 +322,36 @@ export class ConfigSystemController {
 
   // =============== SOCIAL MEDIA CONFIG ===============
 
-  @Post('social-media')
+  @Put('social-media')
   @UseGuards(JwtAuthGuard)
-  @ApiOperation({ 
-    summary: 'Criar configuração de Redes Sociais',
-    description: 'Cria a configuração de links das redes sociais. Só pode existir uma por usuário.'
+  @ApiOperation({
+    summary: 'Criar ou atualizar configuração de Redes Sociais (Upsert)',
+    description: 'Cria a configuração de links das redes sociais se não existir, ou atualiza se já existir. Só pode existir uma por usuário.'
   })
   @ApiBearerAuth()
-  @ApiResponse({ 
-    status: 201, 
-    description: 'Configuração criada com sucesso', 
-    type: SocialMediaConfigResponseDto 
+  @ApiResponse({
+    status: 200,
+    description: 'Configuração salva com sucesso',
+    type: SocialMediaConfigResponseDto
   })
   @ApiResponse({ status: 400, description: 'Dados inválidos' })
   @ApiResponse({ status: 401, description: 'Não autorizado' })
-  @ApiResponse({ status: 409, description: 'Configuração já existe' })
-  async createSocialMediaConfig(
-    @Body() dto: CreateSocialMediaConfigDto,
+  async upsertSocialMediaConfig(
+    @Body() dto: UpdateSocialMediaConfigDto,
     @Request() req: any,
   ): Promise<SocialMediaConfigResponseDto> {
-    return this.configService.createSocialMediaConfig(dto, req.user.id);
+    return this.configService.upsertSocialMediaConfig(dto, req.user.id);
   }
 
   @Get('social-media')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Obter configuração de Redes Sociais',
     description: 'Retorna a configuração atual de links das redes sociais'
   })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Configuração encontrada', 
-    type: SocialMediaConfigResponseDto 
+  @ApiResponse({
+    status: 200,
+    description: 'Configuração encontrada',
+    type: SocialMediaConfigResponseDto
   })
   @ApiResponse({ status: 404, description: 'Configuração não encontrada' })
   async getSocialMediaConfig(): Promise<SocialMediaConfigResponseDto | null> {
@@ -360,15 +360,15 @@ export class ConfigSystemController {
 
   @Patch('social-media')
   @UseGuards(JwtAuthGuard)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Atualizar configuração de Redes Sociais',
     description: 'Atualiza a configuração de links das redes sociais'
   })
   @ApiBearerAuth()
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Configuração atualizada', 
-    type: SocialMediaConfigResponseDto 
+  @ApiResponse({
+    status: 200,
+    description: 'Configuração atualizada',
+    type: SocialMediaConfigResponseDto
   })
   @ApiResponse({ status: 400, description: 'Dados inválidos' })
   @ApiResponse({ status: 401, description: 'Não autorizado' })
@@ -384,15 +384,15 @@ export class ConfigSystemController {
 
   @Post('maintenance')
   @UseGuards(JwtAuthGuard)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Criar configuração de Manutenção',
     description: 'Cria a configuração global de manutenção do site. Só pode existir uma configuração no sistema.'
   })
   @ApiBearerAuth()
-  @ApiResponse({ 
-    status: 201, 
-    description: 'Configuração criada com sucesso', 
-    type: MaintenanceConfigResponseDto 
+  @ApiResponse({
+    status: 201,
+    description: 'Configuração criada com sucesso',
+    type: MaintenanceConfigResponseDto
   })
   @ApiResponse({ status: 400, description: 'Dados inválidos' })
   @ApiResponse({ status: 401, description: 'Não autorizado' })
@@ -405,14 +405,14 @@ export class ConfigSystemController {
   }
 
   @Get('maintenance')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Obter configuração de Manutenção',
     description: 'Retorna a configuração atual de manutenção do site'
   })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Configuração encontrada', 
-    type: MaintenanceConfigResponseDto 
+  @ApiResponse({
+    status: 200,
+    description: 'Configuração encontrada',
+    type: MaintenanceConfigResponseDto
   })
   @ApiResponse({ status: 404, description: 'Configuração não encontrada' })
   async getMaintenanceConfig(): Promise<MaintenanceConfigResponseDto | null> {
@@ -421,15 +421,15 @@ export class ConfigSystemController {
 
   @Patch('maintenance')
   @UseGuards(JwtAuthGuard)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Atualizar configuração de Manutenção',
     description: 'Atualiza a configuração de manutenção do site'
   })
   @ApiBearerAuth()
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Configuração atualizada', 
-    type: MaintenanceConfigResponseDto 
+  @ApiResponse({
+    status: 200,
+    description: 'Configuração atualizada',
+    type: MaintenanceConfigResponseDto
   })
   @ApiResponse({ status: 400, description: 'Dados inválidos' })
   @ApiResponse({ status: 401, description: 'Não autorizado' })
@@ -445,15 +445,15 @@ export class ConfigSystemController {
 
   @Post('carousel')
   @UseGuards(JwtAuthGuard)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Criar configuração de Carrossel',
     description: 'Cria a configuração global do carrossel. Só pode existir uma configuração no sistema.'
   })
   @ApiBearerAuth()
-  @ApiResponse({ 
-    status: 201, 
-    description: 'Configuração criada com sucesso', 
-    type: CarouselConfigResponseDto 
+  @ApiResponse({
+    status: 201,
+    description: 'Configuração criada com sucesso',
+    type: CarouselConfigResponseDto
   })
   @ApiResponse({ status: 400, description: 'Dados inválidos' })
   @ApiResponse({ status: 401, description: 'Não autorizado' })
@@ -466,14 +466,14 @@ export class ConfigSystemController {
   }
 
   @Get('carousel')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Obter configuração de Carrossel',
     description: 'Retorna a configuração atual do carrossel'
   })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Configuração encontrada', 
-    type: CarouselConfigResponseDto 
+  @ApiResponse({
+    status: 200,
+    description: 'Configuração encontrada',
+    type: CarouselConfigResponseDto
   })
   @ApiResponse({ status: 404, description: 'Configuração não encontrada' })
   async getCarouselConfig(): Promise<CarouselConfigResponseDto | null> {
@@ -482,15 +482,15 @@ export class ConfigSystemController {
 
   @Patch('carousel')
   @UseGuards(JwtAuthGuard)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Atualizar configuração de Carrossel',
     description: 'Atualiza a configuração do carrossel'
   })
   @ApiBearerAuth()
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Configuração atualizada', 
-    type: CarouselConfigResponseDto 
+  @ApiResponse({
+    status: 200,
+    description: 'Configuração atualizada',
+    type: CarouselConfigResponseDto
   })
   @ApiResponse({ status: 400, description: 'Dados inválidos' })
   @ApiResponse({ status: 401, description: 'Não autorizado' })

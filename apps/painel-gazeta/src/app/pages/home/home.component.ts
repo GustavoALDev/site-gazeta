@@ -34,7 +34,7 @@ export class HomeComponent {
       { name:'Lista de Anúncios', routerLink: 'adsList', type: 'internal'}
     ]},
     // { name: 'Usuários', routerLink: 'users'},
-    { name: 'Configurações', routerLink: 'config ', type: 'internal' },
+    { name: 'Configurações', routerLink: 'config', type: 'internal' },
   ]
   logout(){
     this.authService.logout();

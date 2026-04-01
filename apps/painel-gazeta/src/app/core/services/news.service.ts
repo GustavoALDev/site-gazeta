@@ -9,6 +9,7 @@ interface NewsQueryParams {
   limit?: number;
   categoryId?: number;
   status?: string;
+  includeTrash?: boolean;
   search?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
@@ -114,6 +115,25 @@ export class NewsService {
    */
   deleteMedia(id: number): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(`${environment.apiUrl}/media/${id}`);
+  }
+
+  /**
+   * Limpar mídias duplicadas de uma notícia
+   */
+  cleanupDuplicateMedia(postId: number): Observable<{
+    message: string;
+    postId: number;
+    deletedCount: number;
+    keptMediaIds: number[];
+    removedMediaIds: number[];
+  }> {
+    return this.http.post<{
+      message: string;
+      postId: number;
+      deletedCount: number;
+      keptMediaIds: number[];
+      removedMediaIds: number[];
+    }>(`${environment.apiUrl}/media/cleanup/by-post/${postId}`, {});
   }
 
   // ========== VIDEO ==========

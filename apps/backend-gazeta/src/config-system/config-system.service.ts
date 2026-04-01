@@ -226,7 +226,7 @@ export class ConfigSystemService {
     });
 
     const map: SectionOrderMapResponseDto = {};
-    
+
     sections.forEach(section => {
       map[section.sectionId] = this.formatSectionResponse(section);
     });
@@ -348,6 +348,37 @@ export class ConfigSystemService {
 
   // =============== SOCIAL MEDIA CONFIG ===============
 
+  async upsertSocialMediaConfig(
+    dto: UpdateSocialMediaConfigDto,
+    userId: number
+  ): Promise<SocialMediaConfigResponseDto> {
+    // Converter strings vazias para null
+    const processedData = this.convertEmptyStringsToNull(dto);
+
+    // Verificar se já existe configuração para o usuário
+    const existing = await this.prisma.socialMediaConfig.findUnique({
+      where: { createdBy: userId },
+    });
+
+    if (existing) {
+      // Atualizar configuração existente
+      const config = await this.prisma.socialMediaConfig.update({
+        where: { id: existing.id },
+        data: processedData,
+      });
+      return this.formatSocialMediaResponse(config);
+    } else {
+      // Criar nova configuração
+      const config = await this.prisma.socialMediaConfig.create({
+        data: {
+          ...processedData,
+          createdBy: userId,
+        },
+      });
+      return this.formatSocialMediaResponse(config);
+    }
+  }
+
   async createSocialMediaConfig(
     dto: CreateSocialMediaConfigDto,
     userId: number
@@ -360,9 +391,12 @@ export class ConfigSystemService {
       throw new ConflictException('Configuração de Redes Sociais já existe. Use PATCH para atualizar.');
     }
 
+    // Converter strings vazias para null
+    const processedData = this.convertEmptyStringsToNull(dto);
+
     const config = await this.prisma.socialMediaConfig.create({
       data: {
-        ...dto,
+        ...processedData,
         createdBy: userId,
       },
     });
@@ -392,9 +426,12 @@ export class ConfigSystemService {
       throw new NotFoundException('Configuração de Redes Sociais não encontrada. Use POST para criar.');
     }
 
+    // Converter strings vazias para null
+    const processedData = this.convertEmptyStringsToNull(dto);
+
     const config = await this.prisma.socialMediaConfig.update({
       where: { id: existing.id },
-      data: dto,
+      data: processedData,
     });
 
     return this.formatSocialMediaResponse(config);
@@ -519,6 +556,26 @@ export class ConfigSystemService {
   }
 
   // =============== HELPER METHODS ===============
+
+  /**
+   * Converte strings vazias para null em um objeto
+   * Útil para campos opcionais que devem ser null em vez de strings vazias
+   */
+  private convertEmptyStringsToNull(obj: any): any {
+    if (!obj || typeof obj !== 'object') {
+      return obj;
+    }
+
+    const converted = { ...obj };
+
+    Object.keys(converted).forEach(key => {
+      if (converted[key] === '') {
+        converted[key] = null;
+      }
+    });
+
+    return converted;
+  }
 
   private async validateCategories(categoryIds: number[]): Promise<void> {
     const categories = await this.prisma.category.findMany({

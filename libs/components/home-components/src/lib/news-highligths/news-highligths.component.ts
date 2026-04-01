@@ -1,8 +1,8 @@
-import { Component, input, computed, OnInit, inject } from '@angular/core';
+import { Component, Signal, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { Category, News } from '@site-gazeta/models';
-import { ApiConfigService } from '../config/api.config.service';
+import { News } from '@site-gazeta/models';
+import { ApiConfigService, HomeHighlightItem } from 'libs/api/service/api-config.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 
 
@@ -16,9 +16,9 @@ import { toSignal } from '@angular/core/rxjs-interop';
 export class NewsHighligthsComponent implements OnInit{
   private apiService = inject(ApiConfigService);
 
-  $news = toSignal(this.apiService.gethighlights())
+  $news: Signal<HomeHighlightItem[]> = toSignal(this.apiService.gethighlights(), { initialValue: [] as HomeHighlightItem[] })
   ngOnInit(): void {
     console.log('news highligths')
   }
-  
+
 }

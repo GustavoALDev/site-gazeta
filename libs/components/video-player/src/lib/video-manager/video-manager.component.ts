@@ -2,7 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { VideoListComponent } from '../video-list/video-list.component';
 import { VideoPlayerComponent } from '../video-player/video-player.component';
-import { ApiConfigService } from '../config/api.config.service';
+import { ApiConfigService } from 'libs/api/service/api-config.service';
 import { Video } from '@site-gazeta/models';
 
 @Component({
@@ -16,7 +16,7 @@ export class VideoManagerComponent implements OnInit {
   private apiConfigService = inject(ApiConfigService);
   currentVideo = signal<Video | null>(null);
   videos = signal<Video[]>([]);
-  
+
   ngOnInit(): void {
     this.apiConfigService.getVideos().subscribe({
       next: (videos) => {
@@ -31,7 +31,7 @@ export class VideoManagerComponent implements OnInit {
       }
     });
   }
-  
+
   onVideoSelect(video: Video): void {
     this.currentVideo.set(video);
   }

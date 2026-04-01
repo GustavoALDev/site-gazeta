@@ -2,7 +2,7 @@ import { Component, input, output, computed, signal, inject, OnInit, effect } fr
 import { CommonModule } from '@angular/common';
 import { Video, Category } from '@site-gazeta/models';
 import { VideoCarouselComponent } from './video-carousel/video-carousel.component';
-import { ApiConfigService } from '../config/api.config.service';
+import { ApiConfigService } from 'libs/api/service/api-config.service';
 
 interface VideosByCategory {
   category: Category;
@@ -27,10 +27,10 @@ export class VideoCategoryGridComponent implements OnInit {
   videosByCategory = computed(() => {
     const videosList = this.videos();
     const excludeIdsSet = new Set(this.excludeIds());
-    
+
     // Filtra vídeos excluídos
     const filteredVideos = videosList.filter(video => !excludeIdsSet.has(video.id));
-    
+
     const grouped = new Map<number, VideosByCategory>();
 
     filteredVideos.forEach(video => {
@@ -40,7 +40,7 @@ export class VideoCategoryGridComponent implements OnInit {
             category,
             videos: []
           });
-        } 
+        }
         grouped.get(category.id!)!.videos.push(video);
       });
     });
@@ -63,7 +63,7 @@ export class VideoCategoryGridComponent implements OnInit {
     this.initialized = true;
     this.getVideos();
   }
-  
+
   getVideos(): void {
     const excludeIds = this.excludeIds();
     this.apiConfigService.getVideosByCategory(excludeIds).subscribe({

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, Matches } from 'class-validator';
+import { IsString, IsOptional, Matches, ValidateIf } from 'class-validator';
 
 // DTO para criar/atualizar redes sociais
 export class CreateSocialMediaConfigDto {
@@ -10,8 +10,9 @@ export class CreateSocialMediaConfigDto {
   })
   @IsOptional()
   @IsString()
-  @Matches(/^https?:\/\/(www\.)?instagram\.com\/.+/, { 
-    message: 'URL do Instagram inválida' 
+  @ValidateIf(o => o.instagram !== '')
+  @Matches(/^https?:\/\/(www\.)?instagram\.com\/.+/, {
+    message: 'URL do Instagram inválida'
   })
   instagram?: string;
 
@@ -22,8 +23,9 @@ export class CreateSocialMediaConfigDto {
   })
   @IsOptional()
   @IsString()
-  @Matches(/^https?:\/\/(www\.)?facebook\.com\/.+/, { 
-    message: 'URL do Facebook inválida' 
+  @ValidateIf(o => o.facebook !== '')
+  @Matches(/^https?:\/\/(www\.)?facebook\.com\/.+/, {
+    message: 'URL do Facebook inválida'
   })
   facebook?: string;
 
@@ -34,8 +36,9 @@ export class CreateSocialMediaConfigDto {
   })
   @IsOptional()
   @IsString()
-  @Matches(/^https?:\/\/(www\.)?youtube\.com\/.+/, { 
-    message: 'URL do YouTube inválida' 
+  @ValidateIf(o => o.youtube !== '')
+  @Matches(/^https?:\/\/(www\.)?youtube\.com\/.+/, {
+    message: 'URL do YouTube inválida'
   })
   youtube?: string;
 
@@ -46,8 +49,9 @@ export class CreateSocialMediaConfigDto {
   })
   @IsOptional()
   @IsString()
-  @Matches(/^https?:\/\/(www\.)?linkedin\.com\/.+/, { 
-    message: 'URL do LinkedIn inválida' 
+  @ValidateIf(o => o.linkedin !== '')
+  @Matches(/^https?:\/\/(www\.)?linkedin\.com\/.+/, {
+    message: 'URL do LinkedIn inválida'
   })
   linkedin?: string;
 
@@ -58,8 +62,9 @@ export class CreateSocialMediaConfigDto {
   })
   @IsOptional()
   @IsString()
-  @Matches(/^https?:\/\/(www\.)?(twitter\.com|x\.com)\/.+/, { 
-    message: 'URL do Twitter/X inválida' 
+  @ValidateIf(o => o.twitter !== '')
+  @Matches(/^https?:\/\/(www\.)?(twitter\.com|x\.com)\/.+/, {
+    message: 'URL do Twitter/X inválida'
   })
   twitter?: string;
 
@@ -70,8 +75,9 @@ export class CreateSocialMediaConfigDto {
   })
   @IsOptional()
   @IsString()
-  @Matches(/^https?:\/\/(www\.)?tiktok\.com\/.+/, { 
-    message: 'URL do TikTok inválida' 
+  @ValidateIf(o => o.tiktok !== '')
+  @Matches(/^https?:\/\/(www\.)?tiktok\.com\/.+/, {
+    message: 'URL do TikTok inválida'
   })
   tiktok?: string;
 
@@ -82,8 +88,9 @@ export class CreateSocialMediaConfigDto {
   })
   @IsOptional()
   @IsString()
-  @Matches(/^\+?[1-9]\d{1,14}$/, { 
-    message: 'Número do WhatsApp inválido (use formato internacional)' 
+  @ValidateIf(o => o.whatsapp !== '')
+  @Matches(/^\+?[1-9]\d{1,14}$/, {
+    message: 'Número do WhatsApp inválido (use formato internacional)'
   })
   whatsapp?: string;
 }

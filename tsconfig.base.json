@@ -31,6 +31,7 @@
       "@site-gazeta/form-validator": [
         "libs/shared/form-validator/src/index.ts"
       ],
+      "@site-gazeta/gallery": ["libs/components/gallery/src/index.ts"],
       "@site-gazeta/header": ["libs/components/header/src/index.ts"],
       "@site-gazeta/home-components": [
         "libs/components/home-components/src/index.ts"
@@ -40,6 +41,7 @@
       "@site-gazeta/modal": ["libs/shared/modal/src/index.ts"],
       "@site-gazeta/models": ["libs/ts/models/index.ts"],
       "@site-gazeta/more-news": ["libs/components/more-news/src/index.ts"],
+      "@site-gazeta/multi-select": ["libs/shared/multi-select/src/index.ts"],
       "@site-gazeta/related-news": [
         "libs/components/related-news/src/index.ts"
       ],
@@ -49,8 +51,8 @@
       "@site-gazeta/video-components": [
         "libs/components/video-components/src/index.ts"
       ],
-      "@site-gazeta/video-player": ["libs/components/video-player/src/index.ts"],
-      "@site-gazeta/multi-select": ["libs/shared/multi-select/src/index.ts"]
+      "@site-gazeta/video-player": ["libs/components/video-player/src/index.ts"]
+
     }
   },
   "exclude": ["node_modules", "tmp"]

@@ -1,0 +1,114 @@
+<div class="media-cleanup-content">
+  <div class="content-header">
+    <div class="header-icon">
+      <span class="material-icons">auto_fix_high</span>
+    </div>
+    <div class="header-text">
+      <h3>Limpeza Temporária de Mídias</h3>
+      <p>Varrer notícias, identificar duplicações e remover automaticamente as mídias repetidas sem afetar o destaque correto.</p>
+    </div>
+    <span class="temporary-badge">Temporário</span>
+  </div>
+
+  <div class="actions-row">
+    <button type="button" class="btn-secondary" (click)="scanForDuplicates()" [disabled]="isLoading() || isCleaning()">
+      @if (isLoading()) {
+        <span class="material-icons spinning">sync</span>
+        <span>Varredura em andamento...</span>
+      } @else {
+        <span class="material-icons">search</span>
+        <span>Procurar duplicações</span>
+      }
+    </button>
+
+    <button
+      type="button"
+      class="btn-primary"
+      (click)="cleanAllDuplicates()"
+      [disabled]="isLoading() || isCleaning() || duplicateNewsCount() === 0"
+    >
+      @if (isCleaning()) {
+        <span class="material-icons spinning">sync</span>
+        <span>Executando limpeza...</span>
+      } @else {
+        <span class="material-icons">delete_sweep</span>
+        <span>Limpar tudo agora</span>
+      }
+    </button>
+  </div>
+
+  <div class="summary-grid">
+    <div class="summary-card">
+      <span class="summary-value">{{ totalNewsScanned() }}</span>
+      <span class="summary-label">Notícias analisadas</span>
+    </div>
+    <div class="summary-card">
+      <span class="summary-value">{{ duplicateNewsCount() }}</span>
+      <span class="summary-label">Notícias com duplicação</span>
+    </div>
+    <div class="summary-card">
+      <span class="summary-value">{{ duplicateMediaCount() }}</span>
+      <span class="summary-label">Mídias duplicadas encontradas</span>
+    </div>
+    <div class="summary-card">
+      <span class="summary-value">{{ duplicateGroupCount() }}</span>
+      <span class="summary-label">Grupos duplicados</span>
+    </div>
+  </div>
+
+  @if (lastScanAt()) {
+    <p class="scan-meta">Última varredura: {{ lastScanAt() }}</p>
+  }
+
+  @if (hasResults() && duplicateNewsCount() === 0) {
+    <div class="empty-state">
+      <span class="material-icons">check_circle</span>
+      <h4>Nenhuma duplicação encontrada</h4>
+      <p>A última varredura não localizou mídias repetidas no acervo carregado.</p>
+    </div>
+  }
+
+  @if (duplicateNewsCount() > 0) {
+    <div class="duplicate-list">
+      @for (item of duplicateNews(); track item.newsId) {
+        <article class="duplicate-item">
+          <div class="duplicate-item-header">
+            <div>
+              <h4>{{ item.title }}</h4>
+              <p>#{{ item.newsId }} · {{ item.slug }}</p>
+            </div>
+            <button type="button" class="btn-secondary" (click)="cleanSingleNews(item.newsId)" [disabled]="isCleaning() || isLoading()">
+              <span class="material-icons">delete</span>
+              Limpar esta notícia
+            </button>
+          </div>
+
+          <div class="duplicate-item-meta">
+            <span>{{ item.mediaCount }} mídias no total</span>
+            <span>{{ item.duplicateMediaCount }} duplicadas</span>
+            <span>{{ item.duplicateGroups.length }} grupo(s)</span>
+          </div>
+
+          <div class="duplicate-groups">
+            @for (group of item.duplicateGroups; track group.fingerprint) {
+              <div class="duplicate-group">
+                <div class="group-header">
+                  <strong>{{ group.label }}</strong>
+                  <span>
+                    Mantida: #{{ group.keptMediaId }}
+                    @if (group.keptEmphasis) {
+                      <em>· destacada</em>
+                    }
+                  </span>
+                </div>
+                <div class="group-body">
+                  <span>Removidas: {{ formatRemovedMediaIds(group.removedMediaIds) }}</span>
+                </div>
+              </div>
+            }
+          </div>
+        </article>
+      }
+    </div>
+  }
+</div>
