@@ -1,4 +1,4 @@
-import { Component, inject, signal, effect, input, output, OnInit } from '@angular/core';
+import { Component, inject, signal, effect, input, output, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { VideoService } from '../../../core/services/video.service';
@@ -15,7 +15,7 @@ import { AlertService } from '@site-gazeta/alert';
   templateUrl: './video-upload.component.html',
   styleUrl: './video-upload.component.scss',
 })
-export class VideoUploadComponent implements OnInit {
+export class VideoUploadComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private videoService = inject(VideoService);
   private categoryService = inject(CategoryService);
@@ -25,6 +25,9 @@ export class VideoUploadComponent implements OnInit {
   videoToEdit = input<Video | null>(null);
   onSave = output<Video>();
   onCancel = output<void>();
+
+  // Storage de Timeouts
+  private progressInterval: any;
 
   // Signals
   uploadForm!: FormGroup;
@@ -147,8 +150,12 @@ export class VideoUploadComponent implements OnInit {
   }
 
   hideTagInput(): void {
-    this.tagInputVisible.set(false);
-    this.tagInput.set('');
+    if (this.tagInput().trim()) {
+      this.addTag(); // Se houver conteúdo sendo digitado e o usuário clicar fora, aceita a tag por padrão
+    } else {
+      this.tagInputVisible.set(false);
+      this.tagInput.set('');
+    }
   }
 
   addTag(): void {
@@ -265,7 +272,7 @@ export class VideoUploadComponent implements OnInit {
     }
 
     // Simular progresso (você pode implementar progresso real com HttpClient)
-    const progressInterval = setInterval(() => {
+    this.progressInterval = setInterval(() => {
       this.uploadProgress.update(p => Math.min(p + 10, 90));
     }, 200);
 
@@ -275,7 +282,9 @@ export class VideoUploadComponent implements OnInit {
 
     apiCall.subscribe({
       next: (video) => {
-        clearInterval(progressInterval);
+        if (this.progressInterval) {
+          clearInterval(this.progressInterval);
+        }
         this.uploadProgress.set(100);
 
         setTimeout(() => {
@@ -286,7 +295,9 @@ export class VideoUploadComponent implements OnInit {
         }, 500);
       },
       error: (err) => {
-        clearInterval(progressInterval);
+        if (this.progressInterval) {
+          clearInterval(this.progressInterval);
+        }
         this.isUploading.set(false);
         this.uploadProgress.set(0);
         console.error('Erro ao fazer upload do vídeo:', err);
@@ -334,5 +345,11 @@ export class VideoUploadComponent implements OnInit {
 
     // Ao editar, vídeo não é obrigatório (já existe)
     return true;
+  }
+
+  ngOnDestroy(): void {
+    if (this.progressInterval) {
+      clearInterval(this.progressInterval);
+    }
   }
 }

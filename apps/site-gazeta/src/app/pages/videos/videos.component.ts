@@ -15,9 +15,11 @@ export class VideosComponent {
   currentVideo = signal<Video>({} as Video);
   excludedVideoIds = signal<number[]>([]);
 
-  receiveCurrentVideo(video: Video, videoModal: VideoModalComponent): void {
+  receiveCurrentVideo(video: Video): void {
     this.currentVideo.set(video);
-    videoModal.open();
+    if (this.videoModal) {
+      this.videoModal.open();
+    }
   }
 
   onFeaturedVideosLoaded(videos: Video[]): void {

@@ -2,15 +2,27 @@
 <lib-video-modal #videoModal [video]="video"></lib-video-modal>
 }
 <section class="videos-page">
-    <lib-video-featured 
-      (currentVideo)="receiveCurrentVideo($event, videoModal)"
-      (videosLoaded)="onFeaturedVideosLoaded($event)">
-    </lib-video-featured>
-    <lib-video-latest 
-      (currentVideo)="receiveCurrentVideo($event, videoModal)"
-      (excludedVideoIds)="onLatestVideosLoaded($event)">
-    </lib-video-latest>
-    <lib-video-category-grid 
-      [excludeIds]="excludedVideoIds()">
-    </lib-video-category-grid>
+ 
+
+  <div class="videos-content-container">
+    <div class="section-block fade-in-up">
+      <lib-video-featured 
+        (currentVideo)="receiveCurrentVideo($event)"
+        (videosLoaded)="onFeaturedVideosLoaded($event)">
+      </lib-video-featured>
+    </div>
+    
+    <div class="section-block fade-in-up delay-1">
+      <lib-video-latest 
+        (currentVideo)="receiveCurrentVideo($event)"
+        (excludedVideoIds)="onLatestVideosLoaded($event)">
+      </lib-video-latest>
+    </div>
+
+    <div class="section-block fade-in-up delay-2">
+      <lib-video-category-grid 
+        [excludeIds]="excludedVideoIds()">
+      </lib-video-category-grid>
+    </div>
+  </div>
 </section>

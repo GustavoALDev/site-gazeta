@@ -149,13 +149,19 @@ export class VideoListComponent implements OnInit {
       return duration;
     }
     
-    // Se for em segundos, converte para MM:SS
+    // Se for em segundos, converte para formato coerente
     const totalSeconds = parseInt(duration);
     if (isNaN(totalSeconds)) return duration;
     
-    const minutes = Math.floor(totalSeconds / 60);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    
+    if (hours > 0) {
+      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+    
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   }
 
   getCategories(): void {

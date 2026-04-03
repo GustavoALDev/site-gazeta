@@ -1,5 +1,126 @@
+$max-width: 1366px;
+$color-primary: #d32f2f;
+$color-dark: #1a1a1a;
+$color-muted: #666;
+$border-radius: 12px;
+$spacing-xl: 3rem;
+$spacing-md: 1.5rem;
+
+:host {
+  display: block;
+  min-height: 100vh;
+  font-family: 'Open Sans', sans-serif;
+}
+
 .videos-page {
+  width: 100%;
+  max-width: $max-width;
+  margin: 0 auto;
+  padding: 30px 0px;
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
+  gap: $spacing-xl;
+}
+
+.videos-hero-header {
+  display: flex;
+  padding: 10px;
+  background: linear-gradient(135deg, #e3061575, #0066cc6c);
+  border-radius: $border-radius;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+  position: relative;
+  overflow: hidden;
+
+  // Decorador visual superior
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, $color-primary, #ff5252);
+  }
+
+  .hero-brand {
+    display: inline-block;
+    
+    .hero-logo {
+      max-height: 45px;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+    }
+  }
+  
+  .videos-page-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #0066cc;
+    margin-bottom: 0.25rem;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  .videos-page-subtitle {
+    font-size: 0.95rem;
+    color: #e30613;
+    opacity: 0.8;
+    max-width: 600px;
+    margin: 5px auto 0;
+    line-height: 1.4;
+  }
+}
+
+.videos-content-container {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.section-block {
+  background: transparent;
+  width: 100%;
+}
+
+/* Animações de Fade in Up para seções modernas */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+
+  &.delay-1 {
+    animation-delay: 0.2s;
+  }
+  &.delay-2 {
+    animation-delay: 0.4s;
+  }
+}
+
+@media (max-width: 768px) {
+  .videos-hero-header {
+    padding: 15px;
+
+    .videos-page-title {
+      font-size: 1.5rem;
+    }
+    
+    .videos-page-subtitle {
+      font-size: 0.9rem;
+    }
+  }
+
+  .videos-content-container {
+    gap: 25px;
+  }
 }
