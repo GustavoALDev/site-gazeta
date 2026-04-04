@@ -197,7 +197,6 @@ export class NewsContentComponent implements OnInit, OnDestroy {
     this.apiService.getRelatedNews([], this.news()?.id as number)
       .subscribe((news: News[]) => {
         this.relatedNews.set(news);
-        console.log(news);
       });
   }
 
@@ -207,7 +206,6 @@ export class NewsContentComponent implements OnInit, OnDestroy {
         const moreNews = news
         .filter((news) => {return !this.relatedNews().includes(news) && news.id !== this.news()?.id})
         .sort(() => Math.random() - 0.5); // Embaralha a ordem aleatoriamente
-        console.log('request')
         this.moreNews.set(moreNews);
       });
   }
@@ -222,7 +220,6 @@ export class NewsContentComponent implements OnInit, OnDestroy {
       this.sessionId
     ).subscribe({
       next: (response: any) => {
-        console.log('✅ View tracked:', news.slug);
         this.hasTrackedInitialView = true;
 
         // Atualizar o número de visualizações em tempo real se retornado pelo backend
@@ -234,9 +231,7 @@ export class NewsContentComponent implements OnInit, OnDestroy {
           });
         }
       },
-      error: (err) => {
-        console.warn('⚠️ Failed to track view:', err);
-      }
+      error: () => {}
     });
   }
 
@@ -256,7 +251,7 @@ export class NewsContentComponent implements OnInit, OnDestroy {
             title: news.title,
             text: news.subtitle,
             url: `https://gazetadopara.com.br/news/${news.slug}`
-          }).catch((err) => console.log('Erro ao compartilhar', err));
+          }).catch(() => {});
         }
         break;
       case 'facebook':
@@ -301,8 +296,8 @@ export class NewsContentComponent implements OnInit, OnDestroy {
         this.sessionId,
         duration
       ).subscribe({
-        next: () => console.log('✅ Duration tracked:', duration, 'seconds'),
-        error: (err) => console.warn('⚠️ Failed to track duration:', err)
+        next: () => {},
+        error: () => {}
       });
     }
   }

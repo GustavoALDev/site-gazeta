@@ -47,7 +47,7 @@ export class HomeComponent implements OnInit{
   private trackPageView(): void {
     const sessionId = this.sessionService.getSessionId();
     this.analyticsService.trackPageView('/', sessionId).subscribe({
-      error: (err) => console.warn('⚠️ Failed to track home page:', err)
+      error: () => {}
     });
   }
 }

@@ -35,7 +35,6 @@ export class NewsCategoryComponent implements OnInit {
 
   protected featuredNews = computed(() => {
     const emphasisList = this.emphasisNews();
-    console.log(emphasisList)
     return emphasisList.length > 0 ? emphasisList[0] : null;
   });
 
@@ -74,7 +73,6 @@ export class NewsCategoryComponent implements OnInit {
 
   getCategories(slug: string) {
     firstValueFrom(this.apiService.getCategoryBySlug(slug)).then((category) => {
-      console.log(category)
       if(category){
         this.category.set(category);
         this.getNewsForCategory(category);
@@ -93,7 +91,6 @@ export class NewsCategoryComponent implements OnInit {
       // Este endpoint suporta o parâmetro 'exclude' via interceptor
       this.apiService.getNewsForCategory(category.id as number)
         .subscribe((news) => {
-          console.log(news)
           const typedNews = news as News[];
           this.initializeImageLoading(typedNews);
           this.news.set(typedNews);
@@ -143,8 +140,8 @@ export class NewsCategoryComponent implements OnInit {
   private trackCategoryView(slug: string): void {
     const sessionId = this.sessionService.getSessionId();
     this.analyticsService.trackPageView(`/category/${slug}`, sessionId).subscribe({
-      next: () => console.log('✅ Category page view tracked:', slug),
-      error: (err) => console.warn('⚠️ Failed to track category page:', err)
+      next: () => {},
+      error: () => {}
     });
   }
 }

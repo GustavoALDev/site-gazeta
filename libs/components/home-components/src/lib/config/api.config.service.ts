@@ -9,7 +9,6 @@ import {
   forkJoin,
   map,
   switchMap,
-  tap,
 } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 
@@ -51,10 +50,7 @@ export class ApiConfigService {
   }
 
   getMostViewedNews(): Observable<News[]> {
-   return this.httpClient.get<News[]>(`${this.apiUrl}/news/most-viewed`)
-   .pipe(
-    tap((news)=> console.log(news))
-   )
+    return this.httpClient.get<News[]>(`${this.apiUrl}/news/most-viewed`);
   }
 
   getCategoryGrid() {

@@ -11,7 +11,6 @@ export class ApiConfigService {
   private apiUrl = inject(VIDEOS_CONFIG).apiUrl;
 
   getVideos(){
-    console.log(`${this.apiUrl}/videos`);
     return this.httpClient.get<Video[]>(`${this.apiUrl}/videos`);
   };
 

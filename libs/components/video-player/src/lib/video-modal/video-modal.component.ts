@@ -38,18 +38,10 @@ export class VideoModalComponent implements OnDestroy {
   
   // Outputs
   closed = output<void>();
-  hasVideo = computed(() => {
-    const video = this.video();
-    console.log(video);
-  });
+  hasVideo = computed(() => !!this.video());
   constructor() {
     // Effect para controlar o scroll do body quando o modal abre/fecha
     effect(() => {
-      if(this.video()){
-        console.log('video', this.video());
-      } else {
-        console.log('no video');
-      }
       if (this.isBrowser) {
         if (this.isOpen()) {
           this.lockBodyScroll();

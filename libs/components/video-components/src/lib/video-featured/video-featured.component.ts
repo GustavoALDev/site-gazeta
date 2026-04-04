@@ -38,7 +38,6 @@ export class VideoFeaturedComponent implements OnInit{
   getVideosFeatured() {
     this.apiConfigService.getVideosFeatured().subscribe({
       next: (videos) => {
-        console.log('Vídeos carregados:', videos);
         this.videos.set(videos);
         // Emite os vídeos carregados para o componente pai coletar os IDs
         this.videosLoaded.emit(videos);

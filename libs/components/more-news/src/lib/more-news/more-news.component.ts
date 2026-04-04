@@ -65,7 +65,6 @@ export class MoreNewsComponent implements OnInit{
   });
   currentCategory = computed(() =>{
     const category = this.category();
-    console.log(category);
     if(category){
       return category;
     }

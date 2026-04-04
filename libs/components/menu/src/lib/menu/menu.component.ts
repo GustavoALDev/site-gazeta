@@ -50,8 +50,9 @@ export class MenuComponent implements OnInit {
   }
 
   performSearch(): void {
-      if (this.searchTerm.value?.trim()) {
-      console.log('Pesquisando por:', this.searchTerm.value);
+    const q = this.searchTerm.value?.trim();
+    if (q) {
+      this.searchBarValue.emit(q);
     }
   }
 

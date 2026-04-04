@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { BehaviorSubject, Observable, catchError, firstValueFrom, forkJoin, map, of, switchMap, tap } from 'rxjs';
+import { BehaviorSubject, Observable, catchError, firstValueFrom, forkJoin, map, of, switchMap } from 'rxjs';
 import { Category, News, PrimaryConfig, SecondaryConfig, Video } from '@site-gazeta/models';
 import { LIBRARY_CONFIG } from '../config/api-config';
 
@@ -79,9 +79,7 @@ export class ApiConfigService {
   }
 
   getMostViewedNews(): Observable<News[]> {
-    return this.httpClient.get<News[]>(`${this.apiUrl}/news/most-viewed`).pipe(
-      tap((news) => console.log(news))
-    );
+    return this.httpClient.get<News[]>(`${this.apiUrl}/news/most-viewed`);
   }
 
   getCategoryGrid(): Observable<HomeCategoryGridItem[]> {

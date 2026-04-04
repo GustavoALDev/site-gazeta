@@ -40,7 +40,6 @@ export class NewsClusterComponent implements OnInit{
   // Computed: organiza as seções de categorias com suas notícias processadas
   categorySections = computed<CategorySection[]>(() => {
     const allNews = this.news();
-    console.log(allNews);
     const categories = this.categories();
 
     if (allNews.length === 0 || categories.length === 0) {
@@ -74,14 +73,12 @@ export class NewsClusterComponent implements OnInit{
 
   getCategories(){
     this.apiService.getCategories().subscribe((categories) => {
-      console.log(categories)
       this.categories.set(categories);
     });
   }
 
   getNews(){
     this.apiService.getNews().subscribe((news) => {
-      console.log(news)
       this.news.set(news);
     });
   }

@@ -11,9 +11,6 @@ import { VideoControlsBarComponent } from './video-controls-bar/video-controls-b
   standalone: true,
 })
 export class VideoPlayerComponent implements AfterViewInit, OnDestroy {
-  constructor(){
-    console.log('VideoPlayerComponent constructor');
-  }
   // Inputs
   src = input.required<string>();
   poster = input<string>('');
@@ -72,7 +69,6 @@ export class VideoPlayerComponent implements AfterViewInit, OnDestroy {
 
   hasThumbnail = computed(() => {
     const thumbnail = this.thumbnail();
-    console.log(thumbnail);
     if(thumbnail){
       return thumbnail;
     }
