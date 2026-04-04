@@ -31,7 +31,9 @@ export class HomeComponent implements OnInit{
   menuItems = signal<Menu[]>([]);
   searchActive = signal<boolean>(false);
   searchQuery = signal<string>('');
-  headerAds = toSignal(this.apiService.getAdsByPlacementAndPosition('header', 'top'));
+  headerAds = toSignal(this.apiService.getAdsByPlacementAndPosition('header', 'top'), {
+    initialValue: {} as Record<string, Ads>,
+  });
   ngOnInit(): void {
     this.getMenu();
     this.trackPageView();

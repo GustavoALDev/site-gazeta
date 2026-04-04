@@ -1,7 +1,7 @@
 import { Component, signal, computed, OnInit, OnDestroy, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { News, NewsMedia } from '@site-gazeta/models';
+import { Ads, News, NewsMedia } from '@site-gazeta/models';
 import { ApiService } from '../../core/service/api.service';
 import { AnalyticsService } from '../../core/service/analytics.service';
 import { SessionService } from '../../core/service/session.service';
@@ -111,8 +111,12 @@ export class NewsContentComponent implements OnInit, OnDestroy {
     this.galleryImageLoading.set(true);
   }
 
-  protected centerAd = toSignal(this.apiService.getAdsByPlacementAndPosition('content', 'center'));
-  protected bottomAd = toSignal(this.apiService.getAdsByPlacementAndPosition('content', 'bottom'));
+  protected centerAd = toSignal(this.apiService.getAdsByPlacementAndPosition('content', 'center'), {
+    initialValue: {} as Record<string, Ads>,
+  });
+  protected bottomAd = toSignal(this.apiService.getAdsByPlacementAndPosition('content', 'bottom'), {
+    initialValue: {} as Record<string, Ads>,
+  });
   
   canShare = signal<boolean>(false);
 

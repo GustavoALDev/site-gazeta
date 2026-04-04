@@ -137,14 +137,14 @@
         </div>
       </div>
       <div class="container-ads">
-        <lib-ads [announcements]="centerAd()!['728x90']"></lib-ads>
-        <lib-ads [announcements]="centerAd()!['300x250']"></lib-ads>
+        <lib-ads [announcements]="centerAd()['728x90']"></lib-ads>
+        <lib-ads [announcements]="centerAd()['300x250']"></lib-ads>
       </div>
       <!-- Conteúdo da Notícia -->
       <div class="news-body">
         <div class="container-news-text">
           <div class="news-text" [innerHTML]="news()?.content"></div>
-          <lib-ads [announcements]="centerAd()!['160x600']"></lib-ads>
+          <lib-ads [announcements]="centerAd()['160x600']"></lib-ads>
         </div>
 
         <!-- Vídeos da Notícia -->
@@ -210,7 +210,7 @@
       </div>
       </div>
       <div class="container-ads">
-        <lib-ads [announcements]="bottomAd()!['728x90']"></lib-ads>
+        <lib-ads [announcements]="bottomAd()['728x90']"></lib-ads>
       </div>
       <!-- Rodapé da Notícia -->
 
