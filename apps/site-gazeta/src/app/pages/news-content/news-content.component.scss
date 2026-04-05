@@ -255,6 +255,21 @@ $border-radius-lg: 12px;
         color: #555;
         font-family: $font-family;
       }
+
+      .news-inline-video,
+      figure.news-inline-video {
+        margin: $spacing-lg 0;
+        max-width: 100%;
+      }
+
+      video {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        border-radius: 4px;
+        background: #000;
+      }
     }
   }
 

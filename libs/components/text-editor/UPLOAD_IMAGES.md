@@ -174,3 +174,25 @@ const token = localStorage.getItem('token'); // ou de onde você armazena o toke
 xhr.setRequestHeader('Authorization', `Bearer ${token}`);
 ```
 
+---
+
+## Vídeos embutidos no texto (MP4 / MOV)
+
+Imagens inseridas pelo editor usam o endpoint **`POST /content-media/upload`** (não `/media/upload`). O fluxo de **vídeo no corpo da matéria** é separado:
+
+1. **Botão** “Inserir vídeo (MP4)” acima do editor (`enableContentVideoUpload`, padrão `true`).
+2. **API**: `POST {apiUrl}/content-media/upload-video` com `multipart/form-data` e campo `file` (MP4, M4V ou MOV).
+3. **Resposta**: `{ "url": "https://.../uploads/.../arquivo.mp4" }`.
+4. **HTML**: o editor insere um `<figure class="news-inline-video"><video controls playsinline preload="metadata" src="..."></video></figure>` na posição do cursor.
+5. **Ao salvar a notícia**, o backend executa `syncNewsContentMedia`, que agora rastreia URLs em `<img>`, `<video src>` e `<source src>` sob `/uploads/`, para vínculos e limpeza de órfãos.
+
+### Desativar o botão de vídeo
+
+```html
+<lib-text-editor formControlName="content" [apiUrl]="apiUrl" [enableContentVideoUpload]="false"></lib-text-editor>
+```
+
+### Legado: `news_video` e YouTube
+
+Vínculos na tabela `news_video` e o bloco “Vídeos relacionados” no site (iframes) permanecem para conteúdo antigo; **não** são o fluxo principal para vídeo **uploadado dentro do texto**.
+

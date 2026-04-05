@@ -1,6 +1,8 @@
-import { Component, signal, computed, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, signal, computed, OnInit, OnDestroy, inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Ads, News, NewsMedia } from '@site-gazeta/models';
 import { ApiService } from '../../core/service/api.service';
 import { AnalyticsService } from '../../core/service/analytics.service';
@@ -41,6 +43,15 @@ export class NewsContentComponent implements OnInit, OnDestroy {
   private viewStartTime: number = Date.now();
   private hasTrackedInitialView = false;
   private metaService = inject(MetaTagsService);
+  private sanitizer = inject(DomSanitizer);
+  private platformId = inject(PLATFORM_ID);
+
+  /** HTML rico da matéria (imagens, vídeos embutidos); bypass para não remover &lt;video&gt;. */
+  safeNewsContent = computed<SafeHtml>(() => {
+    const html = this.news()?.content ?? '';
+    return this.sanitizer.bypassSecurityTrustHtml(html);
+  });
+
   emphasisMedia = computed(() => {
     const currentNews = this.news();
     if (!currentNews) return null;
@@ -189,10 +200,13 @@ export class NewsContentComponent implements OnInit, OnDestroy {
         }
       });
   }
-  goToTop(){
+  goToTop() {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     window.scrollTo({
       top: 0,
-      behavior: 'smooth'
+      behavior: 'smooth',
     });
   }
 

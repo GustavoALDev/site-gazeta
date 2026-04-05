@@ -4,12 +4,12 @@ import { ContentMediaResponseDto } from './dto/content-media-response.dto';
 import * as fs from 'fs';
 import * as path from 'path';
 import { promisify } from 'util';
+import { writeFile, readdir, rm, stat, unlink as unlinkFile } from 'fs/promises';
 import sharp from 'sharp';
 import { sanitizeFileName } from '../utils/file-name-sanitizer';
 
 const mkdir = promisify(fs.mkdir);
 const unlink = promisify(fs.unlink);
-const readdir = promisify(fs.readdir);
 
 @Injectable()
 export class ContentMediaService {
@@ -66,7 +66,7 @@ export class ContentMediaService {
       } catch (error) {
         this.logger.warn(`Erro ao deletar arquivo duplicado: ${filePath}`, error);
       }
-      return { url: existing.url };
+      return { url: existing.url, mediaId: existing.id };
     }
 
     // Salvar no banco de dados
@@ -79,37 +79,145 @@ export class ContentMediaService {
 
     this.logger.log(`Content media criado: ${contentMedia.id} - ${publicUrl}`);
 
-    return { url: contentMedia.url };
+    return {
+      url: contentMedia.url,
+      mediaId: contentMedia.id,
+      sizeBytes: file.buffer?.length ?? file.size
+    };
   }
 
   /**
-   * Extrai URLs de imagens do HTML
+   * Upload de vídeo embutido no HTML da notícia (MP4/MOV/M4V), sem conversão.
    */
-  extractImageUrls(htmlContent: string): string[] {
+  async uploadContentVideo(file: any, baseUrl: string): Promise<ContentMediaResponseDto> {
+    if (!file) {
+      throw new BadRequestException('Arquivo não fornecido');
+    }
+
+    if (!this.isValidContentVideoFormat(file)) {
+      throw new BadRequestException('Formato de vídeo não suportado. Use MP4, M4V ou MOV.');
+    }
+
+    const timestamp = Date.now();
+    const randomId = Math.random().toString(36).substring(2, 15);
+    const sanitizedOriginalName = sanitizeFileName(file.originalname);
+    const videoFilename = `${timestamp}_${randomId}_${this.ensureMp4Extension(sanitizedOriginalName)}`;
+
+    const timestampDir = path.join(this.baseUploadDir, timestamp.toString());
+    await this.ensureUploadDirectoryExists(timestampDir);
+
+    const filePath = path.join(timestampDir, videoFilename);
+    await writeFile(filePath, file.buffer);
+
+    const publicUrl = `${baseUrl}/uploads/${timestamp}/${videoFilename}`;
+
+    const existing = await this.prisma.contentMedia.findUnique({
+      where: { url: publicUrl }
+    });
+
+    if (existing) {
+      try {
+        await unlink(filePath);
+      } catch (error) {
+        this.logger.warn(`Erro ao deletar arquivo duplicado: ${filePath}`, error);
+      }
+      return { url: existing.url, mediaId: existing.id };
+    }
+
+    const contentMedia = await this.prisma.contentMedia.create({
+      data: {
+        url: publicUrl,
+        filePath: filePath
+      }
+    });
+
+    this.logger.log(`Content media (vídeo) criado: ${contentMedia.id} - ${publicUrl}`);
+
+    const sizeBytes = file.buffer?.length ?? file.size;
+    return {
+      url: contentMedia.url,
+      mediaId: contentMedia.id,
+      sizeBytes: typeof sizeBytes === 'number' ? sizeBytes : undefined
+    };
+  }
+
+  private isValidContentVideoFormat(file: { mimetype: string; originalname: string }): boolean {
+    const validMimeTypes = ['video/mp4', 'video/x-m4v', 'video/quicktime'];
+    const validExtensions = ['.mp4', '.m4v', '.mov'];
+    const mimeOk = validMimeTypes.includes(file.mimetype?.toLowerCase() || '');
+    const extOk = validExtensions.some(ext => file.originalname?.toLowerCase().endsWith(ext));
+    return mimeOk || extOk;
+  }
+
+  private ensureMp4Extension(filename: string): string {
+    if (filename.toLowerCase().endsWith('.mp4')) {
+      return filename;
+    }
+    const nameWithoutExt = filename.replace(/\.[^/.]+$/, '');
+    return `${nameWithoutExt}.mp4`;
+  }
+
+  /** Normaliza URL extraída do HTML para bater com o registro no banco. */
+  private normalizeContentAssetUrl(url: string): string {
+    return url.trim().replace(/&amp;/g, '&');
+  }
+
+  private contentMediaUrlCandidates(url: string): string[] {
+    const t = url.trim();
+    return [...new Set([t, this.normalizeContentAssetUrl(t)])];
+  }
+
+  private async findContentMediaByUrl(url: string) {
+    for (const candidate of this.contentMediaUrlCandidates(url)) {
+      const row = await this.prisma.contentMedia.findUnique({
+        where: { url: candidate },
+        include: { newsContentMedia: true }
+      });
+      if (row) {
+        return row;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * URLs de assets embutidos no HTML (imagens + vídeo em &lt;video&gt; / &lt;source&gt;).
+   * Regex multiline: Trecho HTML do CKEditor pode quebrar linhas entre atributos.
+   */
+  extractContentAssetUrls(htmlContent: string): string[] {
     if (!htmlContent) {
       return [];
     }
 
-    const regex = /<img[^>]+src=["']([^"']+)["']/gi;
     const urls: string[] = [];
-    let match;
+    const push = (raw: string) => {
+      const n = this.normalizeContentAssetUrl(raw);
+      if (n.includes('/uploads/')) {
+        urls.push(n);
+      }
+    };
 
-    while ((match = regex.exec(htmlContent)) !== null) {
-      const url = match[1].trim();
-      // Filtrar apenas URLs que são do nosso domínio (uploads/)
-      if (url.includes('/uploads/')) {
-        urls.push(url);
+    const patterns = [
+      /<img\b[\s\S]*?\bsrc\s*=\s*["']([^"']+)["']/gi,
+      /<video\b[\s\S]*?\bsrc\s*=\s*["']([^"']+)["']/gi,
+      /<source\b[\s\S]*?\bsrc\s*=\s*["']([^"']+)["']/gi
+    ];
+
+    for (const re of patterns) {
+      let m: RegExpExecArray | null;
+      while ((m = re.exec(htmlContent)) !== null) {
+        push(m[1]);
       }
     }
 
-    return [...new Set(urls)]; // Remover duplicatas
+    return [...new Set(urls)];
   }
 
   /**
    * Cria ou atualiza referências de ContentMedia para uma notícia
    */
   async syncNewsContentMedia(newsId: number, htmlContent: string): Promise<void> {
-    const imageUrls = this.extractImageUrls(htmlContent);
+    const assetUrls = this.extractContentAssetUrls(htmlContent);
 
     // Buscar todas as referências atuais desta notícia
     const currentReferences = await this.prisma.newsContentMedia.findMany({
@@ -117,15 +225,13 @@ export class ContentMediaService {
       include: { contentMedia: true }
     });
 
-    const currentUrls = currentReferences.map(ref => ref.contentMedia.url);
-    const urlsToAdd = imageUrls.filter(url => !currentUrls.includes(url));
-    const urlsToRemove = currentUrls.filter(url => !imageUrls.includes(url));
+    const currentUrls = currentReferences.map(ref => this.normalizeContentAssetUrl(ref.contentMedia.url));
+    const urlsToAdd = assetUrls.filter(url => !currentUrls.includes(url));
+    const urlsToRemove = currentUrls.filter(url => !assetUrls.includes(url));
 
     // Adicionar novas referências
     for (const url of urlsToAdd) {
-      let contentMedia = await this.prisma.contentMedia.findUnique({
-        where: { url }
-      });
+      let contentMedia = await this.findContentMediaByUrl(url);
 
       // Se não existe, criar (pode acontecer se a URL foi inserida manualmente)
       if (!contentMedia) {
@@ -134,12 +240,16 @@ export class ContentMediaService {
         const urlPath = url.replace(/^https?:\/\/[^\/]+/, '');
         const filePath = urlPath.startsWith('/') ? urlPath.substring(1) : urlPath;
 
-        contentMedia = await this.prisma.contentMedia.create({
+        await this.prisma.contentMedia.create({
           data: {
             url,
             filePath
           }
         });
+        contentMedia = await this.findContentMediaByUrl(url);
+        if (!contentMedia) {
+          throw new Error(`Falha ao localizar ContentMedia recém-criado: ${url}`);
+        }
       }
 
       // Criar referência
@@ -153,10 +263,7 @@ export class ContentMediaService {
 
     // Remover referências antigas
     for (const url of urlsToRemove) {
-      const contentMedia = await this.prisma.contentMedia.findUnique({
-        where: { url },
-        include: { newsContentMedia: true }
-      });
+      const contentMedia = await this.findContentMediaByUrl(url);
 
       if (contentMedia) {
         // Remover referência desta notícia
@@ -188,16 +295,19 @@ export class ContentMediaService {
       const filePath = contentMedia.filePath;
       const fileDir = path.dirname(filePath);
 
-      // Deletar arquivo físico
       if (fs.existsSync(filePath)) {
-        await unlink(filePath);
-        this.logger.log(`Arquivo deletado: ${filePath}`);
+        const st = await stat(filePath);
+        if (st.isFile() || st.isSymbolicLink()) {
+          await unlinkFile(filePath);
+          this.logger.log(`Arquivo deletado: ${filePath}`);
+        } else if (st.isDirectory()) {
+          await rm(filePath, { recursive: true, force: true });
+          this.logger.warn(`filePath apontava para diretório; removido: ${filePath}`);
+        }
       }
 
-      // Verificar se a pasta está vazia e deletá-la se estiver
       await this.deleteEmptyDirectory(fileDir);
 
-      // Deletar registro do banco
       await this.prisma.contentMedia.delete({
         where: { id: contentMedia.id }
       });
@@ -214,45 +324,37 @@ export class ContentMediaService {
    */
   private async deleteEmptyDirectory(dirPath: string): Promise<void> {
     try {
-      // Não deletar o diretório base 'uploads'
       if (dirPath === this.baseUploadDir || !dirPath.startsWith(this.baseUploadDir)) {
         return;
       }
 
-      // Verificar se o diretório existe
       if (!fs.existsSync(dirPath)) {
         return;
       }
 
-      // Verificar se está vazio
+      const st = await stat(dirPath);
+      if (!st.isDirectory()) {
+        return;
+      }
+
       const files = await readdir(dirPath);
-      
+
       if (files.length === 0) {
-        // Pasta vazia, deletar
         try {
-          // Tentar usar fs.rm primeiro (Node.js 14.14.0+)
-          if ((fs as any).rm) {
-            await promisify((fs as any).rm)(dirPath, { recursive: false });
-          } else {
-            // Fallback para fs.rmdir
-            await promisify(fs.rmdir)(dirPath);
-          }
+          await rm(dirPath, { recursive: false });
           this.logger.log(`Pasta vazia deletada: ${dirPath}`);
-          
-          // Verificar se a pasta pai também está vazia (recursivo)
+
           const parentDir = path.dirname(dirPath);
           if (parentDir !== dirPath && parentDir.startsWith(this.baseUploadDir)) {
             await this.deleteEmptyDirectory(parentDir);
           }
         } catch (rmError: any) {
-          // Se der erro (pasta não está vazia ou já foi deletada), apenas logar
           if (rmError.code !== 'ENOTEMPTY' && rmError.code !== 'ENOENT') {
-            this.logger.warn(`Erro ao deletar pasta ${dirPath}:`, rmError.message);
+            this.logger.warn(`Erro ao deletar pasta ${dirPath}: ${rmError.message}`);
           }
         }
       }
     } catch (error) {
-      // Ignorar erros ao deletar pasta (pode não estar vazia ou já ter sido deletada)
       this.logger.debug(`Não foi possível deletar pasta ${dirPath}:`, error);
     }
   }
@@ -261,20 +363,19 @@ export class ContentMediaService {
    * Deleta ContentMedia por URL
    */
   async deleteByUrl(url: string): Promise<void> {
-    const contentMedia = await this.prisma.contentMedia.findUnique({
-      where: { url },
-      include: { newsContentMedia: true }
-    });
+    const contentMedia = await this.findContentMediaByUrl(url);
 
     if (!contentMedia) {
-      throw new NotFoundException('Imagem não encontrada');
+      throw new NotFoundException('Mídia de conteúdo não encontrada');
     }
 
     // Verificar se está sendo usada por alguma notícia
     if (contentMedia.newsContentMedia.length > 0) {
       // Se está em uso, apenas remover referências (não deletar arquivo ainda)
       // Isso pode acontecer se a imagem foi removida do editor mas a notícia ainda não foi salva
-      this.logger.warn(`Imagem ${url} está em uso por ${contentMedia.newsContentMedia.length} notícia(s). Removendo referências...`);
+      this.logger.warn(
+        `Mídia ${contentMedia.url} está em uso por ${contentMedia.newsContentMedia.length} notícia(s). Removendo referências...`
+      );
       
       // Remover todas as referências
       await this.prisma.newsContentMedia.deleteMany({

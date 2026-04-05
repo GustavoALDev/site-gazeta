@@ -41,10 +41,13 @@ export class AnalyticsService {
    * Registra visualização de notícia
    */
   trackNewsView(newsId: number, slug: string, sessionId: string): Observable<any> {
+    if (!this.isBrowser) {
+      return EMPTY;
+    }
     return this.trackView({
       newsId,
       path: `/news/${slug}`,
-      referer: document.referrer || undefined,
+      referer: typeof document !== 'undefined' ? document.referrer || undefined : undefined,
       sessionId,
     });
   }
@@ -58,12 +61,15 @@ export class AnalyticsService {
     sessionId: string,
     duration: number
   ): Observable<any> {
+    if (!this.isBrowser) {
+      return EMPTY;
+    }
     return this.trackView({
       newsId,
       path,
       sessionId,
       duration,
-      referer: document.referrer || undefined,
+      referer: typeof document !== 'undefined' ? document.referrer || undefined : undefined,
     });
   }
 

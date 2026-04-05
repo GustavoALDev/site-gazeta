@@ -28,9 +28,10 @@ async function bootstrap() {
     // Headers para streaming progressivo de vídeo
     setHeaders: (res, path) => {
       // Se for um arquivo de vídeo, adicionar headers apropriados
-      if (path.match(/\.(mp4|webm|ogg)$/i)) {
+      if (path.match(/\.(mp4|webm|ogg|mov|m4v)$/i)) {
         res.setHeader('Accept-Ranges', 'bytes');
-        res.setHeader('Content-Type', 'video/mp4');
+        const isMov = path.match(/\.mov$/i);
+        res.setHeader('Content-Type', isMov ? 'video/quicktime' : 'video/mp4');
         // Cache por 1 dia para vídeos
         res.setHeader('Cache-Control', 'public, max-age=86400');
       }

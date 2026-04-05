@@ -143,7 +143,7 @@
       <!-- Conteúdo da Notícia -->
       <div class="news-body">
         <div class="container-news-text">
-          <div class="news-text" [innerHTML]="news()?.content"></div>
+          <div class="news-text" [innerHTML]="safeNewsContent()"></div>
           <lib-ads [announcements]="centerAd()['160x600']"></lib-ads>
         </div>
 

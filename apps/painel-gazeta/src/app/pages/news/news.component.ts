@@ -307,9 +307,11 @@ export class NewsComponent implements OnInit, OnDestroy {
    this.formatedSlug(title)
   }
 
-  formatedSlug(value?:string) {
-    if(value){
-      const slug = value
+  formatedSlug(value?: string) {
+    if (!value) {
+      return;
+    }
+    const slug = value
       .toLowerCase()
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
@@ -317,11 +319,15 @@ export class NewsComponent implements OnInit, OnDestroy {
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-')
       .trim();
-    this.form.patchValue({ slug });
-    this.urlDisplaySet(slug);
+
+    const current = this.form.get('slug')?.value ?? '';
+    // Evita loop: valueChanges do slug disparava patchValue e reentrava sem fim (Maximum call stack).
+    if (slug === current) {
+      this.urlDisplaySet(slug);
+      return;
     }
-
-
+    this.form.patchValue({ slug }, { emitEvent: false });
+    this.urlDisplaySet(slug);
   }
 
   toggleCategoryDropdown() {
