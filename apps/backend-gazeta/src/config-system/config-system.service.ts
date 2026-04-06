@@ -80,12 +80,13 @@ export class ConfigSystemService {
         createdBy: userId,
         categories: {
           create: !dto.randomMode && dto.categoryIds
-            ? dto.categoryIds.map(catId => ({ categoryId: catId }))
+            ? dto.categoryIds.map((catId, index) => ({ categoryId: catId, order: index }))
             : [],
         },
       },
       include: {
         categories: {
+          orderBy: { order: 'asc' },
           include: {
             category: true,
           },
@@ -103,6 +104,7 @@ export class ConfigSystemService {
       where: { type },
       include: {
         categories: {
+          orderBy: { order: 'asc' },
           include: {
             category: true,
           },
@@ -163,11 +165,12 @@ export class ConfigSystemService {
         randomMode: dto.randomMode ?? existing.randomMode,
         categories: dto.categoryIds ? {
           deleteMany: {},
-          create: dto.categoryIds.map(catId => ({ categoryId: catId })),
+          create: dto.categoryIds.map((catId, index) => ({ categoryId: catId, order: index })),
         } : undefined,
       },
       include: {
         categories: {
+          orderBy: { order: 'asc' },
           include: {
             category: true,
           },
@@ -248,8 +251,7 @@ export class ConfigSystemService {
 
   async updateSectionOrder(
     sectionId: string,
-    dto: UpdateSectionOrderDto,
-    userId: number
+    dto: UpdateSectionOrderDto
   ): Promise<SectionOrderConfigResponseDto> {
     const existing = await this.prisma.sectionOrderConfig.findUnique({
       where: { sectionId },
@@ -279,8 +281,7 @@ export class ConfigSystemService {
   }
 
   async bulkUpdateSectionOrders(
-    dto: BulkUpdateSectionsDto,
-    userId: number
+    dto: BulkUpdateSectionsDto
   ): Promise<SectionOrderConfigResponseDto[]> {
     // Validar que todas as seções existem
     const sectionIds = dto.sections.map(s => s.sectionId);
@@ -476,8 +477,7 @@ export class ConfigSystemService {
   }
 
   async updateMaintenanceConfig(
-    dto: UpdateMaintenanceConfigDto,
-    userId: number
+    dto: UpdateMaintenanceConfigDto
   ): Promise<MaintenanceConfigResponseDto> {
     // Buscar a configuração global (mais recente)
     const existing = await this.prisma.maintenanceConfig.findFirst({
@@ -535,8 +535,7 @@ export class ConfigSystemService {
   }
 
   async updateCarouselConfig(
-    dto: UpdateCarouselConfigDto,
-    userId: number
+    dto: UpdateCarouselConfigDto
   ): Promise<CarouselConfigResponseDto> {
     // Buscar a configuração global (mais recente)
     const existing = await this.prisma.carouselConfig.findFirst({
@@ -561,12 +560,12 @@ export class ConfigSystemService {
    * Converte strings vazias para null em um objeto
    * Útil para campos opcionais que devem ser null em vez de strings vazias
    */
-  private convertEmptyStringsToNull(obj: any): any {
+  private convertEmptyStringsToNull<T>(obj: T): T {
     if (!obj || typeof obj !== 'object') {
       return obj;
     }
 
-    const converted = { ...obj };
+    const converted = { ...obj } as Record<string, unknown>;
 
     Object.keys(converted).forEach(key => {
       if (converted[key] === '') {
@@ -574,10 +573,14 @@ export class ConfigSystemService {
       }
     });
 
-    return converted;
+    return converted as T;
   }
 
   private async validateCategories(categoryIds: number[]): Promise<void> {
+    if (categoryIds.length !== 3) {
+      throw new BadRequestException('Selecione exatamente 3 categorias para esta configuração.');
+    }
+
     const categories = await this.prisma.category.findMany({
       where: {
         id: { in: categoryIds },
@@ -590,7 +593,7 @@ export class ConfigSystemService {
     }
   }
 
-  private async getRandomCategories(count: number): Promise<any[]> {
+  private async getRandomCategories(count: number): Promise<{ id: number; name: string; slug: string; description: string | null; color: string | null; isActive: boolean }[]> {
     // Buscar todas as categorias ativas
     const allCategories = await this.prisma.category.findMany({
       where: {
@@ -608,20 +611,20 @@ export class ConfigSystemService {
     return shuffled.slice(0, count);
   }
 
-  private formatTopCategoriesResponse(config: any): TopCategoriesConfigResponseDto {
+  private formatTopCategoriesResponse(config: { id: number; type: string; randomMode: boolean; categories: { category: any }[]; createdAt: Date; updatedAt: Date; createdBy: number }): TopCategoriesConfigResponseDto {
     return {
       id: config.id,
       type: config.type as TopCategoryType,
       randomMode: config.randomMode,
-      categories: config.categories.map((rel: any) => this.formatCategoryBasic(rel.category)),
-      categoryIds: config.categories.map((rel: any) => rel.category.id),
+      categories: config.categories.map((rel: { category: { id: number; name: string; slug: string; description: string | null; color: string | null; isActive: boolean } }) => this.formatCategoryBasic(rel.category)),
+      categoryIds: config.categories.map((rel: { category: { id: number } }) => rel.category.id),
       createdAt: config.createdAt.toISOString(),
       updatedAt: config.updatedAt.toISOString(),
       createdBy: config.createdBy,
     };
   }
 
-  private formatCategoryBasic(category: any): CategoryBasicDto {
+  private formatCategoryBasic(category: { id: number; name: string; slug: string; description: string | null; color: string | null; isActive: boolean }): CategoryBasicDto {
     return {
       id: category.id,
       name: category.name,
@@ -632,7 +635,7 @@ export class ConfigSystemService {
     };
   }
 
-  private formatSectionResponse(section: any): SectionOrderConfigResponseDto {
+  private formatSectionResponse(section: { id: number; sectionId: string; name: string; title: string | null; order: number; showTitle: boolean; icon: string | null; createdAt: Date; updatedAt: Date; createdBy: number }): SectionOrderConfigResponseDto {
     return {
       id: section.id,
       sectionId: section.sectionId,
@@ -647,7 +650,7 @@ export class ConfigSystemService {
     };
   }
 
-  private formatSocialMediaResponse(config: any): SocialMediaConfigResponseDto {
+  private formatSocialMediaResponse(config: { id: number; instagram: string | null; facebook: string | null; youtube: string | null; linkedin: string | null; twitter: string | null; tiktok: string | null; whatsapp: string | null; createdAt: Date; updatedAt: Date; createdBy: number }): SocialMediaConfigResponseDto {
     return {
       id: config.id,
       instagram: config.instagram,
@@ -663,7 +666,7 @@ export class ConfigSystemService {
     };
   }
 
-  private formatMaintenanceResponse(config: any): MaintenanceConfigResponseDto {
+  private formatMaintenanceResponse(config: { id: number; isActive: boolean; createdAt: Date; updatedAt: Date; createdBy: number }): MaintenanceConfigResponseDto {
     return {
       id: config.id,
       isActive: config.isActive,
@@ -673,7 +676,7 @@ export class ConfigSystemService {
     };
   }
 
-  private formatCarouselResponse(config: any): CarouselConfigResponseDto {
+  private formatCarouselResponse(config: { id: number; featuredNewsLimit: number; createdAt: Date; updatedAt: Date; createdBy: number }): CarouselConfigResponseDto {
     return {
       id: config.id,
       featuredNewsLimit: config.featuredNewsLimit,

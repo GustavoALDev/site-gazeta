@@ -188,6 +188,7 @@ model TopCategoriesCategoryRelation {
   id                    Int                 @id @default(autoincrement())
   topCategoriesConfigId Int                 @map("top_categories_config_id")
   categoryId            Int                 @map("category_id")
+  order                 Int                 @default(0)
   category              Category            @relation(fields: [categoryId], references: [id], onDelete: Cascade, map: "top_cat_rel_category_fkey")
   topCategoriesConfig   TopCategoriesConfig @relation(fields: [topCategoriesConfigId], references: [id], onDelete: Cascade, map: "top_cat_rel_config_fkey")
 

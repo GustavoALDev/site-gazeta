@@ -21,7 +21,6 @@ import {
   SectionOrderMapResponseDto,
 } from './dto/section-order-config.dto';
 import {
-  CreateSocialMediaConfigDto,
   UpdateSocialMediaConfigDto,
   SocialMediaConfigResponseDto,
 } from './dto/social-media-config.dto';
@@ -42,6 +41,12 @@ import {
   TopCategoriesCombinedResponseDto,
   TopCategoryType,
 } from './dto/top-categories-config.dto';
+
+interface AuthenticatedRequest extends Request {
+  user: {
+    id: number;
+  };
+}
 
 @ApiTags('Configurações do Sistema')
 @Controller('config')
@@ -81,7 +86,7 @@ export class ConfigSystemController {
   @ApiResponse({ status: 409, description: 'Configuração já existe' })
   async createTopCategoriesPrimary(
     @Body() dto: Omit<CreateTopCategoriesConfigDto, 'type'>,
-    @Request() req: any,
+    @Request() req: AuthenticatedRequest,
   ): Promise<TopCategoriesConfigResponseDto> {
     return this.configService.createTopCategoriesConfig(
       { ...dto, type: TopCategoryType.PRIMARY },
@@ -106,7 +111,7 @@ export class ConfigSystemController {
   @ApiResponse({ status: 404, description: 'Configuração não encontrada' })
   async updateTopCategoriesPrimary(
     @Body() dto: UpdateTopCategoriesConfigDto,
-    @Request() req: any,
+    @Request() req: AuthenticatedRequest,
   ): Promise<TopCategoriesConfigResponseDto> {
     return this.configService.updateTopCategoriesConfig(TopCategoryType.PRIMARY, dto, req.user.id);
   }
@@ -128,7 +133,7 @@ export class ConfigSystemController {
   @ApiResponse({ status: 409, description: 'Configuração já existe' })
   async createTopCategoriesSecondary(
     @Body() dto: Omit<CreateTopCategoriesConfigDto, 'type'>,
-    @Request() req: any,
+    @Request() req: AuthenticatedRequest,
   ): Promise<TopCategoriesConfigResponseDto> {
     return this.configService.createTopCategoriesConfig(
       { ...dto, type: TopCategoryType.SECONDARY },
@@ -153,7 +158,7 @@ export class ConfigSystemController {
   @ApiResponse({ status: 404, description: 'Configuração não encontrada' })
   async updateTopCategoriesSecondary(
     @Body() dto: UpdateTopCategoriesConfigDto,
-    @Request() req: any,
+    @Request() req: AuthenticatedRequest,
   ): Promise<TopCategoriesConfigResponseDto> {
     return this.configService.updateTopCategoriesConfig(TopCategoryType.SECONDARY, dto, req.user.id);
   }
@@ -177,7 +182,7 @@ export class ConfigSystemController {
   @ApiResponse({ status: 409, description: 'Seção ou ordem já existe' })
   async createSectionOrder(
     @Body() dto: CreateSectionOrderDto,
-    @Request() req: any,
+    @Request() req: AuthenticatedRequest,
   ): Promise<SectionOrderConfigResponseDto> {
     return this.configService.createSectionOrder(dto, req.user.id);
   }
@@ -275,9 +280,8 @@ export class ConfigSystemController {
   async updateSectionOrder(
     @Param('sectionId') sectionId: string,
     @Body() dto: UpdateSectionOrderDto,
-    @Request() req: any,
   ): Promise<SectionOrderConfigResponseDto> {
-    return this.configService.updateSectionOrder(sectionId, dto, req.user.id);
+    return this.configService.updateSectionOrder(sectionId, dto);
   }
 
   @Patch('sections')
@@ -297,9 +301,8 @@ export class ConfigSystemController {
   @ApiResponse({ status: 404, description: 'Uma ou mais seções não encontradas' })
   async bulkUpdateSectionOrders(
     @Body() dto: BulkUpdateSectionsDto,
-    @Request() req: any,
   ): Promise<SectionOrderConfigResponseDto[]> {
-    return this.configService.bulkUpdateSectionOrders(dto, req.user.id);
+    return this.configService.bulkUpdateSectionOrders(dto);
   }
 
   @Delete('sections/:sectionId')
@@ -314,7 +317,6 @@ export class ConfigSystemController {
   @ApiResponse({ status: 404, description: 'Seção não encontrada' })
   async deleteSectionOrder(
     @Param('sectionId') sectionId: string,
-    @Request() req: any,
   ): Promise<{ message: string }> {
     await this.configService.deleteSectionOrder(sectionId);
     return { message: 'Seção removida com sucesso' };
@@ -338,7 +340,7 @@ export class ConfigSystemController {
   @ApiResponse({ status: 401, description: 'Não autorizado' })
   async upsertSocialMediaConfig(
     @Body() dto: UpdateSocialMediaConfigDto,
-    @Request() req: any,
+    @Request() req: AuthenticatedRequest,
   ): Promise<SocialMediaConfigResponseDto> {
     return this.configService.upsertSocialMediaConfig(dto, req.user.id);
   }
@@ -375,7 +377,7 @@ export class ConfigSystemController {
   @ApiResponse({ status: 404, description: 'Configuração não encontrada' })
   async updateSocialMediaConfig(
     @Body() dto: UpdateSocialMediaConfigDto,
-    @Request() req: any,
+    @Request() req: AuthenticatedRequest,
   ): Promise<SocialMediaConfigResponseDto> {
     return this.configService.updateSocialMediaConfig(dto, req.user.id);
   }
@@ -399,7 +401,7 @@ export class ConfigSystemController {
   @ApiResponse({ status: 409, description: 'Configuração já existe' })
   async createMaintenanceConfig(
     @Body() dto: CreateMaintenanceConfigDto,
-    @Request() req: any,
+    @Request() req: AuthenticatedRequest,
   ): Promise<MaintenanceConfigResponseDto> {
     return this.configService.createMaintenanceConfig(dto, req.user.id);
   }
@@ -436,9 +438,8 @@ export class ConfigSystemController {
   @ApiResponse({ status: 404, description: 'Configuração não encontrada' })
   async updateMaintenanceConfig(
     @Body() dto: UpdateMaintenanceConfigDto,
-    @Request() req: any,
   ): Promise<MaintenanceConfigResponseDto> {
-    return this.configService.updateMaintenanceConfig(dto, req.user.id);
+    return this.configService.updateMaintenanceConfig(dto);
   }
 
   // =============== CAROUSEL CONFIG ===============
@@ -460,7 +461,7 @@ export class ConfigSystemController {
   @ApiResponse({ status: 409, description: 'Configuração já existe' })
   async createCarouselConfig(
     @Body() dto: CreateCarouselConfigDto,
-    @Request() req: any,
+    @Request() req: AuthenticatedRequest,
   ): Promise<CarouselConfigResponseDto> {
     return this.configService.createCarouselConfig(dto, req.user.id);
   }
@@ -497,9 +498,7 @@ export class ConfigSystemController {
   @ApiResponse({ status: 404, description: 'Configuração não encontrada' })
   async updateCarouselConfig(
     @Body() dto: UpdateCarouselConfigDto,
-    @Request() req: any,
   ): Promise<CarouselConfigResponseDto> {
-    return this.configService.updateCarouselConfig(dto, req.user.id);
+    return this.configService.updateCarouselConfig(dto);
   }
 }
-
