@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ConflictException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   CreateSectionOrderDto,
@@ -33,19 +33,21 @@ import {
 
 @Injectable()
 export class ConfigSystemService {
+  private readonly logger = new Logger(ConfigSystemService.name);
+
   constructor(private prisma: PrismaService) {}
 
   // =============== TOP CATEGORIES CONFIG ===============
 
   async getTopCategoriesConfig(): Promise<TopCategoriesCombinedResponseDto> {
-    const [primary, secondary] = await Promise.all([
+    const [primary, secondary] = await Promise.allSettled([
       this.getTopCategoriesConfigByType(TopCategoryType.PRIMARY),
       this.getTopCategoriesConfigByType(TopCategoryType.SECONDARY),
     ]);
 
     return {
-      primary,
-      secondary,
+      primary: primary.status === 'fulfilled' ? primary.value : null,
+      secondary: secondary.status === 'fulfilled' ? secondary.value : null,
     };
   }
 
@@ -100,38 +102,46 @@ export class ConfigSystemService {
   async getTopCategoriesConfigByType(
     type: TopCategoryType
   ): Promise<TopCategoriesConfigResponseDto | null> {
-    const config = await this.prisma.topCategoriesConfig.findFirst({
-      where: { type },
-      include: {
-        categories: {
-          orderBy: { order: 'asc' },
-          include: {
-            category: true,
+    try {
+      const config = await this.prisma.topCategoriesConfig.findFirst({
+        where: { type },
+        include: {
+          categories: {
+            orderBy: { order: 'asc' },
+            include: {
+              category: true,
+            },
           },
         },
-      },
-    });
+      });
 
-    if (!config) {
+      if (!config) {
+        return null;
+      }
+
+      // Se randomMode está ativo, buscar 3 categorias aleatórias
+      if (config.randomMode) {
+        const randomCategories = await this.getRandomCategories(3);
+        return {
+          id: config.id,
+          type: config.type as TopCategoryType,
+          randomMode: config.randomMode,
+          categories: randomCategories.map(cat => this.formatCategoryBasic(cat)),
+          categoryIds: randomCategories.map(cat => cat.id),
+          createdAt: config.createdAt.toISOString(),
+          updatedAt: config.updatedAt.toISOString(),
+          createdBy: config.createdBy,
+        };
+      }
+
+      return this.formatTopCategoriesResponse(config);
+    } catch (error) {
+      this.logger.error(
+        `Falha ao buscar configuração de Top Categories (${type}). Retornando null para evitar erro 500.`,
+        error instanceof Error ? error.stack : String(error)
+      );
       return null;
     }
-
-    // Se randomMode está ativo, buscar 3 categorias aleatórias
-    if (config.randomMode) {
-      const randomCategories = await this.getRandomCategories(3);
-      return {
-        id: config.id,
-        type: config.type as TopCategoryType,
-        randomMode: config.randomMode,
-        categories: randomCategories.map(cat => this.formatCategoryBasic(cat)),
-        categoryIds: randomCategories.map(cat => cat.id),
-        createdAt: config.createdAt.toISOString(),
-        updatedAt: config.updatedAt.toISOString(),
-        createdBy: config.createdBy,
-      };
-    }
-
-    return this.formatTopCategoriesResponse(config);
   }
 
   async updateTopCategoriesConfig(
@@ -612,12 +622,16 @@ export class ConfigSystemService {
   }
 
   private formatTopCategoriesResponse(config: { id: number; type: string; randomMode: boolean; categories: { category: any }[]; createdAt: Date; updatedAt: Date; createdBy: number }): TopCategoriesConfigResponseDto {
+    const validCategories = config.categories
+      .filter((rel: { category: unknown }) => !!rel.category)
+      .map((rel: { category: { id: number; name: string; slug: string; description: string | null; color: string | null; isActive: boolean } }) => rel.category);
+
     return {
       id: config.id,
       type: config.type as TopCategoryType,
       randomMode: config.randomMode,
-      categories: config.categories.map((rel: { category: { id: number; name: string; slug: string; description: string | null; color: string | null; isActive: boolean } }) => this.formatCategoryBasic(rel.category)),
-      categoryIds: config.categories.map((rel: { category: { id: number } }) => rel.category.id),
+      categories: validCategories.map((category) => this.formatCategoryBasic(category)),
+      categoryIds: validCategories.map((category) => category.id),
       createdAt: config.createdAt.toISOString(),
       updatedAt: config.updatedAt.toISOString(),
       createdBy: config.createdBy,
