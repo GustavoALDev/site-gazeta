@@ -14,15 +14,15 @@ import { toSignal } from '@angular/core/rxjs-interop';
 })
 export class MostViewedComponent {
   private apiService = inject(ApiConfigService);
-  mostViewedNews = toSignal<News[]>(this.apiService.getMostViewedNews(), { initialValue: [] });
+  mostViewedNews = toSignal(this.apiService.getMostViewedNews(), { initialValue: [] as News[] });
 
   columns = computed(() => {
     const news = this.mostViewedNews();
     if(news) {
       return [
-        news.slice(0, 3) as News[],   // coluna 0
-        news.slice(3, 6) as News[],    // coluna 1
-        news.slice(6, 9) as News[]     // coluna 2
+        news.slice(0, 3),   // coluna 0
+        news.slice(3, 6),   // coluna 1
+        news.slice(6, 9)    // coluna 2
       ];
   }
   return [];

@@ -36,6 +36,18 @@
           <option value="draft">Rascunhos</option>
           <option value="trash">Lixeira</option>
         </select>
+
+        <select [ngModel]="filterEmphasis()" (ngModelChange)="filterEmphasis.set($event)">
+          <option value="all">Filtro Destaque: Todos</option>
+          <option value="only">Somente Destaques</option>
+          <option value="none">Sem Destaque</option>
+        </select>
+
+        <select [ngModel]="filterImageStatus()" (ngModelChange)="filterImageStatus.set($event)">
+          <option value="all">Mídias: Todas</option>
+          <option value="with">Com Imagem</option>
+          <option value="without">Sem Imagem</option>
+        </select>
         
         <button class="btn-refresh" (click)="loadData()" [disabled]="isLoading()">
           <span class="material-icons" [class.spinning]="isLoading()">refresh</span>
@@ -112,6 +124,7 @@
           <th class="col-check">
             <input type="checkbox" (change)="toggleSelectAll($event)" [checked]="selectedCount() === filteredNews().length && filteredNews().length > 0">
           </th>
+          <th class="col-image">Imagem</th>
           <th class="col-id">ID</th>
           <th class="col-title">Título</th>
           <th class="col-category">Categoria</th>
@@ -125,6 +138,15 @@
           <tr [class.selected]="isSelected(news.id)" (click)="toggleSelection(news.id)">
             <td class="col-check" (click)="$event.stopPropagation()">
               <input type="checkbox" [checked]="isSelected(news.id)" (change)="toggleSelection(news.id)">
+            </td>
+            <td class="col-image">
+              @if (getFeaturedImage(news) && !brokenImageIds().has(news.id)) {
+                <img [src]="getFeaturedImage(news)" alt="Thumbnail" class="table-thumb" loading="lazy" (error)="onImageError(news.id)">
+              } @else {
+                <div class="no-image-placeholder">
+                  <span class="material-icons">no_photography</span>
+                </div>
+              }
             </td>
             <td class="col-id">#{{ news.id }}</td>
             <td class="col-title">
@@ -152,7 +174,7 @@
           </tr>
         } @empty {
           <tr>
-            <td colspan="7" class="no-data">
+            <td colspan="8" class="no-data">
               @if (isLoading()) {
                 Carregando notícias...
               } @else {

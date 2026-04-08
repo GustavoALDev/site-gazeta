@@ -14,8 +14,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
 export class NewsCategoryGridComponent {
   private apiService = inject(ApiConfigService);
 
-  $news = toSignal<HomeCategoryGridItem[]>(this.apiService.getCategoryGrid(), {
-    initialValue: [],
+  $news = toSignal(this.apiService.getCategoryGrid(), {
+    initialValue: [] as HomeCategoryGridItem[],
   });
 
   newsInColumns = computed(() => {

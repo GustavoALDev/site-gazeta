@@ -28,6 +28,9 @@ export class MediaCleanupComponent implements OnInit, OnDestroy {
   searchTerm = signal<string>('');
   filterCategory = signal<number | null>(null);
   filterStatus = signal<string>('all');
+  filterEmphasis = signal<'all' | 'only' | 'none'>('all');
+  filterImageStatus = signal<'all' | 'with' | 'without'>('all');
+  brokenImageIds = signal<Set<number>>(new Set());
 
   // Seleção
   selectedIds = signal<Set<number>>(new Set());
@@ -38,9 +41,22 @@ export class MediaCleanupComponent implements OnInit, OnDestroy {
   filteredNews = computed(() => {
     return this.allNews().filter(news => {
       const matchSearch = news.title.toLowerCase().includes(this.searchTerm().toLowerCase());
-      const matchCategory = !this.filterCategory() || news.categoryId.includes(this.filterCategory() ?? 0);
+      const matchCategory = !this.filterCategory() || (news.categoryId && news.categoryId.includes(this.filterCategory() ?? 0));
       const matchStatus = this.filterStatus() === 'all' || news.status === this.filterStatus();
-      return matchSearch && matchCategory && matchStatus;
+      
+      const matchEmphasis = this.filterEmphasis() === 'all' || 
+                           (this.filterEmphasis() === 'only' && news.isEmphasis) ||
+                           (this.filterEmphasis() === 'none' && !news.isEmphasis);
+                           
+      const hasMedia = news.mediaNews && news.mediaNews.length > 0;
+      const isBroken = this.brokenImageIds().has(news.id);
+      const isEffectivelyWithoutImage = !hasMedia || isBroken;
+
+      const matchImages = this.filterImageStatus() === 'all' ||
+                          (this.filterImageStatus() === 'with' && hasMedia && !isBroken) ||
+                          (this.filterImageStatus() === 'without' && isEffectivelyWithoutImage);
+
+      return matchSearch && matchCategory && matchStatus && matchEmphasis && matchImages;
     });
   });
 
@@ -229,5 +245,20 @@ export class MediaCleanupComponent implements OnInit, OnDestroy {
       .filter(c => c.id !== undefined && ids.includes(c.id))
       .map(c => c.name)
       .join(', ');
+  }
+
+  getFeaturedImage(news: News): string | null {
+    if (!news.mediaNews || news.mediaNews.length === 0) return null;
+    
+    const emphasisMedia = news.mediaNews.find(m => m.emphasis);
+    const media = emphasisMedia || news.mediaNews[0];
+    
+    return media.imgSize?.small || media.imgSize?.medium || media.imgSize?.original || null;
+  }
+
+  onImageError(id: number): void {
+    const newSet = new Set(this.brokenImageIds());
+    newSet.add(id);
+    this.brokenImageIds.set(newSet);
   }
 }

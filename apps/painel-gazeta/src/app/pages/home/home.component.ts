@@ -1,11 +1,9 @@
-import { ApiService } from './../../../../../site-gazeta/src/app/core/service/api.service';
 import { Component, inject } from '@angular/core';
 
 
 import { SidebarComponent } from '@site-gazeta/sidebar';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
-import { Menu } from '@site-gazeta/models';
 
 @Component({
   selector: 'app-home',
