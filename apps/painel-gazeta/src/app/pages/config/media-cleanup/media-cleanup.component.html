@@ -1,114 +1,181 @@
-<div class="media-cleanup-content">
-  <div class="content-header">
-    <div class="header-icon">
-      <span class="material-icons">auto_fix_high</span>
+<div class="mass-editor-container">
+  <!-- Cabeçalho e Filtros -->
+  <div class="editor-header">
+    <div class="header-main">
+      <div class="header-icon">
+        <span class="material-icons">edit_note</span>
+      </div>
+      <div class="header-text">
+        <h3>Editor de Notícias em Massa</h3>
+        <p>Gerencie múltiplas notícias de uma só vez: altere status, categorias ou remova do site.</p>
+      </div>
     </div>
-    <div class="header-text">
-      <h3>Limpeza Temporária de Mídias</h3>
-      <p>Varrer notícias, identificar duplicações e remover automaticamente as mídias repetidas sem afetar o destaque correto.</p>
-    </div>
-    <span class="temporary-badge">Temporário</span>
-  </div>
 
-  <div class="actions-row">
-    <button type="button" class="btn-secondary" (click)="scanForDuplicates()" [disabled]="isLoading() || isCleaning()">
-      @if (isLoading()) {
-        <span class="material-icons spinning">sync</span>
-        <span>Varredura em andamento...</span>
-      } @else {
+    <div class="filters-row">
+      <div class="search-box">
         <span class="material-icons">search</span>
-        <span>Procurar duplicações</span>
-      }
-    </button>
+        <input 
+          type="text" 
+          placeholder="Buscar notícias pelo título..." 
+          [ngModel]="searchTerm()" 
+          (ngModelChange)="searchTerm.set($event)"
+        >
+      </div>
 
-    <button
-      type="button"
-      class="btn-primary"
-      (click)="cleanAllDuplicates()"
-      [disabled]="isLoading() || isCleaning() || duplicateNewsCount() === 0"
-    >
-      @if (isCleaning()) {
-        <span class="material-icons spinning">sync</span>
-        <span>Executando limpeza...</span>
-      } @else {
-        <span class="material-icons">delete_sweep</span>
-        <span>Limpar tudo agora</span>
-      }
-    </button>
-  </div>
+      <div class="filter-group">
+        <select [ngModel]="filterCategory()" (ngModelChange)="filterCategory.set($event)">
+          <option [ngValue]="null">Todas as Categorias</option>
+          @for (cat of categories(); track cat.id) {
+            <option [ngValue]="cat.id">{{ cat.name }}</option>
+          }
+        </select>
 
-  <div class="summary-grid">
-    <div class="summary-card">
-      <span class="summary-value">{{ totalNewsScanned() }}</span>
-      <span class="summary-label">Notícias analisadas</span>
-    </div>
-    <div class="summary-card">
-      <span class="summary-value">{{ duplicateNewsCount() }}</span>
-      <span class="summary-label">Notícias com duplicação</span>
-    </div>
-    <div class="summary-card">
-      <span class="summary-value">{{ duplicateMediaCount() }}</span>
-      <span class="summary-label">Mídias duplicadas encontradas</span>
-    </div>
-    <div class="summary-card">
-      <span class="summary-value">{{ duplicateGroupCount() }}</span>
-      <span class="summary-label">Grupos duplicados</span>
+        <select [ngModel]="filterStatus()" (ngModelChange)="filterStatus.set($event)">
+          <option value="all">Todos os Status</option>
+          <option value="published">Publicadas</option>
+          <option value="draft">Rascunhos</option>
+          <option value="trash">Lixeira</option>
+        </select>
+        
+        <button class="btn-refresh" (click)="loadData()" [disabled]="isLoading()">
+          <span class="material-icons" [class.spinning]="isLoading()">refresh</span>
+        </button>
+      </div>
     </div>
   </div>
 
-  @if (lastScanAt()) {
-    <p class="scan-meta">Última varredura: {{ lastScanAt() }}</p>
-  }
+  <!-- Barra de Ações em Massa (Fixa no topo quando há seleção) -->
+  @if (selectedCount() > 0) {
+    <div class="bulk-actions-bar animate-in">
+      <div class="selection-info">
+        <span class="count">{{ selectedCount() }}</span>
+        <span>itens selecionados</span>
+      </div>
 
-  @if (hasResults() && duplicateNewsCount() === 0) {
-    <div class="empty-state">
-      <span class="material-icons">check_circle</span>
-      <h4>Nenhuma duplicação encontrada</h4>
-      <p>A última varredura não localizou mídias repetidas no acervo carregado.</p>
-    </div>
-  }
-
-  @if (duplicateNewsCount() > 0) {
-    <div class="duplicate-list">
-      @for (item of duplicateNews(); track item.newsId) {
-        <article class="duplicate-item">
-          <div class="duplicate-item-header">
-            <div>
-              <h4>{{ item.title }}</h4>
-              <p>#{{ item.newsId }} · {{ item.slug }}</p>
-            </div>
-            <button type="button" class="btn-secondary" (click)="cleanSingleNews(item.newsId)" [disabled]="isCleaning() || isLoading()">
-              <span class="material-icons">delete</span>
-              Limpar esta notícia
-            </button>
-          </div>
-
-          <div class="duplicate-item-meta">
-            <span>{{ item.mediaCount }} mídias no total</span>
-            <span>{{ item.duplicateMediaCount }} duplicadas</span>
-            <span>{{ item.duplicateGroups.length }} grupo(s)</span>
-          </div>
-
-          <div class="duplicate-groups">
-            @for (group of item.duplicateGroups; track group.fingerprint) {
-              <div class="duplicate-group">
-                <div class="group-header">
-                  <strong>{{ group.label }}</strong>
-                  <span>
-                    Mantida: #{{ group.keptMediaId }}
-                    @if (group.keptEmphasis) {
-                      <em>· destacada</em>
-                    }
-                  </span>
-                </div>
-                <div class="group-body">
-                  <span>Removidas: {{ formatRemovedMediaIds(group.removedMediaIds) }}</span>
-                </div>
-              </div>
+      <div class="actions-group">
+        <div class="action-dropdown-wrapper">
+          <button class="btn-action">
+            <span class="material-icons">category</span>
+            Mover para...
+          </button>
+          <div class="action-dropdown">
+            @for (cat of categories(); track cat.id) {
+              <button (click)="bulkChangeCategory(cat.id!)">{{ cat.name }}</button>
             }
           </div>
-        </article>
-      }
+        </div>
+
+        <button class="btn-action" (click)="bulkUpdateStatus('published')">
+          <span class="material-icons">publish</span>
+          Publicar
+        </button>
+        
+        <button class="btn-action" (click)="bulkUpdateStatus('draft')">
+          <span class="material-icons">inventory_2</span>
+          Rascunho
+        </button>
+
+        <button class="btn-action" (click)="bulkToggleEmphasis(true)">
+          <span class="material-icons">star</span>
+          Destaque
+        </button>
+
+        <button class="btn-action" (click)="bulkToggleEmphasis(false)">
+          <span class="material-icons">star_outline</span>
+          Remover Destaque
+        </button>
+
+        <button class="btn-action btn-danger" (click)="bulkUpdateStatus('trash')">
+          <span class="material-icons">delete</span>
+          Lixeira
+        </button>
+
+        <button class="btn-action btn-danger-permanent" (click)="bulkDelete()">
+          <span class="material-icons">warning</span>
+          Excluir Permanente
+        </button>
+        
+        <div class="divider"></div>
+        
+        <button class="btn-cancel" (click)="clearSelection()">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- Tabela de Notícias -->
+  <div class="table-wrapper">
+    <table class="news-table" [class.loading]="isLoading()">
+      <thead>
+        <tr>
+          <th class="col-check">
+            <input type="checkbox" (change)="toggleSelectAll($event)" [checked]="selectedCount() === filteredNews().length && filteredNews().length > 0">
+          </th>
+          <th class="col-id">ID</th>
+          <th class="col-title">Título</th>
+          <th class="col-category">Categoria</th>
+          <th class="col-status">Status</th>
+          <th class="col-emphasis">Destaque</th>
+          <th class="col-date">Data</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (news of filteredNews(); track news.id) {
+          <tr [class.selected]="isSelected(news.id)" (click)="toggleSelection(news.id)">
+            <td class="col-check" (click)="$event.stopPropagation()">
+              <input type="checkbox" [checked]="isSelected(news.id)" (change)="toggleSelection(news.id)">
+            </td>
+            <td class="col-id">#{{ news.id }}</td>
+            <td class="col-title">
+              <strong>{{ news.title }}</strong>
+              <small>{{ news.slug }}</small>
+            </td>
+            <td class="col-category">
+              <span class="cat-badge">{{ getCategoryName(news.categoryId) }}</span>
+            </td>
+            <td class="col-status">
+              <span class="status-badge" [attr.data-status]="news.status">
+                {{ news.status === 'published' ? 'Publicado' : news.status === 'draft' ? 'Rascunho' : 'Lixeira' }}
+              </span>
+            </td>
+            <td class="col-emphasis">
+              @if (news.isEmphasis) {
+                <span class="material-icons star-on">star</span>
+              } @else {
+                <span class="material-icons star-off">star_border</span>
+              }
+            </td>
+            <td class="col-date">
+              {{ news.published | date:'dd/MM/yy' }}
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="7" class="no-data">
+              @if (isLoading()) {
+                Carregando notícias...
+              } @else {
+                Nenhuma notícia encontrada com os filtros selecionados.
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Overlay de Processamento -->
+  @if (isProcessing()) {
+    <div class="processing-overlay">
+      <div class="processing-card">
+        <div class="spinner"></div>
+        <h4>Processando Ações em Massa</h4>
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="(processingProgress().current / processingProgress().total) * 100"></div>
+        </div>
+        <p>{{ processingProgress().current }} de {{ processingProgress().total }} notícias processadas...</p>
+      </div>
     </div>
   }
 </div>

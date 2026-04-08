@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { News } from '@site-gazeta/models';
-import { ApiConfigService } from 'libs/api/service/api-config.service';
+import { ApiConfigService } from '@site-gazeta/api';
 import { RouterModule } from '@angular/router';
 import { Observable } from 'rxjs';
 

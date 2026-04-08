@@ -2,7 +2,7 @@ import { Component, input, output, computed, signal, inject, OnInit, effect } fr
 import { CommonModule } from '@angular/common';
 import { Video, Category } from '@site-gazeta/models';
 import { VideoCarouselComponent } from './video-carousel/video-carousel.component';
-import { ApiConfigService } from 'libs/api/service/api-config.service';
+import { ApiConfigService } from '@site-gazeta/api';
 
 interface VideosByCategory {
   category: Category;

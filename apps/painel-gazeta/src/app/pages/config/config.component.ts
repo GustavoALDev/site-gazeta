@@ -12,6 +12,7 @@ import { MediaCleanupComponent } from './media-cleanup/media-cleanup.component';
 })
 export class ConfigComponent {
   activeTab: 'social-media' | 'home-config' | 'maintenance' | 'media-cleanup' = 'social-media';
+  user = localStorage.getItem('user');
 
   setActiveTab(tab: 'social-media' | 'home-config' | 'maintenance' | 'media-cleanup') {
     this.activeTab = tab;

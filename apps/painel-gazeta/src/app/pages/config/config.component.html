@@ -31,6 +31,7 @@
               (click)="setActiveTab('maintenance')">
               Manutenção
             </button>
+            @if(user === 'admin'){
             <button
               type="button"
               class="tab-button"
@@ -38,6 +39,7 @@
               (click)="setActiveTab('media-cleanup')">
               Limpeza de Mídias
             </button>
+          }
           </div>
         </div>
 

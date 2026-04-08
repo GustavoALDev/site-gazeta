@@ -51,8 +51,8 @@
       "@site-gazeta/video-components": [
         "libs/components/video-components/src/index.ts"
       ],
-      "@site-gazeta/video-player": ["libs/components/video-player/src/index.ts"]
-
+      "@site-gazeta/video-player": ["libs/components/video-player/src/index.ts"],
+      "@site-gazeta/api": ["libs/api/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

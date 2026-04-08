@@ -1,8 +1,8 @@
-import { Component, Signal, computed, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { News, Category } from '@site-gazeta/models';
 import { RouterModule } from '@angular/router';
-import { ApiConfigService, HomeCategoryGridItem } from 'libs/api/service/api-config.service';
+import { ApiConfigService, HomeCategoryGridItem } from '@site-gazeta/api';
 import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
@@ -14,8 +14,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
 export class NewsCategoryGridComponent {
   private apiService = inject(ApiConfigService);
 
-  $news: Signal<HomeCategoryGridItem[]> = toSignal(this.apiService.getCategoryGrid(), {
-    initialValue: [] as HomeCategoryGridItem[],
+  $news = toSignal<HomeCategoryGridItem[]>(this.apiService.getCategoryGrid(), {
+    initialValue: [],
   });
 
   newsInColumns = computed(() => {

@@ -1,11 +1,8 @@
-import { Component, Signal, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { News } from '@site-gazeta/models';
-import { ApiConfigService, HomeHighlightItem } from 'libs/api/service/api-config.service';
+import { ApiConfigService, HomeHighlightItem } from '@site-gazeta/api';
 import { toSignal } from '@angular/core/rxjs-interop';
-
-
 
 @Component({
   selector: 'lib-news-highligths',
@@ -16,5 +13,5 @@ import { toSignal } from '@angular/core/rxjs-interop';
 export class NewsHighligthsComponent {
   private apiService = inject(ApiConfigService);
 
-  $news: Signal<HomeHighlightItem[]> = toSignal(this.apiService.gethighlights(), { initialValue: [] as HomeHighlightItem[] })
+  $news = toSignal<HomeHighlightItem[]>(this.apiService.gethighlights(), { initialValue: [] });
 }

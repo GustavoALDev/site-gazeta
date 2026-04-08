@@ -2,7 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { VideoListComponent } from '../video-list/video-list.component';
 import { VideoPlayerComponent } from '../video-player/video-player.component';
-import { ApiConfigService } from 'libs/api/service/api-config.service';
+import { ApiConfigService } from '@site-gazeta/api';
 import { Video } from '@site-gazeta/models';
 
 @Component({

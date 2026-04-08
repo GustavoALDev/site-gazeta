@@ -11,7 +11,6 @@ export const appRoutes: Route[] = [
   {
     path: '',
     component: HomeComponent,
-    canActivate: [maintenanceGuard],
     children: [
       {path: '', component: HomeComponentsComponent},
       {path: 'category', loadComponent: () => import('./pages/news-category/news-category.component').then(m => m.NewsCategoryComponent)},

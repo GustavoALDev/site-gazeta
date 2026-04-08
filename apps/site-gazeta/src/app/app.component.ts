@@ -18,21 +18,10 @@ import { Ads } from '@site-gazeta/models';
   `],
   changeDetection:ChangeDetectionStrategy.OnPush
 })
-export class AppComponent implements OnInit{
+export class AppComponent {
   apiService = inject(ApiService);
   announcements = signal<Ads[]>([]);
 
   title = 'site-gazeta';
-  ngOnInit(): void {
-      // ApiService espera: getAdsByPositionAndPlacement(placement, position)
-      // Endpoint: /advertisements/active/:placement/:position
-      // Para header/top: placement='header', position='top'
-      // this.getAdsbyPositionAndPlacement('header', 'top');
-  }
-  // getAdsbyPositionAndPlacement(placement: string, position: string){
-  //   this.apiService.getAdsByPositionAndPlacement(placement, position).subscribe((ads) => {
-  //     this.announcements.set(ads as Ads[]);
-  //   });
-  // }
-
+ 
 }

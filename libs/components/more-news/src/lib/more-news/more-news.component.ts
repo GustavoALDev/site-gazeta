@@ -3,7 +3,7 @@ import { RouterModule } from '@angular/router';
 import { Component, input, signal, OnInit, computed, inject, effect } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Category, News } from '@site-gazeta/models';
-import { ApiConfigService } from 'libs/api/service/api-config.service';
+import { ApiConfigService } from '@site-gazeta/api';
 import { PLATFORM_ID } from '@angular/core';
 
 @Component({
@@ -19,7 +19,7 @@ export class MoreNewsComponent implements OnInit{
       const currentState = this.imageLoadingState();
       const nextState = { ...currentState } as Record<number, boolean>;
       let hasChange = false;
-      list.forEach((item) => {
+      list?.forEach((item) => {
         if (nextState[item.id] === undefined) {
           nextState[item.id] = true;
           hasChange = true;
@@ -32,7 +32,7 @@ export class MoreNewsComponent implements OnInit{
   }
   private apiService = inject(ApiConfigService);
   private readonly platformId = inject(PLATFORM_ID);
-  $moreNews = toSignal(this.apiService.getNews(), { initialValue: [] as News[] });
+  $moreNews = toSignal<News[]>(this.apiService.getNews(), { initialValue: [] });
   moreNews = input<News[] | undefined>(undefined);
   category = input<Category>();
   slice = input<number>(0);
@@ -42,7 +42,7 @@ export class MoreNewsComponent implements OnInit{
   protected isLoadingNextBatch = signal<boolean>(false);
 
   visibleNews = computed(() => {
-    const news = this.newsChecked();
+    const news = this.newsChecked() || [];
     const limit = this.showNews() > 0 ? this.showNews() : news.length;
     return news.slice(0, limit);
   });
@@ -52,7 +52,7 @@ export class MoreNewsComponent implements OnInit{
   );
 
   protected canLoadMore = computed(() => {
-    const total = this.newsChecked().length;
+    const total = (this.newsChecked() || []).length;
     return this.slice() > 0 && this.showNews() < total;
   });
 
@@ -79,8 +79,9 @@ export class MoreNewsComponent implements OnInit{
 
 
   sliceNews(){
-    if(this.slice()){
-      this.showNews.set(this.slice()!);
+    const sliceValue = this.slice();
+    if(sliceValue){
+      this.showNews.set(sliceValue);
     }
   }
   async showMoreNews(){
@@ -92,7 +93,7 @@ export class MoreNewsComponent implements OnInit{
       return;
     }
 
-    const news = this.newsChecked();
+    const news = this.newsChecked() || [];
     const currentVisible = this.showNews() > 0 ? this.showNews() : news.length;
     const nextLimit = Math.min(currentVisible + 3, news.length);
     const nextBatch = news.slice(currentVisible, nextLimit);

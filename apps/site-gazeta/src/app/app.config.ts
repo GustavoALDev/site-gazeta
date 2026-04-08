@@ -9,7 +9,7 @@ import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/
 import { environment } from './core/env/env';
 import { newsIdsInterceptor } from './core/interceptor/news-ids.interceptor';
 import { excludeNewsInterceptor } from './core/interceptor/exclude-news.interceptor';
-import { provideLibraryConfig } from 'libs/api/config/api-config';
+import { provideLibraryConfig } from '@site-gazeta/api';
 
 export const appConfig: ApplicationConfig = {
   providers: [

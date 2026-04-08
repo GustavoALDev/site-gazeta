@@ -1,9 +1,9 @@
-import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { News } from '@site-gazeta/models';
 import { CarouselComponent } from '../carousel/carousel.component';
 import { CarouselSwipeComponent } from '../carousel-swipe/carousel-swipe.component';
-import { ApiConfigService } from 'libs/api/service/api-config.service';
+import { ApiConfigService } from '@site-gazeta/api';
 import { combineLatest, map } from 'rxjs';
 
 @Component({
@@ -13,19 +13,15 @@ import { combineLatest, map } from 'rxjs';
   styleUrl: './carousel-manager.component.scss',
   changeDetection:ChangeDetectionStrategy.OnPush
 })
-export class CarouselManagerComponent implements OnInit {
+export class CarouselManagerComponent {
   private apiConfigService = inject(ApiConfigService);
 
   $news = this.apiConfigService.getNewsFeatured();
   $carouselLimit = this.apiConfigService.getCarouselConfig();
 
   $limitedNews = combineLatest([this.$news, this.$carouselLimit]).pipe(
-    map(([news, limit]) => {
+    map(([news, limit]: [News[], number]) => {
       return news.slice(0, limit);
     })
   );
-
-  ngOnInit(): void {
-    // Inicialização se necessário
-  }
 }

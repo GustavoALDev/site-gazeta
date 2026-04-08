@@ -1,3 +1,4 @@
+import { Body } from '@nestjs/common';
 import {
   FormValidatorComponent,
   FormValidatorService,
@@ -65,6 +66,7 @@ export class LoginComponent implements OnInit, OnDestroy {
 
     this.authService.authLogin(body, this.remember()).subscribe({
       next: () => {
+        this.checkAdmin(body.email);
         this.router.navigate(['/']);
       },
       error: (response) => {
@@ -76,7 +78,14 @@ export class LoginComponent implements OnInit, OnDestroy {
       },
     });
   }
-
+  checkAdmin(email: string){
+    if(email === 'master@email.com'){
+      localStorage.setItem('user','admin');
+    }else{
+      localStorage.setItem('user','user');
+    }
+    
+  }
   ngOnDestroy(): void {
     this.formValidator.destroySubscriptions();
     this.destroy$.next();
