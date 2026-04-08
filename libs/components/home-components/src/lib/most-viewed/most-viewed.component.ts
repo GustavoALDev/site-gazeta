@@ -14,7 +14,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 })
 export class MostViewedComponent {
   private apiService = inject(ApiConfigService);
-  mostViewedNews = toSignal<News[]>(this.apiService.getMostViewedNews(), { initialValue: [] });
+  mostViewedNews = toSignal(this.apiService.getMostViewedNews(), { initialValue: [] as News[] });
 
   columns = computed(() => {
     const news = this.mostViewedNews();

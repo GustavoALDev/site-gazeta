@@ -32,7 +32,7 @@ export class MoreNewsComponent implements OnInit{
   }
   private apiService = inject(ApiConfigService);
   private readonly platformId = inject(PLATFORM_ID);
-  $moreNews = toSignal<News[]>(this.apiService.getNews(), { initialValue: [] });
+  $moreNews = toSignal(this.apiService.getNews(), { initialValue: [] as News[] });
   moreNews = input<News[] | undefined>(undefined);
   category = input<Category>();
   slice = input<number>(0);
@@ -56,12 +56,12 @@ export class MoreNewsComponent implements OnInit{
     return this.slice() > 0 && this.showNews() < total;
   });
 
-  newsChecked = computed(() => {
-    const news = this.moreNews()
-    if(news !== undefined){
+  newsChecked = computed((): News[] => {
+    const news = this.moreNews();
+    if (news !== undefined) {
       return news;
     }
-    return this.$moreNews();
+    return this.$moreNews() ?? [];
   });
   currentCategory = computed(() =>{
     const category = this.category();

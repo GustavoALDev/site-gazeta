@@ -13,5 +13,5 @@ import { toSignal } from '@angular/core/rxjs-interop';
 export class NewsHighligthsComponent {
   private apiService = inject(ApiConfigService);
 
-  $news = toSignal<HomeHighlightItem[]>(this.apiService.gethighlights(), { initialValue: [] });
+  $news = toSignal(this.apiService.gethighlights(), { initialValue: [] as HomeHighlightItem[] });
 }
