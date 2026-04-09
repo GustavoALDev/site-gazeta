@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "public": true,
   "name": "site-gazeta",
   "rewrites": [
     {
@@ -17,7 +16,7 @@
     }
   ],
   "functions": {
-    "api/index.js": {
+    "api/index.mjs": {
       "includeFiles": "dist/apps/site-gazeta/**"
     }
   }
