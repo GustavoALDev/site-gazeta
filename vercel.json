@@ -1,0 +1,25 @@
+{
+  "version": 2,
+  "public": true,
+  "name": "site-gazeta",
+  "rewrites": [
+    {
+      "source": "/(css|js|img|assets|fonts)/(.*)",
+      "destination": "/browser/$1/$2"
+    },
+    {
+      "source": "/(.*)\\.(ico|png|jpg|jpeg|svg|webp|js|css|json|txt|xml|webmanifest)",
+      "destination": "/browser/$1.$2"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/api"
+    }
+  ],
+  "functions": {
+    "api/index.js": {
+      "runtime": "nodejs20.x",
+      "includeFiles": "dist/apps/site-gazeta/**"
+    }
+  }
+}

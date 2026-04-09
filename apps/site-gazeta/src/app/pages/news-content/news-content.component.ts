@@ -163,13 +163,13 @@ export class NewsContentComponent implements OnInit, OnDestroy {
       { property: 'og:title', content: news.title },
       { property: 'og:description', content: news.subtitle },
       { property: 'og:image', content: news.mediaNews[0].imgSize?.original },
-      { property: 'og:url', content: `https://gazetadopara.com.br/news/${news.slug}` },
+      { property: 'og:url', content: `https://gazetadopara.com/news/${news.slug}` },
       { property: 'og:type', content: 'article' },
       { property: 'og:site_name', content: 'Gazeta do Pará' },
       { property: 'og:locale', content: 'pt-BR' },
       { property: 'og:image:width', content: '1200' },
       { property: 'og:image:height', content: '630' },
-      { property: 'og:image:type', content: `https://gazetadopara.com.br/news/${news.slug}` },
+      { property: 'og:image:type', content: `https://gazetadopara.com/news/${news.slug}` },
       { property: 'og:image:alt', content: news.title },
     ]);
   }
@@ -257,7 +257,7 @@ export class NewsContentComponent implements OnInit, OnDestroy {
     const news = this.news();
     if (!news) return;
 
-    const url = `https://gazetadopara.com.br/news/${news.slug}`;
+    const url = `https://gazetadopara.com/news/${news.slug}`;
     const title = encodeURIComponent(news.title);
     const description = encodeURIComponent(news.subtitle);
     const image = encodeURIComponent(news.mediaNews[0].imgSize!.original);
@@ -268,7 +268,7 @@ export class NewsContentComponent implements OnInit, OnDestroy {
           navigator.share({
             title: news.title,
             text: news.subtitle,
-            url: `https://gazetadopara.com.br/news/${news.slug}`
+            url: `https://gazetadopara.com/news/${news.slug}`
           }).catch(() => {});
         }
         break;

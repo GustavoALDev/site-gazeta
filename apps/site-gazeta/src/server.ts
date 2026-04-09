@@ -9,7 +9,9 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const serverDistFolder = dirname(fileURLToPath(import.meta.url));
-const browserDistFolder = resolve(serverDistFolder, '../browser');
+const browserDistFolder = process.env['VERCEL'] 
+  ? resolve(process.cwd(), 'dist/apps/site-gazeta/browser')
+  : resolve(serverDistFolder, '../browser');
 
 const app = express();
 const angularApp = new AngularNodeAppEngine();
