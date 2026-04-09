@@ -8,6 +8,9 @@
     "start:ssr": "nx serve-ssr-production site-gazeta"
   },
   "private": true,
+  "engines": {
+    "node": "20.x"
+  },
   "dependencies": {
     "@angular/animations": "~20.0.0",
     "@angular/cdk": "~20.0.0",
