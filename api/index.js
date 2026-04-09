@@ -3,6 +3,7 @@
  * Este arquivo atua como uma ponte entre as requisições do Vercel e o handler do Angular Express.
  */
 export default async function handler(req, res) {
+  console.log(`[SSR] Requisição recebida para: ${req.url}`);
   try {
     // Importa dinamicamente o handler gerado pelo build do Angular
     // O caminho deve coincidir com o outputPath definido no project.json (dist/apps/site-gazeta)
