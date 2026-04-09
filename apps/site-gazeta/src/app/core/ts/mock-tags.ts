@@ -13,7 +13,7 @@ export const META_OG = [
     { property: 'og:author', content: 'Gazeta do Pará' },
     { property: 'og:publisher', content: 'Gazeta do Pará' },
     { property: 'og:robots', content: 'index, follow' },
-    { property: 'og:url', content: 'https://gazetadopara.com.br' },
+    { property: 'og:url', content: 'https://gazetadopara.com' },
     { property: 'og:image', content: 'https://gazetadopara.com/img/capa.png' },
     { property: 'og:type', content: 'website' },
     { property: 'og:site_name', content: 'Gazeta do Pará' },
